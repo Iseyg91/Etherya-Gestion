@@ -79,6 +79,29 @@ async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
     except discord.HTTPException as e:
         await ctx.send(f"Une erreur est survenue : {e}")
 
+@bot.command()
+async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
+    """Retire un rôle à un utilisateur."""
+    # Vérifier si l'utilisateur a le rôle [𝑺ץ] Co-Owner
+    if not any(role.id == 1244339296706760726 for role in ctx.author.roles):
+        await ctx.send("Erreur : vous devez avoir le rôle [𝑺ץ] Co-Owner pour utiliser cette commande.")
+        return
+
+    # Vérifier si les arguments sont bien fournis
+    if user is None or role is None:
+        await ctx.send("Erreur : veuillez suivre ce format : +delrole @user @rôle")
+        return
+
+    try:
+        # Retirer le rôle à l'utilisateur
+        await user.remove_roles(role)
+        await ctx.send(f"{user.mention} n'a plus le rôle {role.name} !")
+    except discord.Forbidden:
+        await ctx.send("Je n'ai pas les permissions nécessaires pour retirer ce rôle.")
+    except discord.HTTPException as e:
+        await ctx.send(f"Une erreur est survenue : {e}")
+
+
 # Synchroniser les commandes après le démarrage du bot
 @bot.event
 async def on_ready():

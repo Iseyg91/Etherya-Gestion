@@ -10,13 +10,12 @@ token = os.environ['ETHERYA']
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="+", intents=intents
-
 # Commande slash pour le giveaway
-@slash.slash(name="giveaway", description="Lance un giveaway personnalisé")
-async def giveaway(ctx, channel: discord.TextChannel, prize: str, duration_hours: int, image_url: str = None):
+@bot.tree.command(name="giveaway", description="Lance un giveaway personnalisé")
+async def giveaway(interaction: discord.Interaction, channel: discord.TextChannel, prize: str, duration_hours: int, image_url: str = None):
     # Vérifier que l'utilisateur a les permissions appropriées
-    if not ctx.author.guild_permissions.manage_messages:
-        await ctx.send("Vous n'avez pas les permissions nécessaires pour lancer un giveaway.", hidden=True)
+    if not interaction.user.guild_permissions.manage_messages:
+        await interaction.response.send_message("Vous n'avez pas les permissions nécessaires pour lancer un giveaway.", ephemeral=True)
         return
 
     # Convertir la durée en heures en secondes
@@ -25,7 +24,7 @@ async def giveaway(ctx, channel: discord.TextChannel, prize: str, duration_hours
     # Créer l'embed pour annoncer le giveaway
     giveaway_embed = Embed(
         title="🎉 Giveaway en cours 🎉",
-        description=f"**Prix :** {prize}\n**Durée :** {duration_hours} heures\n\nReact pour participer !",
+        description=f"**Prix :** {prize}\n**Durée :** {duration_hours} heures\n\nRéagissez avec 🎉 pour participer !",
         color=discord.Color.blue()
     )
 
@@ -33,8 +32,8 @@ async def giveaway(ctx, channel: discord.TextChannel, prize: str, duration_hours
     if image_url:
         giveaway_embed.set_image(url=image_url)
 
-    giveaway_embed.set_footer(text=f"Organisé par {ctx.author.name}", icon_url=ctx.author.avatar_url)
-    
+    giveaway_embed.set_footer(text=f"Organisé par {interaction.user.name}", icon_url=interaction.user.avatar.url)
+
     # Envoyer l'embed dans le salon spécifié
     message = await channel.send(embed=giveaway_embed)
     
@@ -68,6 +67,9 @@ async def giveaway(ctx, channel: discord.TextChannel, prize: str, duration_hours
             color=discord.Color.red()
         )
         await channel.send(embed=no_winner_embed)
+
+    # Répondre à l'utilisateur qui a lancé la commande
+    await interaction.response.send_message(f"Le giveaway a été lancé dans {channel.mention} !", ephemeral=True)
 
 @bot.event
 async def on_ready():

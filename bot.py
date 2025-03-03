@@ -60,25 +60,14 @@ async def clear(ctx, amount: int = None):
 @bot.command()
 async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Ajoute un rôle à un utilisateur."""
-    
     # Vérifier si l'utilisateur a le rôle [𝑺ץ] Co-Owner
     if not any(role.id == 1244339296706760726 for role in ctx.author.roles):
         await ctx.send("Erreur : vous devez avoir le rôle [𝑺ץ] Co-Owner pour utiliser cette commande.")
         return
-    
-    # Vérifier si les arguments sont fournis
+
+    # Vérifier si les arguments sont bien fournis
     if user is None or role is None:
         await ctx.send("Erreur : veuillez suivre ce format : +addrole @user @rôle")
-        return
-
-    # Vérifier si l'utilisateur a seulement mentionné un rôle mais pas un utilisateur
-    if user is None:
-        await ctx.send("Erreur : veuillez préciser un utilisateur valide.")
-        return
-
-    # Vérifier si l'utilisateur a seulement mentionné un utilisateur mais pas un rôle
-    if role is None:
-        await ctx.send("Erreur : veuillez préciser un rôle valide.")
         return
 
     try:

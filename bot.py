@@ -11,11 +11,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="+", intents=intents
 
-# Initialisation du bot
-intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="!", intents=intents)
-slash = SlashCommand(bot, sync_commands=True)
-
 # Commande slash pour le giveaway
 @slash.slash(name="giveaway", description="Lance un giveaway personnalisé")
 async def giveaway(ctx, channel: discord.TextChannel, prize: str, duration_hours: int, image_url: str = None):

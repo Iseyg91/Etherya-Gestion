@@ -102,11 +102,5 @@ async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
         await ctx.send(f"Une erreur est survenue : {e}")
 
 
-# Synchroniser les commandes après le démarrage du bot
-@bot.event
-async def on_ready():
-    await bot.tree.sync()  # Synchronise les commandes slash
-    print(f'Bot logged in as {bot.user}')
-
 keep_alive()
 bot.run(token)

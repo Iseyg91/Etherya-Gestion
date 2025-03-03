@@ -9,7 +9,7 @@ from keep_alive import keep_alive
 token = os.environ['ETHERYA']
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="+", intents=intents
+bot = commands.Bot(command_prefix="+", intents=intents)
 # Commande slash pour le giveaway
 @bot.tree.command(name="giveaway", description="Lance un giveaway personnalisé")
 async def giveaway(interaction: discord.Interaction, channel: discord.TextChannel, prize: str, duration_hours: int, image_url: str = None):

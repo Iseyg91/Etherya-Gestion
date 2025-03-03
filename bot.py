@@ -52,7 +52,7 @@ async def giveaway(interaction: discord.Interaction, channel: discord.TextChanne
         # Supprimer l'auteur du message des participants (si l'auteur a réagi, ne pas l'inclure)
         users = [user for user in users if user != bot.user]
 
-        # Créer un embed pour annoncer le gagnant
+        # Si nous avons des participants, choisir un gagnant
         if users:
             winner = random.choice(users)
             winner_embed = Embed(
@@ -75,8 +75,7 @@ async def giveaway(interaction: discord.Interaction, channel: discord.TextChanne
 
     except Exception as e:
         print(f"Erreur dans la commande giveaway: {e}")
-        await interaction.response.send_message("Une erreur est survenue lors du lancement du giveaway.", ephemeral=True)
-
+        await interaction.response.send_message("Une erreur est survenue lors du lancement du giveaway. Veuillez réessayer plus tard.", ephemeral=True)
 # Synchroniser les commandes après le démarrage du bot
 @bot.event
 async def on_ready():

@@ -57,7 +57,7 @@ async def clear(ctx, amount: int = None):
     deleted = await ctx.channel.purge(limit=amount)
     await ctx.send(f'{len(deleted)} messages supprimés.', delete_after=5)
 
-   @bot.command()
+@bot.command()
 async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Ajoute un rôle à un utilisateur."""
     

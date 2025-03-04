@@ -40,41 +40,24 @@ async def on_message(message):
     if f"<@{OWNER_ID}>" in message.content:
         embed = discord.Embed(
             title="🔹 Hey, besoin d'aide ?",  
-            description=(
-                f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
-                "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
-                "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**"
-            ),
-            color=0x00aaff  # Bleu cyan chill
+            description=(f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
+                         "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
+                         "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**"),
+            color=0x00aaff
         )
-
-        # Ajouter l'image personnalisée en bannière
-        embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png") 
-
-        # Ajouter la photo de profil du bot en thumbnail
+        embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png")
         if bot.user.avatar:
-            embed.set_thumbnail(url=bot.user.avatar.url) 
-        
-        # Ajouter un champ explicatif
-        embed.add_field(
-            name="❓ Pourquoi éviter de mentionner le Owner ?", 
-            value="Le Owner est souvent occupé avec la gestion du serveur. Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀",
-            inline=False
-        )
-
-        # Footer avec l'équipe d'administration
+            embed.set_thumbnail(url=bot.user.avatar.url)
+        embed.add_field(name="❓ Pourquoi éviter de mentionner le Owner ?", 
+                        value="Le Owner est souvent occupé avec la gestion du serveur. Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀", 
+                        inline=False)
         embed.set_footer(text="Merci de ta compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
-
-        # Ajouter un bouton interactif vers le support
         button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
-
         view = View()
         view.add_item(button)
 
         await message.channel.send(embed=embed, view=view)
-        
-        # Ne pas traiter la mention de l'Owner
-        return
+        return  # N'oubliez pas d'ajouter un return ici pour ne pas appeler process_commands après
 
     # Vérifier si le message mentionne le bot directement
     if bot.user.mentioned_in(message):
@@ -83,44 +66,13 @@ async def on_message(message):
             description="Voici la liste des commandes disponibles :",
             color=discord.Color(0xFFFFFF)
         )
-        # Ajout de l'icône du bot à gauche de l'embed
         embed.set_thumbnail(url=bot.user.avatar.url)
-
-        # Ajout des champs pour chaque commande avec des descriptions améliorées
-        embed.add_field(
-            name="🔨 **+clear (nombre entre 2 et 100)**", 
-            value="Supprime un certain nombre de messages dans un salon. "
-                  "Entrez un nombre entre 2 et 100 pour que le bot nettoie les messages.",
-            inline=False
-        )
-        embed.add_field(
-            name="❌ **+delrole @user @rôle**", 
-            value="Retire un rôle spécifique d'un utilisateur. "
-                  "Ciblez un utilisateur et le rôle à retirer.",
-            inline=False
-        )
-        embed.add_field(
-            name="✅ **+addrole @user @rôle**", 
-            value="Attribue un rôle à un utilisateur spécifié. "
-                  "Ciblez un utilisateur et le rôle à attribuer.",
-            inline=False
-        )
-        embed.add_field(
-            name="📊 **+vc**", 
-            value="Affiche les statistiques actuelles du serveur, y compris les membres en ligne.",
-            inline=False
-        )
-        embed.add_field(
-            name="💥 **+nuke**", 
-            value="Efface tous les messages du salon actuel (nuke). "
-                  "Utilisé avec précaution pour éviter toute perte de données importante.",
-            inline=False
-        )
-
-        # Image à inclure
+        embed.add_field(name="🔨 **+clear (nombre entre 2 et 100)**", value="Supprime un certain nombre de messages...", inline=False)
+        embed.add_field(name="❌ **+delrole @user @rôle**", value="Retire un rôle spécifique d'un utilisateur.", inline=False)
+        embed.add_field(name="✅ **+addrole @user @rôle**", value="Attribue un rôle à un utilisateur spécifié.", inline=False)
+        embed.add_field(name="📊 **+vc**", value="Affiche les statistiques actuelles du serveur.", inline=False)
+        embed.add_field(name="💥 **+nuke**", value="Efface tous les messages du salon actuel.", inline=False)
         embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
-        
-        # Mention du créateur en bas
         embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
 
         await message.channel.send(embed=embed)

@@ -65,7 +65,7 @@ async def on_message(message):
         # Footer avec l'équipe d'administration
         embed.set_footer(text="Merci de ta compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
 
-        # Ajouter un bouton interactif vers le support (avec le lien mis à jour)
+        # Ajouter un bouton interactif vers le support
         button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
 
         view = View()
@@ -73,12 +73,11 @@ async def on_message(message):
 
         await message.channel.send(embed=embed, view=view)
         
-        # Ne pas traiter la mention du bot si l'Owner est mentionné
-        await bot.process_commands(message)  # Assure que les autres commandes seront traitées
+        # Ne pas traiter la mention de l'Owner
         return
 
-    # Vérifier si le message mentionne le bot directement (et non l'Owner)
-    if bot.user.mentioned_in(message) and f"<@{OWNER_ID}>" not in message.content:
+    # Vérifier si le message mentionne le bot directement
+    if bot.user.mentioned_in(message):
         embed = discord.Embed(
             title="📜 Commandes du Bot Etherya",
             description="Voici la liste des commandes disponibles :",
@@ -125,7 +124,7 @@ async def on_message(message):
         embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
 
         await message.channel.send(embed=embed)
-    
+
     # Toujours appeler process_commands pour que les autres commandes fonctionnent
     await bot.process_commands(message)
     

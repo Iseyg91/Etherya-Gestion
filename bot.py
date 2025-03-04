@@ -12,7 +12,7 @@ intents.message_content = True
 intents.messages = True 
 intents.members = True
 bot = commands.Bot(command_prefix="+", intents=intents)
-
+bot = commands.Bot(command_prefix='/', intents=intents)
 
 OWNER_ID = 792755123587645461
 STAFF_ROLE_ID = 1244339296706760726

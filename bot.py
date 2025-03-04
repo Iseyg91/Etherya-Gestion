@@ -84,8 +84,6 @@ async def on_message(message):
 def has_management_role(ctx):
     """Vérifie si l'utilisateur a un rôle de gestion."""
     return any(role.id == STAFF_ROLE_ID for role in ctx.author.roles)
-@bot.event
-async def on_message(message):
     #------------------------------------------------------------------------- Ignorer les messages des autres bots
     if message.author.bot:
         return

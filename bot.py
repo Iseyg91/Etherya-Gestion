@@ -113,7 +113,7 @@ EMOJIS = {
 async def vc(ctx):
     guild = ctx.guild
     total_members = guild.member_count
-    online_members = sum(1 for member in guild.members if member.status in [discord.Status.online, discord.Status.idle, discord.Status.dnd])
+    online_members = guild.approximate_presence_count if guild.approximate_presence_count else "N/A"
     voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
     boosts = guild.premium_subscription_count
     

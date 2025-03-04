@@ -165,7 +165,6 @@ salon_ids = [
 ]
 
 @bot.event
-async def on_member_join(member: discord.Member):
     # Récupérer les salons depuis les IDs
     guild = member.guild
     channels = []

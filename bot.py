@@ -292,6 +292,16 @@ async def aide(ctx):
     # Marquer comme envoyé pour éviter la duplication
     ctx.sent_embed = True
 
+@bot.event
+async def on_message(message):
+    # Vérifier si le message ping le bot et s'il n'y a pas de texte après
+    if bot.user.mentioned_in(message) and len(message.content.strip()) == len(f'<@!{bot.user.id}>'):
+        # Répondre avec le message si rien n'est ajouté après le ping
+        await message.channel.send("Mon prefix sur ce serveur est: +, faites +aide pour voir mes commandes.")
+    
+    # Assurer que les autres commandes soient bien traitées
+    await bot.process_commands(message)
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

@@ -282,6 +282,7 @@ async def aide(ctx):
     
     # Envoi de l'embed dans le salon
     await ctx.send(embed=embed)
-    
+# Token pour démarrer le bot (à partir des secrets)
+# Lancer le bot avec ton token depuis l'environnement  
 keep_alive()
 bot.run(token)

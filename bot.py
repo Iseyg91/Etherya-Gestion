@@ -42,21 +42,27 @@ async def on_message(message):
             description=(
                 f"Bonjour {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
                 "📌 **Si vous avez une question ou un problème, veuillez contacter un administrateur.**\n"
-                f"📩 **Besoin d'aide ? Ouvrez un ticket dans le salon [Support](<#{1166093151589634078}>).**"
+                "📩 **Besoin d'aide ? Ouvrez un ticket dans le salon support : <#1166093151589634078>.**"
             ),
             color=0xffcc00  # Couleur d'avertissement (jaune)
         )
         
         # Ajouter des détails supplémentaires
-        embed.add_field(name="Pourquoi cette règle ?", value="Le Owner est souvent occupé et ne peut pas répondre à tout le monde. Merci de respecter cette consigne. 🙏", inline=False)
+        embed.add_field(
+            name="Pourquoi cette règle ?", 
+            value="Le Owner est souvent occupé et ne peut pas répondre à tout le monde. Merci de respecter cette consigne. 🙏",
+            inline=False
+        )
         
         # Ajouter la photo de profil du bot en thumbnail
-        embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else "https://i.imgur.com/dX0DSGh.jpeg") 
+        if bot.user.avatar:
+            embed.set_thumbnail(url=bot.user.avatar.url) 
         
         # Footer avec l'équipe d'administration
         embed.set_footer(text="Merci de votre compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
 
         await message.channel.send(embed=embed)
+
 
     # Afficher le message dans la console
     print(f"Message reçu : {message.content}")

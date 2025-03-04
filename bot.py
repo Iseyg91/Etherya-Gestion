@@ -294,14 +294,20 @@ async def aide(ctx):
 
 @bot.event
 async def on_message(message):
-    # Vérifier si le message ping le bot et s'il n'y a pas de texte après
-    if bot.user.mentioned_in(message) and len(message.content.strip()) == len(f'<@!{bot.user.id}>'):
-        # Répondre avec le message si rien n'est ajouté après le ping
-        await message.channel.send("Mon prefix sur ce serveur est: +, faites +aide pour voir mes commandes.")
-    
-    # Assurer que les autres commandes soient bien traitées
-    await bot.process_commands(message)
+    # Vérifier que le message n'est pas envoyé par le bot lui-même
+    if message.author == bot.user:
+        return
 
+    # Vérifier si le bot est mentionné et qu'il n'y a pas d'autres mots
+    if bot.user.mentioned_in(message):
+        # Vérifier qu'il n'y a pas de texte supplémentaire après la mention
+        if len(message.content.strip()) == len(f'<@!{bot.user.id}>'):
+            # Répondre uniquement si le message contient uniquement la mention du bot
+            await message.channel.send("Mon prefix sur ce serveur est: +, faites +aide pour voir mes commandes.")
+
+    # Assurer que les autres commandes sont toujours traitées normalement
+    await bot.process_commands(message)
+    
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

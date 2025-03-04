@@ -233,9 +233,12 @@ async def nuke(ctx):
             await ctx.send("Cette commande doit être utilisée dans un salon texte.")
     else:
         await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
-
 @bot.command()
 async def aide(ctx):
+    # Vérifier si la commande est déjà en cours d'exécution
+    if hasattr(ctx, 'sent_embed') and ctx.sent_embed:
+        return  # Empêche l'envoi en double si un embed a déjà été envoyé
+    
     # Création de l'embed avec un titre et une description clairs
     embed = discord.Embed(
         title="📜 Commandes du Bot Etherya",
@@ -282,6 +285,10 @@ async def aide(ctx):
     
     # Envoi de l'embed dans le salon
     await ctx.send(embed=embed)
+    
+    # Marquer comme envoyé pour éviter la duplication
+    ctx.sent_embed = True
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

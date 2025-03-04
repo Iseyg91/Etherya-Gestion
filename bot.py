@@ -262,15 +262,17 @@ async def nuke(ctx):
             await ctx.send("Cette commande doit être utilisée dans un salon texte.")
     else:
         await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
-@bot.command()
-async def aide(ctx):
-    # Vérifier si un message a déjà été envoyé
-    if hasattr(ctx, 'sent_embed') and ctx.sent_embed:
-        return  # Empêcher l'envoi en double si un embed a déjà été envoyé
-    
-    # Création de l'embed avec un titre et une description clairs
-    embed = discord.Embed(
-        title="📜 Commandes du Bot Etherya",
+
+#------------------------------------------------------------------------- Ignorer les messages des autres bots
+@bot.event
+async def on_message(message):
+    # Ignorer les messages envoyés par d'autres bots
+    if message.author.bot:
+        return
+
+    # Vérifie si le message mentionne uniquement le bot
+    if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
+        embed = discord.Embed(📜 Commandes du Bot Etherya",
         description="Voici la liste complète des commandes disponibles pour interagir avec le bot.",
         color=discord.Color(0x1abc9c)  # Couleur plus douce et moderne
     )
@@ -313,18 +315,16 @@ async def aide(ctx):
         value="Crée un message personnalisé sous forme d'embed avec un titre, une description, une couleur, et une image."
               "Utilisé pour ajouter des messages visuellement attrayants et bien structurés dans le salon.",
         inline=False
-    )
-    # Image à inclure
-    embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
-    
-    # Mention du créateur en bas
-    embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
+   )
 
-    # Envoi de l'embed dans le salon
-    await ctx.send(embed=embed)
-    
-    # Marquer comme envoyé pour éviter la duplication
-    ctx.sent_embed = True
+        embed.set_thumbnail(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryBot_profil.jpg?raw=true")
+        embed.set_footer(text="Utilise ces commandes avec sagesse !")
+        embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+
+        await message.channel.send(embed=embed)
+
+    # Assurez-vous que le bot continue de traiter les commandes
+    await bot.process_commands(message)
 #------------------------------------------------------------------------- Commandes de Gestion : /embed
 
 THUMBNAIL_URL = "https://github.com/Iseyg91/Etherya-Gestion/blob/main/IMG_2571.jpg?raw=true"

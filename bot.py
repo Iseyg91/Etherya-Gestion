@@ -317,9 +317,14 @@ async def on_message(message):
         inline=False
    )
 
-        embed.set_thumbnail(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryBot_profil.jpg?raw=true")
-        embed.set_footer(text="Utilise ces commandes avec sagesse !")
-        embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+ # Image à inclure
+    embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+    
+    # Mention du créateur en bas
+    embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
+
+    # Envoi de l'embed dans le salon
+    await ctx.send(embed=embed)
 
         await message.channel.send(embed=embed)
 

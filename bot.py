@@ -130,6 +130,41 @@ async def vc(ctx):
     
     await ctx.send(embed=embed)
 
+# Commande +prison
+@bot.command()
+async def prison(ctx, member: discord.Member = None):
+    # Vérifier si l'utilisateur a le rôle nécessaire
+    if not any(role.id == 1165936153418006548 for role in ctx.author.roles):
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
+        return
+    
+    # Vérifier si un membre a été ciblé
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne.")
+        return
+
+    # Préparer l'embed
+    embed = Embed(
+        title="La Police Etheryenne vous arrête !",
+        description="Te voilà privé d'accès de l'économie !",
+        color=discord.Color(0xFFCC00)
+    )
+    embed.set_thumbnail(url=member.avatar.url)  # Ajouter la photo de profil du membre
+    embed.set_image(url="https://i.imgur.com/dX0DSGh.jpeg")  # Image spécifique
+
+    # Retirer l'ancien rôle et ajouter le nouveau
+    try:
+        role_to_remove = discord.utils.get(ctx.guild.roles, id=1344407004739014706)
+        role_to_add = discord.utils.get(ctx.guild.roles, id=1344453363261116468)
+        
+        await member.remove_roles(role_to_remove)  # Retirer l'ancien rôle
+        await member.add_roles(role_to_add)  # Ajouter le rôle permanent
+
+        # Envoyer l'embed
+        await ctx.send(embed=embed)
+
+    except Exception as e:
+        await ctx.send(f"Une erreur est survenue : {str(e)}")
 
 keep_alive()
 bot.run(token)

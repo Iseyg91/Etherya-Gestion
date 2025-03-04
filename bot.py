@@ -104,7 +104,7 @@ async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
 #  Configuration des emojis personnalisables
 EMOJIS = {
     "members": "👥",
-    "vip": "🌟",  # Emoji pour les VIP
+    "crown": "👑",  # Emoji couronne
     "voice": "🎤",
     "boosts": "🚀"
 }
@@ -113,22 +113,21 @@ EMOJIS = {
 async def vc(ctx):
     guild = ctx.guild
     total_members = guild.member_count
-    # Utilisation de l'ID du rôle VIP
-    vip_role = discord.utils.get(guild.roles, id=1340640630027587626)
-    vip_members = [member for member in guild.members if vip_role in member.roles]
+    # L'ID que tu as donné pour te ping
+    crown_member = guild.get_member(792755123587645461)  # ID de ton compte
+    
     voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
     boosts = guild.premium_subscription_count
     
     embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
     embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
-    embed.add_field(name=f"{EMOJIS['vip']} Membres VIP", value=f"**{len(vip_members)}**", inline=True)  # Nombre de membres avec le rôle VIP
+    embed.add_field(name=f"{EMOJIS['crown']} Couronne", value=f"{crown_member.mention}", inline=True)  # Affiche ton ping
     embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
     embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
     embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
     
     await ctx.send(embed=embed)
-
 
 keep_alive()
 bot.run(token)

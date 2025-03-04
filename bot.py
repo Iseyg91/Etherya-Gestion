@@ -157,5 +157,25 @@ async def on_member_join(member):
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
 
+@bot.event
+async def on_member_remove(member):
+    # Salon de départ
+    leave_channel = bot.get_channel(1346430760428507156)  # Remplacez par l'ID de votre salon "Départ"
+
+    # Création de l'embed
+    embed = discord.Embed(
+        title=f"👋 {member.name}",
+        description=(
+            "Nous avons le regret de te voir partir... Merci d'avoir fait partie de notre communauté !\n"
+            "On espère que tu reviendras un jour, mais en attendant, nous te souhaitons bonne chance pour la suite de ton aventure ! 🍀\n"
+            "\n**À bientôt, peut-être ?**"
+        ),
+        color=0xFFCC00
+    )
+    embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png")
+
+    # Envoi du message dans le salon de départ
+    await leave_channel.send(embed=embed)
+
 keep_alive()
 bot.run(token)

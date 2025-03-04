@@ -195,13 +195,16 @@ async def on_member_join(member: discord.Member):
         except discord.HTTPException:
             print("Une erreur est survenue lors de l'envoi du message.")
 
-client = commands.Bot(command_prefix="+", intents=intents)
 
 # Dictionnaire pour stocker les messages supprimés par salon
 deleted_messages = {}
 
 @client.event
 async def on_message_delete(message):
+    # Vérifier si le message a un contenu
+    if not message.content:
+        return
+
     # On garde une trace du dernier message supprimé pour chaque salon
     if message.guild.id not in deleted_messages:
         deleted_messages[message.guild.id] = {}
@@ -217,7 +220,12 @@ async def on_message_delete(message):
             color=discord.Color.red()
         )
         embed.set_footer(text=f"Supprimé par {message.author}")
-        await log_channel.send(embed=embed)
+        try:
+            await log_channel.send(embed=embed)
+        except discord.Forbidden:
+            print(f"Le bot n'a pas les permissions nécessaires pour envoyer des messages dans {log_channel.name}")
+    else:
+        print("Salon non trouvé pour envoyer le message supprimé.")
 
 @client.command()
 async def snipe(ctx):

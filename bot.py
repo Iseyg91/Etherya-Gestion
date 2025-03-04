@@ -188,5 +188,37 @@ async def on_member_join(member: discord.Member):
         except discord.HTTPException:
             print("Une erreur est survenue lors de l'envoi du message.")
 
+@bot.command()
+async def nuke(ctx):
+    # Vérifie si l'utilisateur a les permissions nécessaires (admin ou le rôle spécifique)
+    if ctx.author.guild_permissions.administrator or 1171489794698784859 in [role.id for role in ctx.author.roles]:
+        # Vérifie que la commande a été lancée dans un salon texte
+        if isinstance(ctx.channel, discord.TextChannel):
+            # Récupère le salon actuel
+            channel = ctx.channel
+
+            # Récupère les permissions du salon
+            overwrites = channel.overwrites
+
+            # Sauvegarde le nom du salon
+            channel_name = channel.name
+
+            # Récupère l'ID du salon pour le recréer
+            guild = channel.guild
+
+            # Crée un nouveau salon avec le même nom et les mêmes permissions
+            await channel.delete()  # Supprime le salon actuel
+            new_channel = await guild.create_text_channel(channel_name, overwrites=overwrites)  # Crée le nouveau salon
+
+            # Envoie un message dans le nouveau salon pour confirmer la recréation
+            await new_channel.send(f"Le salon {channel_name} a été supprimé et recréé.")
+
+            # Optionnellement, tu peux aussi envoyer un message dans le salon d'origine pour prévenir de la suppression avant de le recréer
+            await ctx.send(f"Le salon {channel_name} a été supprimé et recréé.")
+        else:
+            await ctx.send("Cette commande doit être utilisée dans un salon texte.")
+    else:
+        await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
+
 keep_alive()
 bot.run(token)

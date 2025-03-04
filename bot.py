@@ -277,8 +277,8 @@ async def aide(ctx):
     # Image à inclure
     embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
     
-    # Mention du créateur en bas
-    embed.add_field(name="Bot développé par 👑 Iseyg", value="Bot développé par 👑 Iseyg (le goat) !", inline=False)
+# Mention du créateur en bas
+embed.add_field(name="Bot développé par 👑 Iseyg", value="Bot développé par 👑 Iseyg (le goat) !", inline=False)
     
     # Envoi de l'embed dans le salon
     await ctx.send(embed=embed)

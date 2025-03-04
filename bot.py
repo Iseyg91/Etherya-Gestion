@@ -236,38 +236,51 @@ async def nuke(ctx):
 
 @bot.command()
 async def aide(ctx):
-    # Création de l'embed
+    # Création de l'embed avec un titre et une description clairs
     embed = discord.Embed(
-        title="Commandes du Bot Etherya",
-        description="Voici la liste des commandes disponibles sur le serveur.",
-        color=discord.Color.blue()
+        title="📜 Commandes du Bot Etherya",
+        description="Voici la liste complète des commandes disponibles pour interagir avec le bot.",
+        color=discord.Color(0x3498db)  # Bleu clair
     )
 
-    # Ajout des descriptions des commandes
-    embed.add_field(name="+clear (nombre entre 2 et 100)", 
-                    value="Supprime un certain nombre de messages dans le salon. "
-                          "Vous devez entrer un nombre entre 2 et 100.",
-                    inline=False)
-    embed.add_field(name="+delrole @user @rôle", 
-                    value="Retire un rôle à un utilisateur spécifique.",
-                    inline=False)
-    embed.add_field(name="+addrole @user @rôle", 
-                    value="Ajoute un rôle à un utilisateur spécifique.",
-                    inline=False)
-    embed.add_field(name="+vc", 
-                    value="Affiche les statistiques du serveur.",
-                    inline=False)
-    embed.add_field(name="+nuke", 
-                    value="Efface tous les messages d'un salon.",
-                    inline=False)
+    # Ajout de l'icône du bot à gauche de l'embed
+    embed.set_thumbnail(url=bot.user.avatar.url)
+
+    # Ajout des champs pour chaque commande
+    embed.add_field(
+        name="🔨 **+clear (nombre entre 2 et 100)**", 
+        value="Supprime un certain nombre de messages dans un salon. "
+              "Entrez un nombre entre 2 et 100 pour que le bot nettoie les messages.",
+        inline=False
+    )
+    embed.add_field(
+        name="🎭 **+delrole @user @rôle**", 
+        value="Retire un rôle spécifique d'un utilisateur.",
+        inline=False
+    )
+    embed.add_field(
+        name="🎭 **+addrole @user @rôle**", 
+        value="Attribue un rôle à un utilisateur spécifié.",
+        inline=False
+    )
+    embed.add_field(
+        name="📊 **+vc**", 
+        value="Affiche les statistiques actuelles du serveur.",
+        inline=False
+    )
+    embed.add_field(
+        name="💥 **+nuke**", 
+        value="Efface tous les messages du salon actuel (nuke). Utilisé avec précaution.",
+        inline=False
+    )
     
-    # Image de l'embed
+    # Image à inclure
     embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
-
-    # Mention du créateur
-    embed.add_field(name="Bot développé par 👑 Iseyg", value="\u200b", inline=False)
-
-    # Envoi de l'embed
+    
+    # Mention du créateur en bas
+    embed.add_field(name="Bot développé par 👑 Iseyg", value="Bot développé par 👑 Iseyg (le goat) !", inline=False)
+    
+    # Envoi de l'embed dans le salon
     await ctx.send(embed=embed)
 
 keep_alive()

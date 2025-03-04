@@ -146,7 +146,7 @@ salon_ids = [
 async def on_member_join(member):
     guild = member.guild
     
-    # Envoi du message de bienvenue dans le salon dédié
+    # Envoi du message de bienvenue
     channel = bot.get_channel(WELCOME_CHANNEL_ID)
     if channel:
         embed = discord.Embed(
@@ -156,26 +156,27 @@ async def on_member_join(member):
                 "<:better_scroll:1342376863909285930> **Avant de commencer, prends le temps de lire :**\n\n"
                 "- <a:fleche3:1290077283100397672> **<#1245380752137388104>** pour éviter les problèmes dès le départ.\n"
                 "- <a:fleche3:1290077283100397672> **<#1340402373708746802>** pour comprendre les bases de l’économie.\n"
-                "- <a:fleche3:1290077283100397672> **<#1340403279019901014>** pour savoir ce que tu peux obtenir.\n\n"
+                "- <a:fleche3:1290077283100397672> **<#1340402531712368752>** pour savoir ce que tu peux obtenir.\n\n"
                 "💡 *Un doute ? Une question ? Ouvre un ticket et le staff t’aidera !*\n\n"
                 "**Prépare-toi à bâtir ton empire... ou à tout perdre. Bonne chance ! 🍀**"
             ),
             color=discord.Color.gold()
         )
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
-        await channel.send(embed=embed)  # Envoie uniquement l'embed sans mention
+        await channel.send(f"{member.mention}", embed=embed)
     
-    # Envoi du ghost ping une seule fois par salon
+    # Envoi d'un seul ghost ping par salon
     for salon_id in salon_ids:
         salon = bot.get_channel(salon_id)
         if salon:
             try:
-                message = await salon.send(f"{member.mention}")  # Ping une seule fois par salon
+                message = await salon.send(f"{member.mention}")
                 await message.delete()
             except discord.Forbidden:
                 print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
             except discord.HTTPException:
                 print("Une erreur est survenue lors de l'envoi du message.")
+
 @bot.command()
 async def nuke(ctx):
     # Vérifie si l'utilisateur a les permissions nécessaires (admin ou le rôle spécifique)

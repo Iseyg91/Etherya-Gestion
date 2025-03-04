@@ -279,8 +279,8 @@ async def aide(ctx):
     
     # Mention du créateur en bas
 embed.add_field(name="Bot développé par 👑 Iseyg (le goat) !", value="Merci à Iseyg pour ce bot !", inline=False)
+
     # Envoi de l'embed dans le salon
     await ctx.send(embed=embed)
-
 keep_alive()
 bot.run(token)

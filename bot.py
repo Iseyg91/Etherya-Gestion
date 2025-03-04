@@ -194,65 +194,6 @@ async def on_member_join(member: discord.Member):
             print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
         except discord.HTTPException:
             print("Une erreur est survenue lors de l'envoi du message.")
-import discord
-from discord.ext import commands
-
-# Assurez-vous que les intents sont correctement définis
-intents = discord.Intents.default()
-intents.messages = True
-intents.message_content = True
-
-# Création du bot
-client = commands.Bot(command_prefix="+", intents=intents)
-
-# Dictionnaire pour stocker les messages supprimés par salon
-deleted_messages = {}
-
-@client.event
-async def on_message_delete(message):
-    # Vérifier si le message a un contenu
-    if not message.content:
-        return
-
-    # On garde une trace du dernier message supprimé pour chaque salon
-    if message.guild.id not in deleted_messages:
-        deleted_messages[message.guild.id] = {}
-    
-    deleted_messages[message.guild.id][message.channel.id] = message
-
-    # Envoi du message supprimé dans le salon spécifique (ID 1346444947750129717)
-    log_channel = message.guild.get_channel(1346444947750129717)  # Salon avec l'ID fourni
-    if log_channel:
-        embed = discord.Embed(
-            title="Message supprimé",
-            description=message.content,
-            color=discord.Color.red()
-        )
-        embed.set_footer(text=f"Supprimé par {message.author}")
-        try:
-            await log_channel.send(embed=embed)
-        except discord.Forbidden:
-            print(f"Le bot n'a pas les permissions nécessaires pour envoyer des messages dans {log_channel.name}")
-    else:
-        print("Salon non trouvé pour envoyer le message supprimé.")
-
-@client.command()
-async def snipe(ctx):
-    # Récupérer le salon actuel
-    channel = ctx.channel
-
-    # Vérifier si un message a été supprimé dans ce salon
-    if channel.id in deleted_messages.get(ctx.guild.id, {}):
-        last_deleted_message = deleted_messages[ctx.guild.id][channel.id]
-        embed = discord.Embed(
-            title="Dernier message supprimé",
-            description=last_deleted_message.content,
-            color=discord.Color.yellow()
-        )
-        embed.set_footer(text=f"Supprimé par {last_deleted_message.author}")
-        await channel.send(embed=embed)
-    else:
-        await channel.send("Aucun message supprimé récemment dans ce salon.")
 
 keep_alive()
 bot.run(token)

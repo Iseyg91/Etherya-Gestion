@@ -48,8 +48,8 @@ async def on_message(message):
             color=0x00aaff  # Bleu cyan chill
         )
 
-        # Ajouter un GIF en bannière pour un effet stylé
-        embed.set_image(url="https://media.tenor.com/fzCt8ip3bJkAAAAC/chill-vibes.gif") 
+        # Ajouter l'image personnalisée en bannière
+        embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png") 
 
         # Ajouter la photo de profil du bot en thumbnail
         if bot.user.avatar:
@@ -65,14 +65,13 @@ async def on_message(message):
         # Footer avec l'équipe d'administration
         embed.set_footer(text="Merci de ta compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
 
-        # Ajouter un bouton interactif vers le support
-        button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/tonserveur/1166093151589634078")
+        # Ajouter un bouton interactif vers le support (avec le lien mis à jour)
+        button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
 
         view = View()
         view.add_item(button)
 
         await message.channel.send(embed=embed, view=view)
-
 
     # Afficher le message dans la console
     print(f"Message reçu : {message.content}")

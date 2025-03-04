@@ -10,7 +10,9 @@ token = os.environ['ETHERYA']
 intents = discord.Intents.default()
 intents.message_content = True
 intents.messages = True 
+intents.members = True
 bot = commands.Bot(command_prefix="+", intents=intents)
+
 
 OWNER_ID = 792755123587645461
 STAFF_ROLE_ID = 1244339296706760726
@@ -131,6 +133,29 @@ async def vc(ctx):
     embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
     
     await ctx.send(embed=embed)
+
+# ID du salon de bienvenue
+WELCOME_CHANNEL_ID = 1344194595092697108
+
+@bot.event
+async def on_member_join(member):
+    channel = bot.get_channel(WELCOME_CHANNEL_ID)
+    if channel:
+        embed = discord.Embed(
+            title="<a:fete:1172810362261880873> Bienvenue sur le serveur ! <a:fete:1172810362261880873>",
+            description=(
+                "*<a:fire:1343873843730579478> Ici, l’économie règne en maître, les alliances se forment, les trahisons éclatent... et ta richesse ne tient qu’à un fil ! <a:fire:1343873843730579478>*\n\n"
+                "<:better_scroll:1342376863909285930> **Avant de commencer, prends le temps de lire :**\n\n"
+                "- <a:fleche3:1290077283100397672> **<#1245380752137388104>** pour éviter les problèmes dès le départ.\n"
+                "- <a:fleche3:1290077283100397672> **<#1340402373708746802>** pour comprendre les bases de l’économie.\n"
+                "- <a:fleche3:1290077283100397672> **<#1340403279019901014>** pour savoir ce que tu peux obtenir.\n\n"
+                "💡 *Un doute ? Une question ? Ouvre un ticket et le staff t’aidera !*\n\n"
+                "**Prépare-toi à bâtir ton empire... ou à tout perdre. Bonne chance ! 🍀**"
+            ),
+            color=discord.Color.gold()
+        )
+        embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
+        await channel.send(f"{member.mention}", embed=embed)
 
 keep_alive()
 bot.run(token)

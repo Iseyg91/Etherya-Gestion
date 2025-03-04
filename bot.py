@@ -197,24 +197,32 @@ async def nuke(ctx):
             # Récupère le salon actuel
             channel = ctx.channel
 
-            # Récupère les permissions du salon
+            # Sauvegarde les permissions et les informations du salon
             overwrites = channel.overwrites
-
-            # Sauvegarde le nom du salon
             channel_name = channel.name
+            category = channel.category
 
             # Récupère l'ID du salon pour le recréer
             guild = channel.guild
 
-            # Crée un nouveau salon avec le même nom et les mêmes permissions
-            await channel.delete()  # Supprime le salon actuel
-            new_channel = await guild.create_text_channel(channel_name, overwrites=overwrites)  # Crée le nouveau salon
+            try:
+                # Crée un nouveau salon avec le même nom et les mêmes permissions
+                await channel.delete()  # Supprime le salon actuel
 
-            # Envoie un message dans le nouveau salon pour confirmer la recréation
-            await new_channel.send(f"Le salon {channel_name} a été supprimé et recréé.")
+                # Crée un nouveau salon avec les mêmes permissions et catégorie
+                new_channel = await guild.create_text_channel(
+                    name=channel_name,
+                    overwrites=overwrites,
+                    category=category
+                )  # Crée le nouveau salon
 
-            # Optionnellement, tu peux aussi envoyer un message dans le salon d'origine pour prévenir de la suppression avant de le recréer
-            await ctx.send(f"Le salon {channel_name} a été supprimé et recréé.")
+                # Envoie un message dans le nouveau salon pour confirmer la recréation
+                await new_channel.send(f"Le salon {channel_name} a été supprimé et recréé.")
+                
+                # Envoie un message dans le salon d'origine pour prévenir de la suppression avant de le recréer
+                await ctx.send(f"Le salon {channel_name} a été supprimé et recréé.")
+            except Exception as e:
+                await ctx.send(f"Une erreur est survenue lors de la recréation du salon : {e}")
         else:
             await ctx.send("Cette commande doit être utilisée dans un salon texte.")
     else:

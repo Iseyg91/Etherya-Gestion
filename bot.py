@@ -74,6 +74,7 @@ async def on_message(message):
         await message.channel.send(embed=embed, view=view)
         
         # Ne pas traiter la mention du bot si l'Owner est mentionné
+        await bot.process_commands(message)  # Assure que les autres commandes seront traitées
         return
 
     # Vérifier si le message mentionne le bot directement (et non l'Owner)
@@ -124,13 +125,10 @@ async def on_message(message):
         embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
 
         await message.channel.send(embed=embed)
-
-    # Afficher le message dans la console
-    print(f"Message reçu : {message.content}")
-
-    # Permet aux commandes de fonctionner
+    
+    # Toujours appeler process_commands pour que les autres commandes fonctionnent
     await bot.process_commands(message)
-
+    
 # Fonction pour la commande clear
 @bot.command()
 async def clear(ctx, amount: int = None):

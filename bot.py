@@ -166,10 +166,9 @@ async def on_member_join(member):
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
     
-    # Envoi du ghost ping dans plusieurs salons
-    channels = [bot.get_channel(salon_id) for salon_id in salon_ids]
-    
-    for salon in channels:
+    # Envoi du ghost ping dans les trois salons sans duplication
+    for salon_id in salon_ids:
+        salon = bot.get_channel(salon_id)
         if salon:
             try:
                 message = await salon.send(f"{member.mention}")

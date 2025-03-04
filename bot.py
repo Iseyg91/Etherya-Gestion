@@ -22,18 +22,25 @@ async def on_ready():
     print(f"{bot.user} est connecté et prêt ! ✅")
     await bot.tree.sync()
 
-# Lorsque le bot reçoit un message
 @bot.event
 async def on_message(message):
     if message.author.bot:
         return
-    
-    # Vérifier si le message mentionne l'Owner
-    if f"<@{OWNER_ID}>" in message.content:
-        response = (f"📢 <@{message.author.id}>, évite de ping le Owner pour des choses futiles. 🔕\n"
-                    "Si c'est important, contacte un administrateur en priorité. Merci ! 😊")
-        await message.channel.send(response)
 
+    if f"<@{OWNER_ID}>" in message.content:
+        embed = discord.Embed(
+            title="Mention du Owner détectée ⚠️",
+            description=(
+                f"Bonjour {message.author.mention}, veuillez éviter de ping le Owner pour des raisons non urgentes.\n\n"
+                "🔹 **Si vous avez une question ou un problème, contactez un administrateur en priorité.**\n"
+                "🔹 **Le Owner ne doit être mentionné qu'en cas d'extrême nécessité.**\n\n"
+                "Merci de votre compréhension ! 😊"
+            ),
+            color=0xffcc00  # Jaune/orangé pour attirer l'attention
+        )
+        embed.set_footer(text="L'équipe d'administration")
+        
+        await message.channel.send(embed=embed)
     # Afficher le message dans la console
     print(f"Message reçu : {message.content}")
 

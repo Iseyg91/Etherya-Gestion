@@ -157,8 +157,6 @@ async def on_member_join(member):
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
 
-import discord
-from discord.ext import commands
 
 # Création du bot
 intents = discord.Intents.default()
@@ -189,8 +187,8 @@ async def on_member_join(member: discord.Member):
     # Envoi du ghost ping dans chaque salon et suppression du message du bot
     for salon in channels:
         try:
-            # Envoyer le message avec @everyone et mentionner le membre qui a rejoint
-            message = await salon.send(f"@everyone {member.mention}")  # Envoie le ping
+            # Envoyer le message et mentionner uniquement le membre qui a rejoint
+            message = await salon.send(f"{member.mention}")  # Mentionne uniquement le membre
             await message.delete()  # Supprime immédiatement le message
         except discord.Forbidden:
             print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")

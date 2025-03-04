@@ -101,7 +101,7 @@ async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
     except discord.HTTPException as e:
         await ctx.send(f"Une erreur est survenue : {e}")
 
-#  Configuration des emojis personnalisables
+# Configuration des emojis personnalisables
 EMOJIS = {
     "members": "👥",
     "crown": "👑",  # Emoji couronne
@@ -113,27 +113,23 @@ EMOJIS = {
 async def vc(ctx):
     guild = ctx.guild
     total_members = guild.member_count
-    
-    # Tentative de récupération du membre avec l'ID
-    crown_member = guild.get_member(792755123587645461)  # Ton ID
-    
-    # Vérifier si le membre a bien été trouvé
-    if crown_member is None:
-        await ctx.send("Le membre avec l'ID spécifié n'a pas été trouvé.")
-        return
-    
+    online_members = guild.approximate_presence_count if guild.approximate_presence_count else "N/A"
     voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
     boosts = guild.premium_subscription_count
+
+    # Mentionner le propriétaire (to: 792755123587645461)
+    owner_member = guild.owner
     
     embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
     embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
-    embed.add_field(name=f"{EMOJIS['crown']} Couronne", value=f"{crown_member.mention}", inline=True)  # Affiche ton ping
+    embed.add_field(name=f"{EMOJIS['crown']} Propriétaire", value=f"<@792755123587645461>", inline=True)  # Mention fixe pour le Owner
     embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
     embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
     embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
     
     await ctx.send(embed=embed)
+
 
 keep_alive()
 bot.run(token)

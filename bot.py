@@ -113,8 +113,14 @@ EMOJIS = {
 async def vc(ctx):
     guild = ctx.guild
     total_members = guild.member_count
-    # L'ID que tu as donné pour te ping
-    crown_member = guild.get_member(792755123587645461)  # ID de ton compte
+    
+    # Tentative de récupération du membre avec l'ID
+    crown_member = guild.get_member(792755123587645461)  # Ton ID
+    
+    # Vérifier si le membre a bien été trouvé
+    if crown_member is None:
+        await ctx.send("Le membre avec l'ID spécifié n'a pas été trouvé.")
+        return
     
     voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
     boosts = guild.premium_subscription_count

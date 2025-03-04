@@ -323,13 +323,10 @@ async def on_message(message):
     # Mention du créateur en bas
     embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
 
-    # Envoi de l'embed dans le salon
-    await ctx.send(embed=embed)
-
-        await message.channel.send(embed=embed)
+    await message.channel.send(embed=embed)
 
     # Assurez-vous que le bot continue de traiter les commandes
-    await bot.process_commands(message)
+await bot.process_commands(message)
 #------------------------------------------------------------------------- Commandes de Gestion : /embed
 
 THUMBNAIL_URL = "https://github.com/Iseyg91/Etherya-Gestion/blob/main/IMG_2571.jpg?raw=true"

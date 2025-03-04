@@ -121,12 +121,13 @@ async def vc(ctx):
     owner_member = guild.owner
     server_invite = "https://discord.gg/X4dZAt3BME"  # Lien du serveur
 
-    embed = discord.Embed(title=f"[📊 Statistiques de {guild.name}]({server_invite})", color=discord.Color.purple())
+    embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
     embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
     embed.add_field(name=f"{EMOJIS['crown']} Propriétaire", value=f"<@792755123587645461>", inline=True)  # Mention fixe pour le Owner
     embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
     embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
+    embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
     embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
     
     await ctx.send(embed=embed)

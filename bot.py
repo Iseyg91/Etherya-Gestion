@@ -101,10 +101,10 @@ async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
     except discord.HTTPException as e:
         await ctx.send(f"Une erreur est survenue : {e}")
 
-# Configuration des emojis personnalisables
+#  Configuration des emojis personnalisables
 EMOJIS = {
     "members": "👥",
-    "online": "🟢",
+    "online": "🤖",  # On change l'emoji pour les bots
     "voice": "🎤",
     "boosts": "🚀"
 }
@@ -113,14 +113,14 @@ EMOJIS = {
 async def vc(ctx):
     guild = ctx.guild
     total_members = guild.member_count
-    online_members = guild.approximate_presence_count if guild.approximate_presence_count else "N/A"
+    bots = len([member for member in guild.members if member.bot])  # Nombre de bots
     voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
     boosts = guild.premium_subscription_count
     
     embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
     embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
-    embed.add_field(name=f"{EMOJIS['online']} En ligne", value=f"**{online_members}**", inline=True)
+    embed.add_field(name=f"{EMOJIS['online']} Bots", value=f"**{bots}**", inline=True)  # Remplacé par le nombre de bots
     embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
     embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
     embed.set_footer(text="📈 Statistiques mises à jour en temps réel")

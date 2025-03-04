@@ -27,20 +27,37 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    guild = message.guild
+    member = guild.get_member(message.author.id)
+
+    # Vérifier si la personne a le rôle à ignorer
+    ignored_role_id = 1170326040485318686
+    if any(role.id == ignored_role_id for role in member.roles):
+        return
+
+    # Vérifier si le message mentionne l'Owner
     if f"<@{OWNER_ID}>" in message.content:
         embed = discord.Embed(
-            title="Mention du Owner détectée ⚠️",
+            title="🚨 Mention du Owner détectée",
             description=(
-                f"Bonjour {message.author.mention}, veuillez éviter de ping le Owner pour des raisons non urgentes.\n\n"
-                "🔹 **Si vous avez une question ou un problème, contactez un administrateur en priorité.**\n"
-                "🔹 **Le Owner ne doit être mentionné qu'en cas d'extrême nécessité.**\n\n"
-                "Merci de votre compréhension ! 😊"
+                f"Bonjour {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
+                "📌 **Si vous avez une question ou un problème, veuillez contacter un administrateur.**\n"
+                f"📩 **Besoin d'aide ? Ouvrez un ticket dans le salon [Support](<#{1166093151589634078}>).**"
             ),
-            color=0xffcc00  # Jaune/orangé pour attirer l'attention
+            color=0xffcc00  # Couleur d'avertissement (jaune)
         )
-        embed.set_footer(text="L'équipe d'administration")
         
+        # Ajouter des détails supplémentaires
+        embed.add_field(name="Pourquoi cette règle ?", value="Le Owner est souvent occupé et ne peut pas répondre à tout le monde. Merci de respecter cette consigne. 🙏", inline=False)
+        
+        # Ajouter la photo de profil du bot en thumbnail
+        embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else "https://i.imgur.com/dX0DSGh.jpeg") 
+        
+        # Footer avec l'équipe d'administration
+        embed.set_footer(text="Merci de votre compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
+
         await message.channel.send(embed=embed)
+
     # Afficher le message dans la console
     print(f"Message reçu : {message.content}")
 

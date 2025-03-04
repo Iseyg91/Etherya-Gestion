@@ -233,6 +233,30 @@ async def nuke(ctx):
             await ctx.send("Cette commande doit être utilisée dans un salon texte.")
     else:
         await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
+const { MessageEmbed } = require('discord.js');
+
+module.exports = {
+    name: 'help',
+    description: 'Affiche toutes les commandes du bot.',
+    async execute(message, args) {
+        const embed = new MessageEmbed()
+            .setColor('#ffcc00')
+            .setTitle('Commandes du bot Etherya')
+            .setDescription('Voici une liste des commandes disponibles pour interagir avec le bot.')
+            .setThumbnail('https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true')
+            .addFields(
+                { name: '+clear (nombre entre 2 et 100)', value: 'Permet de supprimer un certain nombre de messages dans un salon, entre 2 et 100.' },
+                { name: '+delrole @user @rôle', value: 'Retire un rôle spécifique à un utilisateur.' },
+                { name: '+addrole @user @rôle', value: 'Ajoute un rôle spécifique à un utilisateur.' },
+                { name: '+vc', value: 'Affiche les statistiques du serveur.' },
+                { name: '+nuke', value: 'Efface toutes les données du serveur (attention : action irréversible !)' }
+            )
+            .setFooter('Le bot a été codé par 👑 Iseyg', 'https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true');
+
+        message.channel.send({ embeds: [embed] });
+    }
+};
+
 
 keep_alive()
 bot.run(token)

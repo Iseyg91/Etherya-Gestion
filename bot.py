@@ -104,7 +104,7 @@ async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
 #  Configuration des emojis personnalisables
 EMOJIS = {
     "members": "👥",
-    "online": "🤖",  # On change l'emoji pour les bots
+    "online": "🤖",
     "voice": "🎤",
     "boosts": "🚀"
 }
@@ -126,5 +126,6 @@ async def vc(ctx):
     embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
     
     await ctx.send(embed=embed)
+
 keep_alive()
 bot.run(token)

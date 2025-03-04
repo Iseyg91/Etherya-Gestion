@@ -269,7 +269,12 @@ async def aide(ctx):
               "Utilisé avec précaution pour éviter toute perte de données importante.",
         inline=False
     )
-    
+    embed.add_field(
+        name="🔔 **/embed**", 
+        value="Crée un message personnalisé sous forme d'embed avec un titre, une description, une couleur, et une image."
+              "Utilisé pour ajouter des messages visuellement attrayants et bien structurés dans le salon.",
+        inline=False
+    )
     # Image à inclure
     embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
     

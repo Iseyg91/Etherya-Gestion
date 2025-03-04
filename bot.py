@@ -283,7 +283,7 @@ async def aide(ctx):
     ctx.sent_embed = True
 #------------------------------------------------------------------------- Commandes de Gestion : /embed
 
-THUMBNAIL_URL = "https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryBot_profil.jpg?raw=true"
+THUMBNAIL_URL = "https://github.com/Iseyg91/Etherya-Gestion/blob/main/IMG_2571.jpg?raw=true"
 
 # Fonction pour vérifier si une URL est valide
 def is_valid_url(url):

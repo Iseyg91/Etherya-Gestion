@@ -72,21 +72,6 @@ async def on_message(message):
         view.add_item(button)
 
         await message.channel.send(embed=embed, view=view)
-        
-
-    # Afficher le message dans la console
-    print(f"Message reçu : {message.content}")
-
-    # Permet aux commandes de fonctionner
-    await bot.process_commands(message)
-
-# Vérifier si l'utilisateur a un rôle de gestion
-def has_management_role(ctx):
-    """Vérifie si l'utilisateur a un rôle de gestion."""
-    return any(role.id == STAFF_ROLE_ID for role in ctx.author.roles)
-    #------------------------------------------------------------------------- Ignorer les messages des autres bots
-    if message.author.bot:
-        return
 
     # Vérifie si le message mentionne uniquement le bot
     if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
@@ -137,7 +122,10 @@ def has_management_role(ctx):
 
         await message.channel.send(embed=embed)
 
-    # Assurez-vous que le bot continue de traiter les commandes
+    # Afficher le message dans la console
+    print(f"Message reçu : {message.content}")
+
+    # Permet aux commandes de fonctionner
     await bot.process_commands(message)
 
 # Fonction pour la commande clear

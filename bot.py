@@ -157,6 +157,14 @@ async def on_member_join(member):
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
 
+import discord
+from discord.ext import commands
+
+intents = discord.Intents.default()
+intents.members = True  # Pour écouter les événements de départ des membres
+
+bot = commands.Bot(command_prefix='!', intents=intents)
+
 @bot.event
 async def on_member_remove(member):
     # Salon de départ
@@ -164,11 +172,12 @@ async def on_member_remove(member):
 
     # Création de l'embed
     embed = discord.Embed(
-        title=f"👋 {member.name}",
+        title=f"👋 Au revoir {member.name} !",
         description=(
-            "Nous avons le regret de te voir partir... Merci d'avoir fait partie de notre communauté !\n"
-            "On espère que tu reviendras un jour, mais en attendant, nous te souhaitons bonne chance pour la suite de ton aventure ! 🍀\n"
-            "\n**À bientôt, peut-être ?**"
+            "C'est avec tristesse que nous te voyons partir...\n"
+            "\nMerci d'avoir fait partie de notre communauté et d'avoir partagé des moments avec nous !\n"
+            "On espère que ton aventure sera remplie de belles découvertes et que, peut-être, nos chemins se croiseront à nouveau. 🍀\n"
+            "\n**À bientôt, on l'espère !**"
         ),
         color=0xFFCC00
     )

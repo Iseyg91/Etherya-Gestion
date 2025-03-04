@@ -132,7 +132,6 @@ async def vc(ctx):
     embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
     
     await ctx.send(embed=embed)
-
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108
 
@@ -147,7 +146,7 @@ salon_ids = [
 async def on_member_join(member):
     guild = member.guild
     
-    # Envoi du message de bienvenue
+    # Envoi du message de bienvenue dans le salon dédié
     channel = bot.get_channel(WELCOME_CHANNEL_ID)
     if channel:
         embed = discord.Embed(
@@ -164,20 +163,19 @@ async def on_member_join(member):
             color=discord.Color.gold()
         )
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
-        await channel.send(f"{member.mention}", embed=embed)
+        await channel.send(embed=embed)  # Envoie uniquement l'embed sans mention
     
-    # Envoi du ghost ping dans les trois salons sans duplication
+    # Envoi du ghost ping une seule fois par salon
     for salon_id in salon_ids:
         salon = bot.get_channel(salon_id)
         if salon:
             try:
-                message = await salon.send(f"{member.mention}")
+                message = await salon.send(f"{member.mention}")  # Ping une seule fois par salon
                 await message.delete()
             except discord.Forbidden:
                 print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
             except discord.HTTPException:
                 print("Une erreur est survenue lors de l'envoi du message.")
-
 @bot.command()
 async def nuke(ctx):
     # Vérifie si l'utilisateur a les permissions nécessaires (admin ou le rôle spécifique)

@@ -113,18 +113,18 @@ EMOJIS = {
 async def vc(ctx):
     guild = ctx.guild
     total_members = guild.member_count
-    online_members = sum(1 for member in guild.members if member.status != discord.Status.offline)
+    online_members = sum(1 for member in guild.members if member.status in [discord.Status.online, discord.Status.idle, discord.Status.dnd])
     voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
     boosts = guild.premium_subscription_count
     
-    embed = discord.Embed(title=f"Statistiques de {guild.name}", color=discord.Color.blue())
-    embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"{total_members}", inline=False)
-    embed.add_field(name=f"{EMOJIS['online']} En ligne", value=f"{online_members}", inline=False)
-    embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"{voice_members}", inline=False)
-    embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"{boosts}", inline=False)
-    embed.set_footer(text="📊 Statistiques du serveur")
+    embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
+    embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
+    embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
+    embed.add_field(name=f"{EMOJIS['online']} En ligne", value=f"**{online_members}**", inline=True)
+    embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
+    embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
+    embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
     
     await ctx.send(embed=embed)
-
 keep_alive()
 bot.run(token)

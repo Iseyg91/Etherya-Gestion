@@ -220,10 +220,28 @@ async def nuke(ctx):
                 # Réajuste la position du salon
                 await new_channel.edit(position=position)
 
-                # Envoie un message dans le nouveau salon pour confirmer la recréation
-                await new_channel.send(f"Le salon {channel_name} a été supprimé et recréé.")
+                # Crée un bouton pour supprimer le message
+                button = Button(style=discord.ButtonStyle.danger, label="Supprimer ce message")
+                
+                # Définir la fonction d'action pour le bouton
+                async def button_callback(interaction):
+                    await interaction.message.delete()  # Supprime le message lorsque le bouton est pressé
 
-                # Ping de la personne qui a utilisé la commande
+                # Attache la fonction de suppression au bouton
+                button.callback = button_callback
+
+                # Crée une vue pour le bouton
+                view = View()
+                view.add_item(button)
+
+                # Envoie un message dans le nouveau salon pour confirmer la recréation
+                # et inclut le bouton de suppression de message
+                await new_channel.send(
+                    f"Le salon {channel_name} a été supprimé et recréé, {ctx.author.mention}.", 
+                    view=view
+                )
+
+                # Envoie un message dans le salon d'origine pour prévenir de la suppression avant de le recréer
                 await ctx.send(f"{ctx.author.mention} a nuke le salon {channel_name}. Le salon a été recréé avec succès.")
             except Exception as e:
                 await ctx.send(f"Une erreur est survenue lors de la recréation du salon : {e}")

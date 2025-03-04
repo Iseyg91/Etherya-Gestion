@@ -181,7 +181,7 @@ async def on_member_remove(member):
         ),
         color=0xFFCC00
     )
-    embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png")
+    embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
 
     # Envoi du message dans le salon de départ
     await leave_channel.send(embed=embed)

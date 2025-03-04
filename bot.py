@@ -427,16 +427,6 @@ async def embed_builder(interaction: discord.Interaction):
     response = await interaction.followup.send(embed=view.embed, view=view, ephemeral=True)
     view.message = response  # Stocke le message contenant la View
 
-@bot.event
-async def on_message(message):
-    if message.attachments:
-        attachment = message.attachments[0]
-        if attachment.content_type and attachment.content_type.startswith("image/"):
-            embed = discord.Embed(title="Image ajoutée")
-            embed.set_thumbnail(url=THUMBNAIL_URL)
-            embed.set_image(url=attachment.url)
-            await message.channel.send(embed=embed)
-
     await bot.process_commands(message)
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

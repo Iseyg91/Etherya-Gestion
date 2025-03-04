@@ -197,30 +197,34 @@ async def nuke(ctx):
             # Récupère le salon actuel
             channel = ctx.channel
 
-            # Sauvegarde les permissions et les informations du salon
+            # Sauvegarde les informations du salon
             overwrites = channel.overwrites
             channel_name = channel.name
             category = channel.category
+            position = channel.position
 
             # Récupère l'ID du salon pour le recréer
             guild = channel.guild
 
             try:
-                # Crée un nouveau salon avec le même nom et les mêmes permissions
+                # Crée un nouveau salon avec les mêmes permissions et la même position
                 await channel.delete()  # Supprime le salon actuel
 
-                # Crée un nouveau salon avec les mêmes permissions et catégorie
+                # Crée un nouveau salon avec les mêmes permissions, catégorie et position
                 new_channel = await guild.create_text_channel(
                     name=channel_name,
                     overwrites=overwrites,
                     category=category
                 )  # Crée le nouveau salon
 
+                # Réajuste la position du salon
+                await new_channel.edit(position=position)
+
                 # Envoie un message dans le nouveau salon pour confirmer la recréation
                 await new_channel.send(f"Le salon {channel_name} a été supprimé et recréé.")
-                
-                # Envoie un message dans le salon d'origine pour prévenir de la suppression avant de le recréer
-                await ctx.send(f"Le salon {channel_name} a été supprimé et recréé.")
+
+                # Ping de la personne qui a utilisé la commande
+                await ctx.send(f"{ctx.author.mention} a nuke le salon {channel_name}. Le salon a été recréé avec succès.")
             except Exception as e:
                 await ctx.send(f"Une erreur est survenue lors de la recréation du salon : {e}")
         else:

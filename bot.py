@@ -237,19 +237,39 @@ const { MessageEmbed } = require('discord.js');
 
 @bot.command()
 async def help(ctx):
+    # Création de l'embed
     embed = discord.Embed(
-        title="Commandes du bot Etherya",
-        description="Voici une liste des commandes disponibles pour interagir avec le bot.",
-        color=0xffcc00
+        title="Commandes du Bot Etherya",
+        description="Voici la liste des commandes disponibles sur le serveur.",
+        color=discord.Color.blue()
     )
-    embed.set_thumbnail(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
-    embed.add_field(name='+clear (nombre entre 2 et 100)', value="Permet de supprimer un certain nombre de messages dans un salon, entre 2 et 100.", inline=False)
-    embed.add_field(name='+delrole @user @rôle', value="Retire un rôle spécifique à un utilisateur.", inline=False)
-    embed.add_field(name='+addrole @user @rôle', value="Ajoute un rôle spécifique à un utilisateur.", inline=False)
-    embed.add_field(name='+vc', value="Affiche les statistiques du serveur.", inline=False)
-    embed.add_field(name='+nuke', value="Efface toutes les données du serveur (attention : action irréversible !)", inline=False)
-    embed.set_footer(text="Le bot a été codé par 👑 Iseyg", icon_url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+
+    # Ajout des descriptions des commandes
+    embed.add_field(name="+clear (nombre entre 2 et 100)", 
+                    value="Supprime un certain nombre de messages dans le salon. "
+                          "Vous devez entrer un nombre entre 2 et 100.",
+                    inline=False)
+    embed.add_field(name="+delrole @user @rôle", 
+                    value="Retire un rôle à un utilisateur spécifique.",
+                    inline=False)
+    embed.add_field(name="+addrole @user @rôle", 
+                    value="Ajoute un rôle à un utilisateur spécifique.",
+                    inline=False)
+    embed.add_field(name="+vc", 
+                    value="Affiche les statistiques du serveur.",
+                    inline=False)
+    embed.add_field(name="+nuke", 
+                    value="Efface tous les messages d'un salon.",
+                    inline=False)
     
+    # Image de l'embed
+    embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+
+    # Mention du créateur
+    embed.add_field(name="Bot développé par 👑 Iseyg", value="\u200b", inline=False)
+
+    # Envoi de l'embed
     await ctx.send(embed=embed)
+
 keep_alive()
 bot.run(token)

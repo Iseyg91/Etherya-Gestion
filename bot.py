@@ -136,8 +136,18 @@ async def vc(ctx):
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108
 
+# Liste des salons à pinguer
+salon_ids = [
+    1342179344889675827,
+    1342179655263977492,
+    1245380752137388104
+]
+
 @bot.event
 async def on_member_join(member):
+    guild = member.guild
+    
+    # Envoi du message de bienvenue
     channel = bot.get_channel(WELCOME_CHANNEL_ID)
     if channel:
         embed = discord.Embed(
@@ -155,37 +165,19 @@ async def on_member_join(member):
         )
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
-
-
-# Liste des salons à pinguer
-salon_ids = [
-    1342179344889675827,
-    1342179655263977492,
-    1245380752137388104
-]
-
-@bot.event
-    # Récupérer les salons depuis les IDs
-    guild = member.guild
-    channels = []
-    for salon_id in salon_ids:
-        salon = discord.utils.get(guild.text_channels, id=salon_id)
-        if salon:
-            channels.append(salon)
-        else:
-            print(f"Le salon avec l'ID {salon_id} n'existe pas ou n'est pas accessible.")
-            return
-
-    # Envoi du ghost ping dans chaque salon et suppression du message du bot
+    
+    # Envoi du ghost ping dans plusieurs salons
+    channels = [bot.get_channel(salon_id) for salon_id in salon_ids]
+    
     for salon in channels:
-        try:
-            # Envoyer le message et mentionner uniquement le membre qui a rejoint
-            message = await salon.send(f"{member.mention}")  # Mentionne uniquement le membre
-            await message.delete()  # Supprime immédiatement le message
-        except discord.Forbidden:
-            print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
-        except discord.HTTPException:
-            print("Une erreur est survenue lors de l'envoi du message.")
+        if salon:
+            try:
+                message = await salon.send(f"{member.mention}")
+                await message.delete()
+            except discord.Forbidden:
+                print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
+            except discord.HTTPException:
+                print("Une erreur est survenue lors de l'envoi du message.")
 
 @bot.command()
 async def nuke(ctx):

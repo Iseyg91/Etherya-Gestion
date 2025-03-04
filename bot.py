@@ -194,7 +194,16 @@ async def on_member_join(member: discord.Member):
             print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
         except discord.HTTPException:
             print("Une erreur est survenue lors de l'envoi du message.")
+import discord
+from discord.ext import commands
 
+# Assurez-vous que les intents sont correctement définis
+intents = discord.Intents.default()
+intents.messages = True
+intents.message_content = True
+
+# Création du bot
+client = commands.Bot(command_prefix="+", intents=intents)
 
 # Dictionnaire pour stocker les messages supprimés par salon
 deleted_messages = {}

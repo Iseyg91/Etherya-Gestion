@@ -5,6 +5,7 @@ import os
 import random
 import asyncio
 from keep_alive import keep_alive
+from discord.ui import Button, View
 
 token = os.environ['ETHERYA']
 intents = discord.Intents.default()
@@ -38,30 +39,39 @@ async def on_message(message):
     # Vérifier si le message mentionne l'Owner
     if f"<@{OWNER_ID}>" in message.content:
         embed = discord.Embed(
-            title="🚨 Mention du Owner détectée",
+            title="🔹 Hey, besoin d'aide ?",  
             description=(
-                f"Bonjour {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
-                "📌 **Si vous avez une question ou un problème, veuillez contacter un administrateur.**\n"
-                "📩 **Besoin d'aide ? Ouvrez un ticket dans le salon support : <#1166093151589634078>.**"
+                f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
+                "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
+                "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**"
             ),
-            color=0xffcc00  # Couleur d'avertissement (jaune)
+            color=0x00aaff  # Bleu cyan chill
         )
-        
-        # Ajouter des détails supplémentaires
-        embed.add_field(
-            name="Pourquoi cette règle ?", 
-            value="Le Owner est souvent occupé et ne peut pas répondre à tout le monde. Merci de respecter cette consigne. 🙏",
-            inline=False
-        )
-        
+
+        # Ajouter un GIF en bannière pour un effet stylé
+        embed.set_image(url="https://media.tenor.com/fzCt8ip3bJkAAAAC/chill-vibes.gif") 
+
         # Ajouter la photo de profil du bot en thumbnail
         if bot.user.avatar:
             embed.set_thumbnail(url=bot.user.avatar.url) 
         
-        # Footer avec l'équipe d'administration
-        embed.set_footer(text="Merci de votre compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
+        # Ajouter un champ explicatif
+        embed.add_field(
+            name="❓ Pourquoi éviter de mentionner le Owner ?", 
+            value="Le Owner est souvent occupé avec la gestion du serveur. Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀",
+            inline=False
+        )
 
-        await message.channel.send(embed=embed)
+        # Footer avec l'équipe d'administration
+        embed.set_footer(text="Merci de ta compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
+
+        # Ajouter un bouton interactif vers le support
+        button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/tonserveur/1166093151589634078")
+
+        view = View()
+        view.add_item(button)
+
+        await message.channel.send(embed=embed, view=view)
 
 
     # Afficher le message dans la console

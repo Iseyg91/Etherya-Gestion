@@ -12,7 +12,6 @@ intents.message_content = True
 intents.messages = True 
 intents.members = True
 bot = commands.Bot(command_prefix="+", intents=intents)
-bot = commands.Bot(command_prefix='/', intents=intents)
 
 OWNER_ID = 792755123587645461
 STAFF_ROLE_ID = 1244339296706760726
@@ -157,12 +156,6 @@ async def on_member_join(member):
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
 
-
-# Création du bot
-intents = discord.Intents.default()
-intents.members = True  # Nécessaire pour écouter les événements de join
-intents.messages = True
-bot = commands.Bot(command_prefix='/', intents=intents)
 
 # Liste des salons à pinguer
 salon_ids = [

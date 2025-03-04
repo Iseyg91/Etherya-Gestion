@@ -235,7 +235,7 @@ async def nuke(ctx):
         await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
 
 @bot.command()
-async def help(ctx):
+async def aide(ctx):
     # Création de l'embed
     embed = discord.Embed(
         title="Commandes du Bot Etherya",

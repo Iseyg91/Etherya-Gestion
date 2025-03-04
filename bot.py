@@ -139,7 +139,7 @@ def has_management_role(ctx):
     await message.channel.send(embed=embed)
 
     # Assurez-vous que le bot continue de traiter les commandes
-    await bot.process_commands(message)
+await bot.process_commands(message)
 
 # Fonction pour la commande clear
 @bot.command()

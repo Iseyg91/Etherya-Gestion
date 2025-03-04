@@ -326,7 +326,7 @@ async def on_message(message):
     await message.channel.send(embed=embed)
 
     # Assurez-vous que le bot continue de traiter les commandes
-await bot.process_commands(message)
+    await bot.process_commands(message)
 #------------------------------------------------------------------------- Commandes de Gestion : /embed
 
 THUMBNAIL_URL = "https://github.com/Iseyg91/Etherya-Gestion/blob/main/IMG_2571.jpg?raw=true"

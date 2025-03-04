@@ -233,7 +233,6 @@ async def nuke(ctx):
             await ctx.send("Cette commande doit être utilisée dans un salon texte.")
     else:
         await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
-const { MessageEmbed } = require('discord.js');
 
 @bot.command()
 async def help(ctx):

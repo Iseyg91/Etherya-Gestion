@@ -272,11 +272,11 @@ async def on_message(message):
 
     # Vérifie si le message mentionne uniquement le bot
     if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
-        embed = discord.Embed(📜 Commandes du Bot Etherya",
-        description="Voici la liste complète des commandes disponibles pour interagir avec le bot.",
-        color=discord.Color(0x1abc9c)  # Couleur plus douce et moderne
-    )
-
+        embed = discord.Embed(
+            title="📜 Commandes du Bot Etherya",
+            description="Voici la liste des commandes disponibles :",
+            color=discord.Color(0xFFFFFF)
+        )
     # Ajout de l'icône du bot à gauche de l'embed
     embed.set_thumbnail(url=bot.user.avatar.url)
 

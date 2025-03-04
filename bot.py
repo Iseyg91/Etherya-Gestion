@@ -157,33 +157,45 @@ async def on_member_join(member):
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
 
-# ID du rôle autorisé à utiliser la commande
-authorized_role_id = 1171489794698784859
+import discord
+from discord.ext import commands
 
-@bot.command()
-async def ghost_ping(ctx, *salons: discord.TextChannel):
-    # Vérifier si l'utilisateur a le bon rôle
-    member = ctx.author
-    role = discord.utils.get(member.roles, id=authorized_role_id)
-    
-    if not role:
-        await ctx.send("Tu n'as pas l'autorisation d'utiliser cette commande.")
-        return
+# Création du bot
+intents = discord.Intents.default()
+intents.members = True  # Nécessaire pour écouter les événements de join
+intents.messages = True
+bot = commands.Bot(command_prefix='/', intents=intents)
 
-    # Vérifier que le nombre de salons est entre 1 et 5
-    if len(salons) < 1 or len(salons) > 5:
-        await ctx.send("Tu dois spécifier entre 1 et 5 salons.")
-        return
+# Liste des salons à pinguer
+salon_ids = [
+    1342179344889675827,
+    1342179655263977492,
+    1342179655263977492  # Le même salon répété
+]
 
-    # Envoi du ghost ping dans les salons et suppression du message
-    for salon in salons:
+@bot.event
+async def on_member_join(member: discord.Member):
+    # Récupérer les salons depuis les IDs
+    guild = member.guild
+    channels = []
+    for salon_id in salon_ids:
+        salon = discord.utils.get(guild.text_channels, id=salon_id)
+        if salon:
+            channels.append(salon)
+        else:
+            print(f"Le salon avec l'ID {salon_id} n'existe pas ou n'est pas accessible.")
+            return
+
+    # Envoi du ghost ping dans chaque salon et suppression du message du bot
+    for salon in channels:
         try:
-            await salon.send(f"@everyone {ctx.author.mention}")  # Envoie le ping
-            await ctx.message.delete()  # Supprime le message du bot après envoi
+            # Envoyer le message avec @everyone et mentionner le membre qui a rejoint
+            message = await salon.send(f"@everyone {member.mention}")  # Envoie le ping
+            await message.delete()  # Supprime immédiatement le message
         except discord.Forbidden:
-            await ctx.send(f"Je n'ai pas la permission d'envoyer un message dans {salon.name}.")
+            print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
         except discord.HTTPException:
-            await ctx.send("Une erreur est survenue lors de l'envoi du message.")
+            print("Une erreur est survenue lors de l'envoi du message.")
 
 keep_alive()
 bot.run(token)

@@ -73,8 +73,11 @@ async def on_message(message):
 
         await message.channel.send(embed=embed, view=view)
 
-    # Vérifie si le message mentionne uniquement le bot
-    if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
+        # Ne pas continuer avec la vérification de la mention du bot si l'Owner a été mentionné
+        return
+
+    # Vérifier si le message mentionne le bot directement et non l'Owner
+    if bot.user.mentioned_in(message) and f"<@{OWNER_ID}>" not in message.content:
         embed = discord.Embed(
             title="📜 Commandes du Bot Etherya",
             description="Voici la liste des commandes disponibles :",

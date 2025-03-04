@@ -161,7 +161,7 @@ async def on_member_join(member):
 salon_ids = [
     1342179344889675827,
     1342179655263977492,
-    1342179655263977492  # Le même salon répété
+    1245380752137388104
 ]
 
 @bot.event

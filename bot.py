@@ -157,5 +157,33 @@ async def on_member_join(member):
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
 
+# ID du rôle autorisé à utiliser la commande
+authorized_role_id = 1171489794698784859
+
+@bot.command()
+async def ghost_ping(ctx, *salons: discord.TextChannel):
+    # Vérifier si l'utilisateur a le bon rôle
+    member = ctx.author
+    role = discord.utils.get(member.roles, id=authorized_role_id)
+    
+    if not role:
+        await ctx.send("Tu n'as pas l'autorisation d'utiliser cette commande.")
+        return
+
+    # Vérifier que le nombre de salons est entre 1 et 5
+    if len(salons) < 1 or len(salons) > 5:
+        await ctx.send("Tu dois spécifier entre 1 et 5 salons.")
+        return
+
+    # Envoi du ghost ping dans les salons et suppression du message
+    for salon in salons:
+        try:
+            await salon.send(f"@everyone {ctx.author.mention}")  # Envoie le ping
+            await ctx.message.delete()  # Supprime le message du bot après envoi
+        except discord.Forbidden:
+            await ctx.send(f"Je n'ai pas la permission d'envoyer un message dans {salon.name}.")
+        except discord.HTTPException:
+            await ctx.send("Une erreur est survenue lors de l'envoi du message.")
+
 keep_alive()
 bot.run(token)

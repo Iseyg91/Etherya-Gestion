@@ -4,6 +4,7 @@ from discord import app_commands
 import os
 import random
 import asyncio
+import time
 from keep_alive import keep_alive
 from discord.ui import Button, View
 from discord.ui import View, Select
@@ -14,6 +15,7 @@ intents.message_content = True
 intents.messages = True 
 intents.members = True
 intents.guilds = True
+start_time = time.time()
 bot = commands.Bot(command_prefix="+", intents=intents)
 
 STAFF_ROLE_ID = 1244339296706760726
@@ -894,25 +896,24 @@ async def alerte(ctx, member: discord.Member, *, reason: str):
 @bot.command()
 async def ping(ctx):
     latency = round(bot.latency * 1000)  # Latence en ms
-    await ctx.send(f'Pong! Latence: {latency}ms')
+    embed = discord.Embed(title="Pong!", description=f"Latence: {latency}ms", color=discord.Color.green())
+    await ctx.send(embed=embed)
 
 @bot.command()
 async def roleinfo(ctx, *, role_name: str):
+    # Cherche le rôle par son nom
     role = discord.utils.get(ctx.guild.roles, name=role_name)
+    
     if role is None:
-        await ctx.send("Rôle introuvable.")
+        embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())
+        await ctx.send(embed=embed)
     else:
         embed = discord.Embed(title=f"Informations sur le rôle: {role.name}", color=role.color)
         embed.add_field(name="ID", value=role.id)
-        embed.add_field(name="Couleur", value=role.color)
+        embed.add_field(name="Couleur", value=str(role.color))
         embed.add_field(name="Nombre de membres", value=len(role.members))
         embed.add_field(name="Position", value=role.position)
         await ctx.send(embed=embed)
-
-import time
-
-# Variable pour stocker le temps du lancement du bot
-start_time = time.time()
 
 @bot.command()
 async def uptime(ctx):
@@ -921,7 +922,12 @@ async def uptime(ctx):
     hours = (uptime_seconds % (24 * 3600)) // 3600
     minutes = (uptime_seconds % 3600) // 60
     seconds = uptime_seconds % 60
-    await ctx.send(f"Uptime: {days} jours, {hours} heures, {minutes} minutes, {seconds} secondes")
+    embed = discord.Embed(
+        title="Uptime du bot",
+        description=f"Le bot est en ligne depuis : {days} jours, {hours} heures, {minutes} minutes, {seconds} secondes",
+        color=discord.Color.blue()
+    )
+    await ctx.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

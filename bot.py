@@ -294,10 +294,6 @@ async def aide(ctx):
                 )
             )
 
-        async def interaction_check(self, interaction: discord.Interaction) -> bool:
-            # On vérifie que l'utilisateur qui interagit est bien celui qui a lancé la commande
-            return interaction.user == ctx.author
-
         async def on_select(self, interaction: discord.Interaction):
             category = interaction.data['values'][0]
             new_embed = discord.Embed(color=discord.Color(0x1abc9c))

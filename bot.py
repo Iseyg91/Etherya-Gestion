@@ -314,7 +314,7 @@ async def aide(ctx):
             new_embed.add_field(name="🚔 +arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.\n*Appliquez les sanctions après un braquage raté ou une tentative échouée.*", inline=False)
             new_embed.add_field(name="⚖️ +liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
             new_embed.add_field(name="🔓 +evasion", value="Permet de s'évader après un braquage raté 🔓.\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
-elif category == "Fun":
+        elif category == "Fun":
             new_embed.title = "🎉 **Commandes Fun**"
             new_embed.description = "Bienvenue dans la section Fun ! 🎲\nCes commandes sont là pour ajouter une touche d'humour et de détente au serveur. Amusez-vous !"
             new_embed.add_field(name="🌈 +gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.\n*Testez votre ouverture d'esprit !*.", inline=False)

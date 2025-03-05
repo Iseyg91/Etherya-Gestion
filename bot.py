@@ -81,7 +81,12 @@ async def on_message(message):
     
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
-    
+
+    @bot.event
+async def on_message(message):
+    print(f"Message reçu : {message.content}")  # Affiche le message dans la console
+    await bot.process_commands(message)  # Nécessaire pour traiter les commandes
+
 # Fonction pour la commande clear
 @bot.command()
 async def clear(ctx, amount: int = None):

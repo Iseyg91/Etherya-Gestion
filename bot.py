@@ -46,42 +46,27 @@ async def on_message(message):
     if f"<@{OWNER_ID}>" in message.content:
         embed = discord.Embed(
             title="🔹 Hey, besoin d'aide ?",  
-            description=(
-                f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
-                "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
-                "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**"
-            ),
+            description=(f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
+                         "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
+                         "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**"),
             color=0x00aaff  # Bleu cyan chill
         )
-
-        # Ajouter l'image personnalisée en bannière
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png") 
-
-        # Ajouter la photo de profil du bot en thumbnail
         if bot.user.avatar:
             embed.set_thumbnail(url=bot.user.avatar.url) 
-        
-        # Ajouter un champ explicatif
-        embed.add_field(
-            name="❓ Pourquoi éviter de mentionner le Owner ?", 
-            value="Le Owner est souvent occupé avec la gestion du serveur. Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀",
-            inline=False
-        )
-
-        # Footer avec l'équipe d'administration
+        embed.add_field(name="❓ Pourquoi éviter de mentionner le Owner ?", 
+                        value="Le Owner est souvent occupé avec la gestion du serveur. Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀", 
+                        inline=False)
         embed.set_footer(text="Merci de ta compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
 
-        # Ajouter un bouton interactif vers le support (avec le lien mis à jour)
         button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
-
         view = View()
         view.add_item(button)
-
         await message.channel.send(embed=embed, view=view)
-    
-    # Permet au bot de continuer à traiter les commandes, mais seulement si ce n'est pas une commande
-    if message.content.startswith("!"):
-        await bot.process_commands(message)
+
+    # Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+
 
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108

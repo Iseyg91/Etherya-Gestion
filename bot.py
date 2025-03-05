@@ -316,13 +316,6 @@ async def aide(ctx):
 
     view = HelpMenu()
     await ctx.send(embed=embed, view=view)
-    
-    # Marquer comme envoyé pour éviter la duplication
-    ctx.sent_embed = True
-    
-    # IMPORTANT : Permet au bot de continuer à traiter les commandes
-    await bot.process_commands(message)
-    
 
 ROLE_ID = 1166113718602575892  # ID du rôle requis
 

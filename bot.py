@@ -700,6 +700,13 @@ async def on_command_error(ctx, error):
     else:
         await ctx.send(f"Une erreur est survenue : {error}")
 
+import discord
+from discord.ext import commands
+
+intents = discord.Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix='+', intents=intents)
+
 MOD_ROLE_ID = 1168109892851204166
 MUTED_ROLE_ID = 1170488926834798602
 LOG_CHANNEL_ID = 1345349357532090399
@@ -713,6 +720,15 @@ async def send_log(ctx, member, action, reason):
         embed.add_field(name="Sanction:", value=action, inline=False)
         embed.add_field(name="Raison:", value=reason, inline=False)
         await log_channel.send(embed=embed)
+
+async def send_dm(member, action, reason):
+    try:
+        embed = discord.Embed(title="Sanction reçue", color=discord.Color.red())
+        embed.add_field(name="Sanction:", value=action, inline=False)
+        embed.add_field(name="Raison:", value=reason, inline=False)
+        await member.send(embed=embed)
+    except:
+        print(f"Impossible d'envoyer un MP à {member.display_name}")
 
 @bot.event
 async def on_ready():
@@ -732,6 +748,7 @@ async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"
         await member.ban(reason=reason)
         await ctx.send(f"{member.mention} a été banni.")
         await send_log(ctx, member, "Ban", reason)
+        await send_dm(member, "Ban", reason)
 
 @bot.command()
 async def unban(ctx, user_id: int):
@@ -740,6 +757,7 @@ async def unban(ctx, user_id: int):
         await ctx.guild.unban(user)
         await ctx.send(f"{user.mention} a été débanni.")
         await send_log(ctx, user, "Unban", "Réintégration")
+        await send_dm(user, "Unban", "Réintégration")
 
 @bot.command()
 async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
@@ -747,6 +765,7 @@ async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await member.kick(reason=reason)
         await ctx.send(f"{member.mention} a été expulsé.")
         await send_log(ctx, member, "Kick", reason)
+        await send_dm(member, "Kick", reason)
 
 @bot.command()
 async def mute(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
@@ -755,6 +774,7 @@ async def mute(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await member.add_roles(muted_role)
         await ctx.send(f"{member.mention} a été muté.")
         await send_log(ctx, member, "Mute", reason)
+        await send_dm(member, "Mute", reason)
 
 @bot.command()
 async def unmute(ctx, member: discord.Member):
@@ -763,12 +783,16 @@ async def unmute(ctx, member: discord.Member):
         await member.remove_roles(muted_role)
         await ctx.send(f"{member.mention} a été démuté.")
         await send_log(ctx, member, "Unmute", "Réhabilitation")
+        await send_dm(member, "Unmute", "Réhabilitation")
 
 @bot.command()
 async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
     if await check_permissions(ctx):
         await ctx.send(f"{member.mention} a reçu un avertissement.")
         await send_log(ctx, member, "Warn", reason)
+        await send_dm(member, "Warn", reason)
+
+bot.run('TON_TOKEN_ICI')
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

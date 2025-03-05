@@ -867,7 +867,7 @@ async def alerte(ctx, member: discord.Member, *, reason: str):
         return
 
     # Création de l'embed
-    embed = Embed(
+    embed = discord.Embed(
         title="Alerte Émise",
         description=f"**Utilisateur:** {member.mention}\n**Raison:** {reason}",
         color=0xff0000  # Couleur rouge

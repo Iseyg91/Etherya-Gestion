@@ -891,6 +891,38 @@ async def alerte(ctx, member: discord.Member, *, reason: str):
     # Envoi de l'embed dans le même salon
     await channel.send(embed=embed)
 
+@bot.command()
+async def ping(ctx):
+    latency = round(bot.latency * 1000)  # Latence en ms
+    await ctx.send(f'Pong! Latence: {latency}ms')
+
+@bot.command()
+async def roleinfo(ctx, *, role_name: str):
+    role = discord.utils.get(ctx.guild.roles, name=role_name)
+    if role is None:
+        await ctx.send("Rôle introuvable.")
+    else:
+        embed = discord.Embed(title=f"Informations sur le rôle: {role.name}", color=role.color)
+        embed.add_field(name="ID", value=role.id)
+        embed.add_field(name="Couleur", value=role.color)
+        embed.add_field(name="Nombre de membres", value=len(role.members))
+        embed.add_field(name="Position", value=role.position)
+        await ctx.send(embed=embed)
+
+import time
+
+# Variable pour stocker le temps du lancement du bot
+start_time = time.time()
+
+@bot.command()
+async def uptime(ctx):
+    uptime_seconds = round(time.time() - start_time)
+    days = uptime_seconds // (24 * 3600)
+    hours = (uptime_seconds % (24 * 3600)) // 3600
+    minutes = (uptime_seconds % 3600) // 60
+    seconds = uptime_seconds % 60
+    await ctx.send(f"Uptime: {days} jours, {hours} heures, {minutes} minutes, {seconds} secondes")
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

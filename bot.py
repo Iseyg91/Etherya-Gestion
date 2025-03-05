@@ -482,12 +482,6 @@ async def roll(ctx, x: str = None):
     )
     await ctx.send(embed=embed)
     
-# Assurez-vous que l'utilisateur a le rôle requis
-def has_required_role():
-    def predicate(ctx):
-        return any(role.id == 1165936153418006548 for role in ctx.author.roles)
-    return commands.check(predicate)
-
 @bot.command()
 @has_required_role()
 async def rat(ctx, member: discord.Member = None):

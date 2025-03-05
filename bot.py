@@ -298,6 +298,8 @@ async def aide(ctx):
             new_embed.add_field(name="🌟 +compliment @user", value="Envoie un compliment aléatoire à [membre], comme 'Tu es plus génial que tout le chocolat du monde !'.", inline=False)
             new_embed.add_field(name="😜 +troll @user", value="Une blague aléatoire ou une phrase troll envers le membre, avec une image rigolote.", inline=False)
             new_embed.add_field(name="🤡 +con @user", value="Détermine le taux de connerie d'un utilisateur 😤.\n*Un test amusant à faire avec vos amis.*", inline=False)
+            new_embed.add_field(name="🤪 +fou @user", value="Détermine le taux de folie d'un utilisateur 🤪.\n*Testez l'état mental de vos amis !*.", inline=False)
+            new_embed.add_field(name="💪 +testo @user", value="Détermine le taux de testostérone d'un utilisateur 💪.\n*Testez la virilité de vos amis !*.", inline=False)
         elif category == "Utilitaire":
             new_embed.title = "⚙️ **Commandes Utilitaires**"
             new_embed.description = "Bienvenue dans la section utilitaire ! 🛠️\nCes commandes sont conçues pour offrir des statistiques en temps réel et envoyer des alertes."
@@ -505,6 +507,44 @@ async def zizi(ctx, member: discord.Member = None):
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
 
     # Envoyer l'embed
+    await ctx.send(embed=embed)
+
+@bot.command()
+@has_required_role()
+async def fou(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+    
+    percentage = random.randint(0, 100)
+    
+    embed = discord.Embed(
+        title=f"Analyse de folie 🤪", 
+        description=f"{member.mention} est fou à **{percentage}%** !\n\n*Le pourcentage varie en fonction de l'état mental du membre.*", 
+        color=discord.Color.green()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    
+    await ctx.send(embed=embed)
+
+@bot.command()
+@has_required_role()
+async def testo(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+    
+    percentage = random.randint(0, 100)
+    
+    embed = discord.Embed(
+        title=f"Analyse de testostérone 💪", 
+        description=f"{member.mention} a un taux de testostérone de **{percentage}%** !\n\n*Le pourcentage varie en fonction des niveaux de virilité du membre.*", 
+        color=discord.Color.blue()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    
     await ctx.send(embed=embed)
 
 @bot.command()

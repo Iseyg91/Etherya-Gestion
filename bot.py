@@ -7,6 +7,7 @@ import asyncio
 from keep_alive import keep_alive
 from discord.ui import Button, View
 from discord.ui import View, Select
+from discord.ext import commands
 
 token = os.environ['ETHERYA']
 intents = discord.Intents.default()
@@ -303,25 +304,25 @@ async def aide(ctx):
         if category == "Gestion":
             new_embed.title = "🔨 **Commandes de Gestion**"
             new_embed.description = "Bienvenue dans la section gestion ! 📊\nCes commandes sont essentielles pour administrer le serveur. Voici un aperçu :"
-            new_embed.add_field(name="+clear (2-100)", value="Supprime des messages dans le salon 📬.\n*Utilisé pour nettoyer un salon ou supprimer un spam.*", inline=False)
-            new_embed.add_field(name="+nuke", value="Efface **tous** les messages du salon 🚨.\n*Pour une action plus drastique en cas de chaos ou d'urgence !*.", inline=False)
-            new_embed.add_field(name="+addrole @user @rôle", value="Ajoute un rôle à un utilisateur 👤.\n*Pour attribuer des rôles et des privilèges spéciaux aux membres.*", inline=False)
-            new_embed.add_field(name="+delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.\n*Retirer un rôle en cas de sanction ou de changement de statut.*", inline=False)
+            new_embed.add_field(name="🔧 +clear (2-100)", value="Supprime des messages dans le salon 📬.\n*Utilisé pour nettoyer un salon ou supprimer un spam.*", inline=False)
+            new_embed.add_field(name="💥 +nuke", value="Efface **tous** les messages du salon 🚨.\n*Pour une action plus drastique en cas de chaos ou d'urgence !*.", inline=False)
+            new_embed.add_field(name="➕ +addrole @user @rôle", value="Ajoute un rôle à un utilisateur 👤.\n*Pour attribuer des rôles et des privilèges spéciaux aux membres.*", inline=False)
+            new_embed.add_field(name="➖ +delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.\n*Retirer un rôle en cas de sanction ou de changement de statut.*", inline=False)
         elif category == "Modération / Économie":
             new_embed.title = "⚖️ **Commandes de Modération et Économie**"
             new_embed.description = "Bienvenue dans la section modération et économie ! 💼\nIci, vous pouvez gérer les aspects économiques et de sécurité du serveur."
-            new_embed.add_field(name="+prison @user", value="Mets un utilisateur en prison pour non-paiement des taxes 🏰.\n*Assurez-vous que tout le monde respecte les règles économiques.*", inline=False)
-            new_embed.add_field(name="+arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.\n*Appliquez les sanctions après un braquage raté ou une tentative échouée.*", inline=False)
-            new_embed.add_field(name="+liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
-            new_embed.add_field(name="+evasion", value="Permet de s'évader après un braquage raté 🔓.\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
+            new_embed.add_field(name="🏰 +prison @user", value="Mets un utilisateur en prison pour non-paiement des taxes 🏰.\n*Assurez-vous que tout le monde respecte les règles économiques.*", inline=False)
+            new_embed.add_field(name="🚔 +arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.\n*Appliquez les sanctions après un braquage raté ou une tentative échouée.*", inline=False)
+            new_embed.add_field(name="⚖️ +liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
+            new_embed.add_field(name="🔓 +evasion", value="Permet de s'évader après un braquage raté 🔓.\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
         elif category == "Fun":
             new_embed.title = "🎉 **Commandes Fun**"
             new_embed.description = "Bienvenue dans la section Fun ! 🎲\nCes commandes sont là pour ajouter une touche d'humour et de détente au serveur. Amusez-vous !"
-            new_embed.add_field(name="+gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.\n*Testez votre ouverture d'esprit !*.", inline=False)
-            new_embed.add_field(name="+racist @user", value="Détermine le taux de racisme d'un utilisateur 😤.\n*Un test amusant à faire avec vos amis.*", inline=False)
-            new_embed.add_field(name="+love @user", value="Affiche le niveau de compatibilité amoureuse 💘.\n*Testez votre compatibilité avec quelqu'un !*.", inline=False)
-            new_embed.add_field(name="+rat @user", value="Détermine le taux de ratitude d'un utilisateur 🐀.\n*Vérifiez qui est le plus ‘rat’ parmi vos amis.*", inline=False)
-            new_embed.add_field(name="+roll", value="Lance un dé pour générer un nombre aléatoire entre 1 et 500 🎲.\n*Essayez votre chance !*.", inline=False)
+            new_embed.add_field(name="🌈 +gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.\n*Testez votre ouverture d'esprit !*.", inline=False)
+            new_embed.add_field(name="😤 +racist @user", value="Détermine le taux de racisme d'un utilisateur 😤.\n*Un test amusant à faire avec vos amis.*", inline=False)
+            new_embed.add_field(name="💘 +love @user", value="Affiche le niveau de compatibilité amoureuse 💘.\n*Testez votre compatibilité avec quelqu'un !*.", inline=False)
+            new_embed.add_field(name="🐀 +rat @user", value="Détermine le taux de ratitude d'un utilisateur 🐀.\n*Vérifiez qui est le plus ‘rat’ parmi vos amis.*", inline=False)
+            new_embed.add_field(name="🎲 +roll", value="Lance un dé pour générer un nombre aléatoire entre 1 et 500 🎲.\n*Essayez votre chance !*.", inline=False)
         elif category == "Crédits":
             new_embed.title = "💖 **Crédits**"
             new_embed.description = "Un immense merci à **Iseyg** pour le développement de ce bot incroyable ! 🙏\n\nGrâce à lui, ce bot est ce qu'il est aujourd'hui. Merci à toute la communauté pour son soutien continu ! 💙"
@@ -420,6 +421,65 @@ async def rat(ctx, member: discord.Member = None):
     embed.set_thumbnail(url=member.avatar.url)
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
     
+    await ctx.send(embed=embed)
+
+# ID du rôle requis
+role_id = 1166113718602575892
+
+# Définir la commande +roll
+@bot.command()
+async def roll(ctx, x: str = None):
+    # Vérifier si l'utilisateur a le rôle requis
+    if role_id not in [role.id for role in ctx.author.roles]:
+        embed = discord.Embed(
+            title="Erreur",
+            description="Vous n'avez pas le rôle requis pour utiliser cette commande.",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
+        return
+
+    # Vérifier si x est bien précisé
+    if x is None:
+        embed = discord.Embed(
+            title="Erreur",
+            description="Vous n'avez pas précisé de chiffre entre 1 et 500.",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
+        return
+    
+    try:
+        # Convertir x en entier
+        x = int(x)
+    except ValueError:
+        embed = discord.Embed(
+            title="Erreur",
+            description="Le chiffre doit être un nombre entier.",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
+        return
+    
+    # Vérifier si x est dans les bonnes limites
+    if x < 1 or x > 500:
+        embed = discord.Embed(
+            title="Erreur",
+            description="Le chiffre doit être compris entre 1 et 500.",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
+        return
+    
+    # Générer un nombre aléatoire entre 1 et x
+    result = random.randint(1, x)
+
+    # Créer l'embed de la réponse
+    embed = discord.Embed(
+        title="Résultat du tirage",
+        description=f"Le nombre tiré au hasard entre 1 et {x} est : **{result}**",
+        color=discord.Color.green()
+    )
     await ctx.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)

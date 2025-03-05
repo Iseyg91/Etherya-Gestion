@@ -120,15 +120,17 @@ async def on_member_join(member):
 async def clear(ctx, amount: int = None):
     # Vérifie si l'utilisateur a les permissions nécessaires (admin ou le rôle spécifique)
     if ctx.author.guild_permissions.administrator or 1171489794698784859 in [role.id for role in ctx.author.roles]:
-    if amount is None:
-        await ctx.send("Merci de préciser un chiffre entre 2 et 100.")
-        return
-    if amount < 2 or amount > 100:
-        await ctx.send("Veuillez spécifier un nombre entre 2 et 100.")
-        return
+        if amount is None:
+            await ctx.send("Merci de préciser un chiffre entre 2 et 100.")
+            return
+        if amount < 2 or amount > 100:
+            await ctx.send("Veuillez spécifier un nombre entre 2 et 100.")
+            return
 
-    deleted = await ctx.channel.purge(limit=amount)
-    await ctx.send(f'{len(deleted)} messages supprimés.', delete_after=5)
+        deleted = await ctx.channel.purge(limit=amount)
+        await ctx.send(f'{len(deleted)} messages supprimés.', delete_after=5)
+    else:
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
 
 # Configuration des emojis personnalisables
 EMOJIS = {

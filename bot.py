@@ -396,6 +396,29 @@ async def rat(ctx, member: discord.Member = None):
     
     await ctx.send(embed=embed)
 
+import random
+import discord
+from discord.ext import commands
+
+@bot.command()
+@has_required_role()
+async def con(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+    
+    percentage = random.randint(0, 100)
+    
+    embed = discord.Embed(
+        title="Analyse de connerie 🤡",
+        description=f"{member.mention} est con à **{percentage}%** !\n\n*Le pourcentage varie en fonction des neurones actifs du membre.*",
+        color=discord.Color.red()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    
+    await ctx.send(embed=embed)
+
 # ID du rôle requis
 role_id = 1166113718602575892
 
@@ -589,6 +612,24 @@ async def troll(ctx, member: discord.Member = None):
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
 
+@bot.command()
+@has_required_role()
+async def kiss(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"Tu as embrassé {member.name} !",  # Utilisation de member.name
+        description="Un doux baiser 💋",  
+        color=discord.Color.pink()
+    )
+    embed.set_image(url="https://media.tenor.com/3DHc1_2PZ-oAAAAM/kiss.gif")
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
+    await ctx.send(embed=embed)
+    
 # Commande +prison
 @bot.command()
 @commands.has_role(1165936153418006548)  # ID du rôle sans guillemets
@@ -702,6 +743,7 @@ async def on_command_error(ctx, error):
 
 MOD_ROLE_ID = 1168109892851204166
 MUTED_ROLE_ID = 1170488926834798602
+IMMUNE_ROLE_ID = 1170326040485318686
 LOG_CHANNEL_ID = 1345349357532090399
 
 async def send_log(ctx, member, action, reason, duration=None):
@@ -739,9 +781,13 @@ async def check_permissions(ctx):
         await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
         return False
 
+async def is_immune(member):
+    immune_role = discord.utils.get(member.guild.roles, id=IMMUNE_ROLE_ID)
+    return immune_role in member.roles
+
 @bot.command()
 async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
-    if await check_permissions(ctx):
+    if await check_permissions(ctx) and not await is_immune(member):
         await member.ban(reason=reason)
         await ctx.send(f"{member.mention} a été banni.")
         await send_log(ctx, member, "Ban", reason)
@@ -758,36 +804,29 @@ async def unban(ctx, user_id: int):
 
 @bot.command()
 async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
-    if await check_permissions(ctx):
+    if await check_permissions(ctx) and not await is_immune(member):
         await member.kick(reason=reason)
         await ctx.send(f"{member.mention} a été expulsé.")
         await send_log(ctx, member, "Kick", reason)
         await send_dm(member, "Kick", reason)
 
 @bot.command()
-async def mute(ctx, member: discord.Member, duration: str, *, reason="Aucune raison spécifiée"):
-    if await check_permissions(ctx):
+async def mute(ctx, member: discord.Member, duration: int, unit: str, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx) and not await is_immune(member):
         muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
         await member.add_roles(muted_role)
         
-        try:
-            time_value = int(duration[:-1])
-            unit = duration[-1].lower()
-        except ValueError:
-            await ctx.send("Format invalide ! Utilisez un nombre suivi de 'm' (minutes), 'h' (heures) ou 'd' (jours). Exemple: 10m, 2h, 1d")
-            return
-
-        if unit == "m":
-            seconds = time_value * 60
-            duration_str = f"{time_value} minute(s)"
-        elif unit == "h":
-            seconds = time_value * 3600
-            duration_str = f"{time_value} heure(s)"
-        elif unit == "d":
-            seconds = time_value * 86400
-            duration_str = f"{time_value} jour(s)"
+        if unit.lower() in ["m", "minute", "minutes"]:
+            seconds = duration * 60
+            duration_str = f"{duration} minute(s)"
+        elif unit.lower() in ["h", "heure", "heures"]:
+            seconds = duration * 3600
+            duration_str = f"{duration} heure(s)"
+        elif unit.lower() in ["d", "jour", "jours"]:
+            seconds = duration * 86400
+            duration_str = f"{duration} jour(s)"
         else:
-            await ctx.send("Unité de temps invalide ! Utilisez 'm' (minutes), 'h' (heures) ou 'd' (jours).")
+            await ctx.send("Unité de temps invalide ! Utilisez m (minutes), h (heures) ou d (jours).")
             return
 
         await ctx.send(f"{member.mention} a été muté pour {duration_str}.")
@@ -802,7 +841,7 @@ async def mute(ctx, member: discord.Member, duration: str, *, reason="Aucune rai
 
 @bot.command()
 async def unmute(ctx, member: discord.Member):
-    if await check_permissions(ctx):
+    if await check_permissions(ctx) and not await is_immune(member):
         muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
         await member.remove_roles(muted_role)
         await ctx.send(f"{member.mention} a été démuté.")
@@ -811,7 +850,7 @@ async def unmute(ctx, member: discord.Member):
 
 @bot.command()
 async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
-    if await check_permissions(ctx):
+    if await check_permissions(ctx) and not await is_immune(member):
         await ctx.send(f"{member.mention} a reçu un avertissement.")
         await send_log(ctx, member, "Warn", reason)
         await send_dm(member, "Warn", reason)

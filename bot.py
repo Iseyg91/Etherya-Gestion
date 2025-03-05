@@ -260,71 +260,62 @@ async def nuke(ctx):
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
     
+# Commande +aide avec menu déroulant
 @bot.command()
 async def aide(ctx):
     role_id = 1166113718602575892  # ID du rôle requis
     if not any(role.id == role_id for role in ctx.author.roles):
         await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
         return
-    
-    # Création de l'embed avec un titre et une description clairs
+
     embed = discord.Embed(
         title="📜 Commandes du Bot Etherya",
-        description="Voici la liste complète des commandes disponibles pour interagir avec le bot.",
-        color=discord.Color(0x1abc9c)  # Couleur plus douce et moderne
+        description="Sélectionnez une catégorie pour voir les commandes disponibles.",
+        color=discord.Color(0x1abc9c)
     )
-
-    # Ajout de l'icône du bot à gauche de l'embed
     embed.set_thumbnail(url=bot.user.avatar.url)
+    embed.set_footer(text="Bot développé par Iseyg - Merci pour ce bot incroyable !")
 
-    # Ajout des champs pour chaque commande avec des descriptions améliorées
-    embed.add_field(
-        name="🔨 **+clear (nombre entre 2 et 100)**", 
-        value="Supprime un certain nombre de messages dans un salon. "
-              "Entrez un nombre entre 2 et 100 pour que le bot nettoie les messages.",
-        inline=False
-    )
-    embed.add_field(
-        name="❌ **+delrole @user @rôle**", 
-        value="Retire un rôle spécifique d'un utilisateur. "
-              "Ciblez un utilisateur et le rôle à retirer.",
-        inline=False
-    )
-    embed.add_field(
-        name="✅ **+addrole @user @rôle**", 
-        value="Attribue un rôle à un utilisateur spécifié. "
-              "Ciblez un utilisateur et le rôle à attribuer.",
-        inline=False
-    )
-    embed.add_field(
-        name="📊 **+vc**", 
-        value="Affiche les statistiques actuelles du serveur, y compris les membres en ligne.",
-        inline=False
-    )
-    embed.add_field(
-        name="💥 **+nuke**", 
-        value="Efface tous les messages du salon actuel (nuke). "
-              "Utilisé avec précaution pour éviter toute perte de données importante.",
-        inline=False
-    )
-    embed.add_field(
-        name="🌈 **+gay @user**", 
-        value="Évalue le taux de gayitude d'un membre.",
-        inline=False
-    )
-    embed.add_field(
-        name="🪄 **+racist @user**", 
-        value="Évalue le taux de racisme d'un membre.",
-        inline=False
-    )
-    # Image à inclure
-    embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
-    
-    # Mention du créateur en bas
-    embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
+    class HelpMenu(View):
+        def __init__(self):
+            super().__init__()
+            self.add_item(Select(placeholder="Choisissez une catégorie", options=[
+                discord.SelectOption(label="Gestion", description="Commandes de gestion du serveur"),
+                discord.SelectOption(label="Modération / Économie", description="Commandes de modération et économiques"),
+                discord.SelectOption(label="Fun", description="Commandes fun et divertissantes"),
+                discord.SelectOption(label="Crédits", description="Remerciements")
+            ], custom_id="help_select"))
 
-    # Envoi de l'embed dans le salon
-    await ctx.send(embed=embed)
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            category = interaction.data['values'][0]
+            new_embed = discord.Embed(color=discord.Color(0x1abc9c))
+            if category == "Gestion":
+                new_embed.title = "🔨 Commandes de Gestion"
+                new_embed.add_field(name="+clear (2-100)", value="Supprime des messages dans le salon.", inline=False)
+                new_embed.add_field(name="+nuke", value="Efface tous les messages du salon.", inline=False)
+                new_embed.add_field(name="+addrole @user @rôle", value="Ajoute un rôle à un utilisateur.", inline=False)
+                new_embed.add_field(name="+delrole @user @rôle", value="Retire un rôle à un utilisateur.", inline=False)
+            elif category == "Modération / Économie":
+                new_embed.title = "⚖️ Commandes de Modération et Économie"
+                new_embed.add_field(name="+prison @user", value="Met un utilisateur en prison pour non-paiement des taxes.", inline=False)
+                new_embed.add_field(name="+arrestation @user", value="Arrête un utilisateur après un braquage raté.", inline=False)
+                new_embed.add_field(name="+liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées.", inline=False)
+                new_embed.add_field(name="+evasion", value="Permet de s'évader après un braquage raté.", inline=False)
+            elif category == "Fun":
+                new_embed.title = "🎉 Commandes Fun"
+                new_embed.add_field(name="+gay @user", value="Détermine le taux de gayitude d'un utilisateur.", inline=False)
+                new_embed.add_field(name="+racist @user", value="Détermine le taux de racisme d'un utilisateur.", inline=False)
+                new_embed.add_field(name="+love @user", value="Affiche le niveau de compatibilité amoureuse.", inline=False)
+                new_embed.add_field(name="+rat @user", value="Détermine le taux de ratitude d'un utilisateur.", inline=False)
+                new_embed.add_field(name="+roll", value="Génère un nombre aléatoire entre 1 et 500.", inline=False)
+            elif category == "Crédits":
+                new_embed.title = "💖 Crédits"
+                new_embed.description = "Merci à **Iseyg** pour le développement de ce bot incroyable !"
+            await interaction.response.edit_message(embed=new_embed)
+            return True
+
+    view = HelpMenu()
+    await ctx.send(embed=embed, view=view)
     
     # Marquer comme envoyé pour éviter la duplication
     ctx.sent_embed = True

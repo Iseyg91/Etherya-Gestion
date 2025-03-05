@@ -490,7 +490,7 @@ def has_required_role():
 
 @bot.command()
 @has_required_role()
-async def zizi(ctx, member: discord.Member = None):
+async def rat(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
         return

@@ -704,7 +704,7 @@ MOD_ROLE_ID = 1168109892851204166
 MUTED_ROLE_ID = 1170488926834798602
 LOG_CHANNEL_ID = 1345349357532090399
 
-async def send_log(ctx, member, action, reason):
+async def send_log(ctx, member, action, reason, duration=None):
     log_channel = bot.get_channel(LOG_CHANNEL_ID)
     if log_channel:
         embed = discord.Embed(title="Formulaire des sanctions", color=discord.Color.red())
@@ -712,13 +712,17 @@ async def send_log(ctx, member, action, reason):
         embed.add_field(name="Pseudo du modérateur:", value=ctx.author.mention, inline=False)
         embed.add_field(name="Sanction:", value=action, inline=False)
         embed.add_field(name="Raison:", value=reason, inline=False)
+        if duration:
+            embed.add_field(name="Durée:", value=duration, inline=False)
         await log_channel.send(embed=embed)
 
-async def send_dm(member, action, reason):
+async def send_dm(member, action, reason, duration=None):
     try:
         embed = discord.Embed(title="Sanction reçue", color=discord.Color.red())
         embed.add_field(name="Sanction:", value=action, inline=False)
         embed.add_field(name="Raison:", value=reason, inline=False)
+        if duration:
+            embed.add_field(name="Durée:", value=duration, inline=False)
         await member.send(embed=embed)
     except:
         print(f"Impossible d'envoyer un MP à {member.display_name}")
@@ -761,13 +765,33 @@ async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await send_dm(member, "Kick", reason)
 
 @bot.command()
-async def mute(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+async def mute(ctx, member: discord.Member, duration: int, unit: str, *, reason="Aucune raison spécifiée"):
     if await check_permissions(ctx):
         muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
         await member.add_roles(muted_role)
-        await ctx.send(f"{member.mention} a été muté.")
-        await send_log(ctx, member, "Mute", reason)
-        await send_dm(member, "Mute", reason)
+        
+        if unit.lower() in ["m", "minute", "minutes"]:
+            seconds = duration * 60
+            duration_str = f"{duration} minute(s)"
+        elif unit.lower() in ["h", "heure", "heures"]:
+            seconds = duration * 3600
+            duration_str = f"{duration} heure(s)"
+        elif unit.lower() in ["d", "jour", "jours"]:
+            seconds = duration * 86400
+            duration_str = f"{duration} jour(s)"
+        else:
+            await ctx.send("Unité de temps invalide ! Utilisez m (minutes), h (heures) ou d (jours).")
+            return
+
+        await ctx.send(f"{member.mention} a été muté pour {duration_str}.")
+        await send_log(ctx, member, "Mute", reason, duration_str)
+        await send_dm(member, "Mute", reason, duration_str)
+
+        await asyncio.sleep(seconds)
+        await member.remove_roles(muted_role)
+        await ctx.send(f"{member.mention} a été démuté après {duration_str}.")
+        await send_log(ctx, member, "Unmute automatique", "Fin de la durée de mute")
+        await send_dm(member, "Unmute", "Fin de la durée de mute")
 
 @bot.command()
 async def unmute(ctx, member: discord.Member):

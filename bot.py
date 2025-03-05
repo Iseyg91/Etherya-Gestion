@@ -278,22 +278,30 @@ async def aide(ctx):
     embed.set_footer(text="Développé avec ❤️ par Iseyg. Merci pour votre soutien !")
     embed.set_image(url=banner_url)  # Ajout de la bannière en bas de l'embed
 
-    # Classe pour gérer le menu déroulant
     class HelpMenu(View):
         def __init__(self):
             super().__init__()
-            self.add_item(Select(placeholder="Choisissez une catégorie 👇", options=[
-                discord.SelectOption(label="Gestion", description="📚 Commandes pour gérer le serveur", emoji="🔧"),
-                discord.SelectOption(label="Modération / Économie", description="⚖️ Commandes modération et économie", emoji="💰"),
-                discord.SelectOption(label="Fun", description="🎉 Commandes fun et divertissantes", emoji="🎲"),
-                discord.SelectOption(label="Crédits", description="💖 Remerciements et crédits", emoji="🙏")
-            ], custom_id="help_select"))
+            self.add_item(
+                discord.ui.Select(
+                    placeholder="Choisissez une catégorie 👇", 
+                    options=[
+                        discord.SelectOption(label="Gestion", description="📚 Commandes pour gérer le serveur", emoji="🔧"),
+                        discord.SelectOption(label="Modération / Économie", description="⚖️ Commandes modération et économie", emoji="💰"),
+                        discord.SelectOption(label="Fun", description="🎉 Commandes fun et divertissantes", emoji="🎲"),
+                        discord.SelectOption(label="Crédits", description="💖 Remerciements et crédits", emoji="🙏")
+                    ], 
+                    custom_id="help_select"
+                )
+            )
 
-        # Lorsque l'utilisateur sélectionne une catégorie
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            # On vérifie que l'utilisateur qui interagit est bien celui qui a lancé la commande
+            return interaction.user == ctx.author
+
         async def on_select(self, interaction: discord.Interaction):
             category = interaction.data['values'][0]
             new_embed = discord.Embed(color=discord.Color(0x1abc9c))
-            new_embed.set_image(url=banner_url)  # Ajout de la bannière à chaque nouveau message d'embed
+            new_embed.set_image(url=banner_url)  # Ajout de la bannière dans chaque catégorie
 
             if category == "Gestion":
                 new_embed.title = "🔨 **Commandes de Gestion**"
@@ -320,10 +328,8 @@ async def aide(ctx):
 
             await interaction.response.edit_message(embed=new_embed)
 
-    # Envoi du message initial avec le menu déroulant
     view = HelpMenu()
     await ctx.send(embed=embed, view=view)
-
 
 ROLE_ID = 1166113718602575892  # ID du rôle requis
 

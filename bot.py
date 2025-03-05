@@ -164,7 +164,6 @@ async def on_member_join(member):
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
     
-    # Fonction pour la commande clear
 @bot.command()
 async def clear(ctx, amount: int = None):
     if amount is None:
@@ -176,14 +175,12 @@ async def clear(ctx, amount: int = None):
 
     deleted = await ctx.channel.purge(limit=amount)
     await ctx.send(f'{len(deleted)} messages supprimés.', delete_after=5)
-    # IMPORTANT : Permet au bot de continuer à traiter les commandes
-    await bot.process_commands(message)
-    
+
 @bot.command()
 async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Ajoute un rôle à un utilisateur."""
     # Vérifier si l'utilisateur a le rôle [𝑺ץ] Co-Owner
-    if not any(role.id == 1244339296706760726 for role in ctx.author.roles):
+    if not any(r.id == 1244339296706760726 for r in ctx.author.roles):
         await ctx.send("Erreur : vous devez avoir le rôle [𝑺ץ] Co-Owner pour utiliser cette commande.")
         return
 
@@ -200,15 +197,12 @@ async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
         await ctx.send("Je n'ai pas les permissions nécessaires pour attribuer ce rôle.")
     except discord.HTTPException as e:
         await ctx.send(f"Une erreur est survenue : {e}")
-        
-    # IMPORTANT : Permet au bot de continuer à traiter les commandes
-    await bot.process_commands(message)
-    
+
 @bot.command()
 async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Retire un rôle à un utilisateur."""
     # Vérifier si l'utilisateur a le rôle [𝑺ץ] Co-Owner
-    if not any(role.id == 1244339296706760726 for role in ctx.author.roles):
+    if not any(r.id == 1244339296706760726 for r in ctx.author.roles):
         await ctx.send("Erreur : vous devez avoir le rôle [𝑺ץ] Co-Owner pour utiliser cette commande.")
         return
 

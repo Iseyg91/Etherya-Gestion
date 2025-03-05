@@ -700,13 +700,6 @@ async def on_command_error(ctx, error):
     else:
         await ctx.send(f"Une erreur est survenue : {error}")
 
-import discord
-from discord.ext import commands
-
-intents = discord.Intents.default()
-intents.members = True
-bot = commands.Bot(command_prefix='+', intents=intents)
-
 MOD_ROLE_ID = 1168109892851204166
 MUTED_ROLE_ID = 1170488926834798602
 LOG_CHANNEL_ID = 1345349357532090399
@@ -791,9 +784,7 @@ async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await ctx.send(f"{member.mention} a reçu un avertissement.")
         await send_log(ctx, member, "Warn", reason)
         await send_dm(member, "Warn", reason)
-
-bot.run('TON_TOKEN_ICI')
-
+        
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

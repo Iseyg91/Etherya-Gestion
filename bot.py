@@ -589,9 +589,12 @@ async def troll(ctx, member: discord.Member = None):
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
 
+# Initialisation du bot avec le préfixe '+'
+bot = commands.Bot(command_prefix="+", intents=intents)
+
 # Commande +prison
 @bot.command()
-@commands.has_role('1165936153418006548')  # Assurez-vous que le rôle peut l'utiliser
+@commands.has_role(1165936153418006548)  # ID du rôle sans guillemets
 async def prison(ctx, member: discord.Member = None):
     if not member:
         await ctx.send("Vous n'avez ciblé personne.")
@@ -605,13 +608,18 @@ async def prison(ctx, member: discord.Member = None):
     embed.set_image(url="https://i.imgur.com/dX0DSGh.jpeg")
     await ctx.send(embed=embed)
 
-    # Retirer et ajouter les rôles
-    await member.remove_roles(discord.Object(id=1344407004739014706))
-    await member.add_roles(discord.Object(id=1344453363261116468))
+    # Gestion des rôles
+    role_remove = discord.utils.get(ctx.guild.roles, id=1344407004739014706)
+    role_add = discord.utils.get(ctx.guild.roles, id=1344453363261116468)
+
+    if role_remove:
+        await member.remove_roles(role_remove)
+    if role_add:
+        await member.add_roles(role_add)
 
 # Commande +arrestation
 @bot.command()
-@commands.has_role('1165936153418006548')
+@commands.has_role(1165936153418006548)
 async def arrestation(ctx, member: discord.Member = None):
     if not member:
         await ctx.send("Vous n'avez ciblé personne.")
@@ -625,13 +633,18 @@ async def arrestation(ctx, member: discord.Member = None):
     embed.set_image(url="https://i.imgur.com/uVNxDX2.jpeg")
     await ctx.send(embed=embed)
 
-    # Retirer et ajouter les rôles
-    await member.remove_roles(discord.Object(id=1344407004739014706))
-    await member.add_roles(discord.Object(id=1344453363261116468))
+    # Gestion des rôles
+    role_remove = discord.utils.get(ctx.guild.roles, id=1344407004739014706)
+    role_add = discord.utils.get(ctx.guild.roles, id=1344453363261116468)
+
+    if role_remove:
+        await member.remove_roles(role_remove)
+    if role_add:
+        await member.add_roles(role_add)
 
 # Commande +liberation
 @bot.command()
-@commands.has_role('1165936153418006548')
+@commands.has_role(1165936153418006548)
 async def liberation(ctx, member: discord.Member = None):
     if not member:
         await ctx.send("Vous n'avez ciblé personne.")
@@ -645,29 +658,50 @@ async def liberation(ctx, member: discord.Member = None):
     embed.set_image(url="https://i.imgur.com/Xh7vqh7.jpeg")
     await ctx.send(embed=embed)
 
-    # Ajouter et retirer les rôles
-    await member.add_roles(discord.Object(id=1344407004739014706))
-    await member.remove_roles(discord.Object(id=1344453363261116468))
+    # Gestion des rôles
+    role_add = discord.utils.get(ctx.guild.roles, id=1344407004739014706)
+    role_remove = discord.utils.get(ctx.guild.roles, id=1344453363261116468)
+
+    if role_add:
+        await member.add_roles(role_add)
+    if role_remove:
+        await member.remove_roles(role_remove)
 
 # Commande +evasion
 @bot.command()
-@commands.has_role('1344591867068809268')
+@commands.has_role(1344591867068809268)
 async def evasion(ctx):
-    # Le rôle de l'auteur de la commande pour s'évader
-    member = ctx.author
+    member = ctx.author  # L'auteur de la commande s'évade
 
     embed = discord.Embed(
         title="Un joueur s'évade de prison !",
-        description="Grâce a un ticket trouvé a la fête foraine !!",
+        description="Grâce à un ticket trouvé à la fête foraine !!",
         color=0x0000ff
     )
     embed.set_image(url="https://i.imgur.com/X8Uje39.jpeg")
     await ctx.send(embed=embed)
 
-    # Retirer et ajouter les rôles
-    await member.add_roles(discord.Object(id=1344407004739014706))
-    await member.remove_roles(discord.Object(id=1344453363261116468))
-    await member.remove_roles(discord.Object(id=1344591867068809268))
+    # Gestion des rôles
+    role_add = discord.utils.get(ctx.guild.roles, id=1344407004739014706)
+    role_remove_1 = discord.utils.get(ctx.guild.roles, id=1344453363261116468)
+    role_remove_2 = discord.utils.get(ctx.guild.roles, id=1344591867068809268)
+
+    if role_add:
+        await member.add_roles(role_add)
+    if role_remove_1:
+        await member.remove_roles(role_remove_1)
+    if role_remove_2:
+        await member.remove_roles(role_remove_2)
+
+# Gestion des erreurs pour les commandes
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingRole):
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("Il manque un argument à la commande.")
+    else:
+        await ctx.send(f"Une erreur est survenue : {error}")
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

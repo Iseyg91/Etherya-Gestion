@@ -382,7 +382,8 @@ async def love(ctx, member: discord.Member = None):
         description=f"L'amour entre {ctx.author.mention} et {member.mention} est de **{love_percentage}%** !",
         color=discord.Color.red() if love_percentage > 50 else discord.Color.blue()
     )
-    embed.set_image(url="https://img.freepik.com/photos-gratuite/forme-coeur-3d-couple-amoureux_23-2150965335.jpg?t=st=1741155852~exp=1741159452~hmac=269bf57afed5bd664832de5febc63dc88f2f96734ce329d2ad2046cfbc771c70&w=826")  # Nouvelle image
+    embed.set_footer(text="Que l'amour vous guide !")
+    embed.set_thumbnail(url="https://img.freepik.com/photos-gratuite/silhouette-mains-coeur-contre-lumieres-ville-nuit_23-2150984259.jpg?ga=GA1.1.719997987.1741155829&semt=ais_hybrid")  # Image que tu veux dans l'embed (personnalisable)
 
     # Envoi de l'embed
     await ctx.send(embed=embed)

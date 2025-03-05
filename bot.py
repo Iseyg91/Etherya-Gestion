@@ -870,8 +870,8 @@ async def alerte(ctx, member: discord.Member, *, reason: str):
     # Obtention du salon où envoyer le message
     channel = bot.get_channel(channel_id)
 
-    # Envoyer le message mentionnant le rôle au-dessus de l'embed
-    await channel.send(f"<@&{ping_role_id}>\n📢 Alerte émise : {member.mention} - Raison : {reason}")
+    # Mentionner le rôle et l'utilisateur qui a exécuté la commande dans le message
+    await channel.send(f"<@&{ping_role_id}>\n📢 Alerte émise par {ctx.author.mention}: {member.mention} - Raison : {reason}")
 
     # Création de l'embed
     embed = discord.Embed(

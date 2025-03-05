@@ -25,6 +25,11 @@ async def on_ready():
     await bot.tree.sync()
 
 @bot.event
+async def on_ready():
+    print(f"Connecté en tant que {bot.user}")
+    print(f"Commandes chargées: {list(bot.commands)}")  # Affiche les commandes disponibles
+
+@bot.event
 async def on_message(message):
     if message.author.bot:
         return

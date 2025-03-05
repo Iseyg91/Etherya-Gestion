@@ -280,7 +280,7 @@ async def aide(ctx):
     embed.set_image(url=banner_url)  # Ajout de la bannière en bas de l'embed
 
     # Informations générales
-    embed.add_field(name="📚 **Informations**", value=f"• **Mon préfixe** : `+`\n• **Nombre de commandes** : `X`", inline=False)
+    embed.add_field(name="📚 **Informations**", value=f"• **Mon préfixe** : +\n• **Nombre de commandes** : X", inline=False)
 
     # Création du menu déroulant
     select = discord.ui.Select(
@@ -317,12 +317,13 @@ async def aide(ctx):
         elif category == "Fun":
             new_embed.title = "🎉 **Commandes Fun**"
             new_embed.description = "Bienvenue dans la section Fun ! 🎲\nCes commandes sont là pour ajouter une touche d'humour et de détente au serveur. Amusez-vous !"
-            new_embed.add_field(name="🌈 +gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.\n*Testez votre ouverture d'esprit !*.", inline=False)
-            new_embed.add_field(name="😤 +racist @user", value="Détermine le taux de racisme d'un utilisateur 😤.\n*Un test amusant à faire avec vos amis.*", inline=False)
-            new_embed.add_field(name="💘 +love @user", value="Affiche le niveau de compatibilité amoureuse 💘.\n*Testez votre compatibilité avec quelqu'un !*.", inline=False)
-            new_embed.add_field(name="🐀 +rat @user", value="Détermine le taux de ratitude d'un utilisateur 🐀.\n*Vérifiez qui est le plus ‘rat’ parmi vos amis.*", inline=False)
-            new_embed.add_field(name="🎲 +roll", value="Lance un dé pour générer un nombre aléatoire entre 1 et 500 🎲.\n*Essayez votre chance !*.", inline=False)
-            new_embed.add_field(name="🍆 +zizi @user", value="Évalue le niveau de zizi de l'utilisateur 🍆.\n*Un test ludique pour voir qui a le plus grand ego !*.", inline=False)
+            new_embed.add_field(name="🤗 +hug @user", value="Envoie un câlin à [membre] avec une image mignonne de câlin.", inline=False)
+            new_embed.add_field(name="💥 +slap @user", value="Tu as giflé [membre] avec une image drôle de gifle.", inline=False)
+            new_embed.add_field(name="💃 +dance @user", value="[membre] danse avec une animation rigolote.", inline=False)
+            new_embed.add_field(name="💘 +flirt @user", value="Vous avez charmé [membre] avec un compliment !", inline=False)
+            new_embed.add_field(name="🤫 +whisper @user [message]", value="[membre] a chuchoté à [ton nom] : [message].", inline=False)
+            new_embed.add_field(name="🌟 +compliment @user", value="Envoie un compliment aléatoire à [membre], comme 'Tu es plus génial que tout le chocolat du monde !'.", inline=False)
+            new_embed.add_field(name="😜 +troll @user", value="Une blague aléatoire ou une phrase troll envers le membre, avec une image rigolote.", inline=False)
         elif category == "Crédits":
             new_embed.title = "💖 **Crédits**"
             new_embed.description = "Un immense merci à **Iseyg** pour le développement de ce bot incroyable ! 🙏\n\nGrâce à lui, ce bot est ce qu'il est aujourd'hui. Merci à toute la communauté pour son soutien continu ! 💙"
@@ -490,7 +491,7 @@ async def zizi(ctx, member: discord.Member = None):
         return
     
     # Générer une valeur aléatoire entre 0 et 28 cm
-    value = random.randint(0, 28)
+    value = random.randint(0, 50)
 
     # Créer l'embed
     embed = discord.Embed(
@@ -504,6 +505,117 @@ async def zizi(ctx, member: discord.Member = None):
     # Envoyer l'embed
     await ctx.send(embed=embed)
 
+@bot.command()
+@has_required_role()
+async def hug(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"Tu as donné un câlin à {member.mention} ! 🤗",
+        description="Les câlins sont la meilleure chose au monde !",
+        color=discord.Color.blue()
+    )
+    embed.set_image(url="https://images-ext-1.discordapp.net/external/MlIhTcnnwMOrGv4PZkfB0pZMlwId20GStbF2EJBMu4o/https/media.tenor.com/P6FsFii7pnoAAAPo/hug-warm-hug.mp4")  # Remplace avec l'URL du GIF de câlin
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+@has_required_role()
+async def slap(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"Tu as giflé {member.mention} !",
+        description="Oups, ça a dû faire mal 😱",
+        color=discord.Color.red()
+    )
+    embed.set_image(url="https://images-ext-1.discordapp.net/external/JRfu6VPuLtwZvnn4PhaUSZmKF4SYJFve47n23_TXrNA/https/media.tenor.com/qf7iMVZ2YXoAAAPo/slap-her-badly-in-the-face-shocking-her-as-she-turns-her-head-saddle.mp4")  # Remplace avec l'URL du GIF de gifle
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+@has_required_role()
+async def dance(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"{member.mention} danse comme un pro ! 💃🕺",
+        description="Admirez cette danse épique !",
+        color=discord.Color.green()
+    )
+    embed.set_image(url="https://images-ext-1.discordapp.net/external/SA7z20OMB6Wg9fWvEGWofpBzD7cPAQyotlX93C5bz1o/https/media.tenor.com/WuyykgPL8aYAAAPo/gru-minions.mp4")  # Remplace avec l'URL du GIF de danse
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+@has_required_role()
+async def flirt(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"Vous avez charmé {member.mention} avec un sourire éclatant ! 😍",
+        description="Vous êtes irrésistible !",
+        color=discord.Color.purple()
+    )
+    embed.set_image(url="https://images-ext-1.discordapp.net/external/tw4dELKd6TeOmxxLeTCgUWG0l-vwkTDhMPyq3vf5mK8/https/media.tenor.com/yEAzUopw8rIAAAPo/flirt-millhouse.mp4")  # Remplace avec l'URL du GIF mignon
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+@has_required_role()
+async def whisper(ctx, member: discord.Member = None, *, message):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"Chuchotement de {ctx.author.mention} à {member.mention}",
+        description=f"*{message}*",
+        color=discord.Color.greyple()
+    )
+    embed.set_footer(text="Un message secret entre vous deux...")
+    embed.set_thumbnail(url=member.avatar.url)
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+@has_required_role()
+async def troll(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"Tu as trollé {member.mention} ! 😆",
+        description="Oups, {member.mention} s'est fait avoir !",
+        color=discord.Color.orange()
+    )
+    embed.set_image(url="https://images-ext-1.discordapp.net/external/OTzqCtUnd1qHCv5gQjBEWBYhF7FygF-j-Wc4bj5WIL4/https/media.tenor.com/zt__M2DybWkAAAPo/wind-in-hair-troll-train.mp4")  # Remplace avec l'URL du GIF rigolo
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    await ctx.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

@@ -118,6 +118,8 @@ async def on_member_join(member):
     
 @bot.command()
 async def clear(ctx, amount: int = None):
+    # Vérifie si l'utilisateur a les permissions nécessaires (admin ou le rôle spécifique)
+    if ctx.author.guild_permissions.administrator or 1171489794698784859 in [role.id for role in ctx.author.roles]:
     if amount is None:
         await ctx.send("Merci de préciser un chiffre entre 2 et 100.")
         return

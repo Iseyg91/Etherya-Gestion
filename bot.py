@@ -73,7 +73,10 @@ async def on_message(message):
         view.add_item(button)
 
         await message.channel.send(embed=embed, view=view)
-        
+    
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+    
 # Fonction pour la commande clear
 @bot.command()
 async def clear(ctx, amount: int = None):
@@ -86,7 +89,9 @@ async def clear(ctx, amount: int = None):
 
     deleted = await ctx.channel.purge(limit=amount)
     await ctx.send(f'{len(deleted)} messages supprimés.', delete_after=5)
-
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+    
 @bot.command()
 async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Ajoute un rôle à un utilisateur."""
@@ -108,7 +113,10 @@ async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
         await ctx.send("Je n'ai pas les permissions nécessaires pour attribuer ce rôle.")
     except discord.HTTPException as e:
         await ctx.send(f"Une erreur est survenue : {e}")
-
+        
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+    
 @bot.command()
 async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Retire un rôle à un utilisateur."""
@@ -161,6 +169,9 @@ async def vc(ctx):
     embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
     
     await ctx.send(embed=embed)
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108
 
@@ -206,6 +217,8 @@ async def on_member_join(member):
             except discord.HTTPException:
                 print("Une erreur est survenue lors de l'envoi du message.")
 
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
 
 @bot.command()
 async def nuke(ctx):
@@ -252,7 +265,9 @@ async def nuke(ctx):
             await ctx.send("Cette commande doit être utilisée dans un salon texte.")
     else:
         await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
-
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+    
 @bot.command()
 async def gay(ctx, member: discord.Member = None):
     if member is None:
@@ -270,7 +285,9 @@ async def gay(ctx, member: discord.Member = None):
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
-
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+    
 @bot.command()
 async def aide(ctx):
     # Vérifier si un message a déjà été envoyé
@@ -329,7 +346,9 @@ async def aide(ctx):
     
     # Marquer comme envoyé pour éviter la duplication
     ctx.sent_embed = True
-
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+    
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

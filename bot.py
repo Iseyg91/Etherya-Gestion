@@ -480,6 +480,35 @@ async def roll(ctx, x: str = None):
         color=discord.Color.green()
     )
     await ctx.send(embed=embed)
+    
+# Assurez-vous que l'utilisateur a le rôle requis
+def has_required_role():
+    def predicate(ctx):
+        return any(role.id == 1165936153418006548 for role in ctx.author.roles)
+    return commands.check(predicate)
+
+@bot.command()
+@has_required_role()
+async def zizi(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+    
+    # Générer une valeur aléatoire entre 0 et 28 cm
+    value = random.randint(0, 28)
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title="Analyse de la taille du zizi 🔥", 
+        description=f"{member.mention} a un zizi de **{value} cm** !\n\n*La taille varie selon l'humeur du membre.*", 
+        color=discord.Color.blue()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+
+    # Envoyer l'embed
+    await ctx.send(embed=embed)
+
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

@@ -700,6 +700,76 @@ async def on_command_error(ctx, error):
     else:
         await ctx.send(f"Une erreur est survenue : {error}")
 
+MOD_ROLE_ID = 1168109892851204166
+MUTED_ROLE_ID = 1170488926834798602
+LOG_CHANNEL_ID = 1345349357532090399
+
+async def send_log(ctx, member, action, reason):
+    log_channel = bot.get_channel(LOG_CHANNEL_ID)
+    if log_channel:
+        embed = discord.Embed(title="Formulaire des sanctions", color=discord.Color.red())
+        embed.add_field(name="Pseudo de la personne sanctionnée:", value=member.mention, inline=False)
+        embed.add_field(name="Pseudo du modérateur:", value=ctx.author.mention, inline=False)
+        embed.add_field(name="Sanction:", value=action, inline=False)
+        embed.add_field(name="Raison:", value=reason, inline=False)
+        await log_channel.send(embed=embed)
+
+@bot.event
+async def on_ready():
+    print(f'Connecté en tant que {bot.user}')
+
+async def check_permissions(ctx):
+    mod_role = discord.utils.get(ctx.guild.roles, id=MOD_ROLE_ID)
+    if mod_role in ctx.author.roles:
+        return True
+    else:
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
+        return False
+
+@bot.command()
+async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx):
+        await member.ban(reason=reason)
+        await ctx.send(f"{member.mention} a été banni.")
+        await send_log(ctx, member, "Ban", reason)
+
+@bot.command()
+async def unban(ctx, user_id: int):
+    if await check_permissions(ctx):
+        user = await bot.fetch_user(user_id)
+        await ctx.guild.unban(user)
+        await ctx.send(f"{user.mention} a été débanni.")
+        await send_log(ctx, user, "Unban", "Réintégration")
+
+@bot.command()
+async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx):
+        await member.kick(reason=reason)
+        await ctx.send(f"{member.mention} a été expulsé.")
+        await send_log(ctx, member, "Kick", reason)
+
+@bot.command()
+async def mute(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx):
+        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
+        await member.add_roles(muted_role)
+        await ctx.send(f"{member.mention} a été muté.")
+        await send_log(ctx, member, "Mute", reason)
+
+@bot.command()
+async def unmute(ctx, member: discord.Member):
+    if await check_permissions(ctx):
+        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
+        await member.remove_roles(muted_role)
+        await ctx.send(f"{member.mention} a été démuté.")
+        await send_log(ctx, member, "Unmute", "Réhabilitation")
+
+@bot.command()
+async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx):
+        await ctx.send(f"{member.mention} a reçu un avertissement.")
+        await send_log(ctx, member, "Warn", reason)
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

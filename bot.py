@@ -12,6 +12,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.messages = True 
 intents.members = True
+intents.guilds = True
 bot = commands.Bot(command_prefix="+", intents=intents)
 
 OWNER_ID = 792755123587645461

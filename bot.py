@@ -270,13 +270,17 @@ async def aide(ctx):
 
     banner_url = "https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png"  # URL de la bannière
     embed = discord.Embed(
-        title="📜 **Commandes du Bot Etherya**",
-        description="Sélectionnez une catégorie ci-dessous pour découvrir les commandes disponibles. 🌟",
+        title="🏡 **Accueil Etherya Gestion**",
+        description=f"Hey, bienvenue {ctx.author.mention} sur la page d'accueil d'Etherya Gestion ! 🎉\n\n"
+                    "Ici, vous trouverez toutes les informations nécessaires pour gérer et administrer votre serveur efficacement. 🌟",
         color=discord.Color(0x1abc9c)
     )
     embed.set_thumbnail(url=bot.user.avatar.url)
     embed.set_footer(text="Développé avec ❤️ par Iseyg. Merci pour votre soutien !")
     embed.set_image(url=banner_url)  # Ajout de la bannière en bas de l'embed
+
+    # Informations générales
+    embed.add_field(name="📚 **Informations**", value=f"• **Mon préfixe** : `+`\n• **Nombre de commandes** : `X`", inline=False)
 
     # Création du menu déroulant
     select = discord.ui.Select(
@@ -298,26 +302,29 @@ async def aide(ctx):
 
         if category == "Gestion":
             new_embed.title = "🔨 **Commandes de Gestion**"
-            new_embed.add_field(name="+clear (2-100)", value="Supprime des messages dans le salon 📬.", inline=False)
-            new_embed.add_field(name="+nuke", value="Efface **tous** les messages du salon 🚨.", inline=False)
-            new_embed.add_field(name="+addrole @user @rôle", value="Ajoute un rôle à un utilisateur 👤.", inline=False)
-            new_embed.add_field(name="+delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.", inline=False)
+            new_embed.description = "Bienvenue dans la section gestion ! 📊\nCes commandes sont essentielles pour administrer le serveur. Voici un aperçu :"
+            new_embed.add_field(name="+clear (2-100)", value="Supprime des messages dans le salon 📬.\n*Utilisé pour nettoyer un salon ou supprimer un spam.*", inline=False)
+            new_embed.add_field(name="+nuke", value="Efface **tous** les messages du salon 🚨.\n*Pour une action plus drastique en cas de chaos ou d'urgence !*.", inline=False)
+            new_embed.add_field(name="+addrole @user @rôle", value="Ajoute un rôle à un utilisateur 👤.\n*Pour attribuer des rôles et des privilèges spéciaux aux membres.*", inline=False)
+            new_embed.add_field(name="+delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.\n*Retirer un rôle en cas de sanction ou de changement de statut.*", inline=False)
         elif category == "Modération / Économie":
             new_embed.title = "⚖️ **Commandes de Modération et Économie**"
-            new_embed.add_field(name="+prison @user", value="Mets un utilisateur en prison pour non-paiement des taxes 🏰.", inline=False)
-            new_embed.add_field(name="+arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.", inline=False)
-            new_embed.add_field(name="+liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.", inline=False)
-            new_embed.add_field(name="+evasion", value="Permet de s'évader après un braquage raté 🔓.", inline=False)
+            new_embed.description = "Bienvenue dans la section modération et économie ! 💼\nIci, vous pouvez gérer les aspects économiques et de sécurité du serveur."
+            new_embed.add_field(name="+prison @user", value="Mets un utilisateur en prison pour non-paiement des taxes 🏰.\n*Assurez-vous que tout le monde respecte les règles économiques.*", inline=False)
+            new_embed.add_field(name="+arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.\n*Appliquez les sanctions après un braquage raté ou une tentative échouée.*", inline=False)
+            new_embed.add_field(name="+liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
+            new_embed.add_field(name="+evasion", value="Permet de s'évader après un braquage raté 🔓.\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
         elif category == "Fun":
             new_embed.title = "🎉 **Commandes Fun**"
-            new_embed.add_field(name="+gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.", inline=False)
-            new_embed.add_field(name="+racist @user", value="Détermine le taux de racisme d'un utilisateur 😤.", inline=False)
-            new_embed.add_field(name="+love @user", value="Affiche le niveau de compatibilité amoureuse 💘.", inline=False)
-            new_embed.add_field(name="+rat @user", value="Détermine le taux de ratitude d'un utilisateur 🐀.", inline=False)
-            new_embed.add_field(name="+roll", value="Lance un dé pour générer un nombre aléatoire entre 1 et 500 🎲.", inline=False)
+            new_embed.description = "Bienvenue dans la section Fun ! 🎲\nCes commandes sont là pour ajouter une touche d'humour et de détente au serveur. Amusez-vous !"
+            new_embed.add_field(name="+gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.\n*Testez votre ouverture d'esprit !*.", inline=False)
+            new_embed.add_field(name="+racist @user", value="Détermine le taux de racisme d'un utilisateur 😤.\n*Un test amusant à faire avec vos amis.*", inline=False)
+            new_embed.add_field(name="+love @user", value="Affiche le niveau de compatibilité amoureuse 💘.\n*Testez votre compatibilité avec quelqu'un !*.", inline=False)
+            new_embed.add_field(name="+rat @user", value="Détermine le taux de ratitude d'un utilisateur 🐀.\n*Vérifiez qui est le plus ‘rat’ parmi vos amis.*", inline=False)
+            new_embed.add_field(name="+roll", value="Lance un dé pour générer un nombre aléatoire entre 1 et 500 🎲.\n*Essayez votre chance !*.", inline=False)
         elif category == "Crédits":
             new_embed.title = "💖 **Crédits**"
-            new_embed.description = "Un immense merci à **Iseyg** pour le développement de ce bot incroyable ! 🙏"
+            new_embed.description = "Un immense merci à **Iseyg** pour le développement de ce bot incroyable ! 🙏\n\nGrâce à lui, ce bot est ce qu'il est aujourd'hui. Merci à toute la communauté pour son soutien continu ! 💙"
 
         await interaction.response.edit_message(embed=new_embed)
 

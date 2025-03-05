@@ -302,7 +302,17 @@ async def aide(ctx):
               "Utilisé avec précaution pour éviter toute perte de données importante.",
         inline=False
     )
-    
+    embed.add_field(
+        name="🌈 **+gay @user**", 
+        value="Evalue le taux de gayitude d'un membres  "
+        inline=False
+    )
+    embed.add_field(
+        name="🪄 **+racist @user**", 
+        value="Efface tous les messages du salon actuel (nuke). "
+        value="Evalue le taux de racisme d'un membres  "
+        inline=False
+    )
     # Image à inclure
     embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
     

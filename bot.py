@@ -128,6 +128,38 @@ async def clear(ctx, amount: int = None):
     deleted = await ctx.channel.purge(limit=amount)
     await ctx.send(f'{len(deleted)} messages supprimés.', delete_after=5)
 
+# Configuration des emojis personnalisables
+EMOJIS = {
+    "members": "👥",
+    "crown": "👑",  # Emoji couronne
+    "voice": "🎤",
+    "boosts": "🚀"
+}
+
+@bot.command()
+async def vc(ctx):
+    guild = ctx.guild
+    total_members = guild.member_count
+    online_members = guild.approximate_presence_count if guild.approximate_presence_count else "N/A"
+    voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
+    boosts = guild.premium_subscription_count
+
+    # Mentionner le propriétaire (to: 792755123587645461)
+    owner_member = guild.owner
+    server_invite = "https://discord.gg/X4dZAt3BME"  # Lien du serveur
+
+    embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
+    embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
+    embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
+    embed.add_field(name=f"{EMOJIS['crown']} Propriétaire", value=f"<@792755123587645461>", inline=True)  # Mention fixe pour le Owner
+    embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
+    embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
+    embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
+    embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
+    
+    await ctx.send(embed=embed)
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

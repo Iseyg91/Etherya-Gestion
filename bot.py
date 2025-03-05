@@ -149,9 +149,6 @@ async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
         await ctx.send("Je n'ai pas les permissions nécessaires pour attribuer ce rôle.")
     except discord.HTTPException as e:
         await ctx.send(f"Une erreur est survenue : {e}")
-        
-    # IMPORTANT : Permet au bot de continuer à traiter les commandes
-    await bot.process_commands(message)
     
 @bot.command()
 async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):

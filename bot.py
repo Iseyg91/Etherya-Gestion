@@ -589,9 +589,6 @@ async def troll(ctx, member: discord.Member = None):
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
 
-# Initialisation du bot avec le préfixe '+'
-bot = commands.Bot(command_prefix="+", intents=intents)
-
 # Commande +prison
 @bot.command()
 @commands.has_role(1165936153418006548)  # ID du rôle sans guillemets

@@ -79,8 +79,9 @@ async def on_message(message):
 
         await message.channel.send(embed=embed, view=view)
     
-    # IMPORTANT : Permet au bot de continuer à traiter les commandes
-    await bot.process_commands(message)
+    # Permet au bot de continuer à traiter les commandes, mais seulement si ce n'est pas une commande
+    if message.content.startswith("!"):
+        await bot.process_commands(message)
 
 # Configuration des emojis personnalisables
 EMOJIS = {

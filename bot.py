@@ -855,9 +855,10 @@ async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await send_log(ctx, member, "Warn", reason)
         await send_dm(member, "Warn", reason)
 
-# ID des rôles
+# ID des rôles et du salon
 access_role_id = 1166113718602575892  # Rôle qui peut utiliser la commande
-ping_role_id = 1168109892851204166  # Rôle à mentionner dans l'embed
+ping_role_id = 1168109892851204166  # Rôle à mentionner avant l'embed
+channel_id = 1345369756148170805  # Salon où l'alerte doit être envoyée
 
 @bot.command()
 async def alerte(ctx, member: discord.Member, *, reason: str):
@@ -866,6 +867,12 @@ async def alerte(ctx, member: discord.Member, *, reason: str):
         await ctx.send("Vous n'avez pas les permissions nécessaires pour utiliser cette commande.")
         return
 
+    # Obtention du salon où envoyer le message
+    channel = bot.get_channel(channel_id)
+
+    # Envoyer le message mentionnant le rôle au-dessus de l'embed
+    await channel.send(f"<@&{ping_role_id}>\n📢 Alerte émise : {member.mention} - Raison : {reason}")
+
     # Création de l'embed
     embed = discord.Embed(
         title="Alerte Émise",
@@ -873,11 +880,8 @@ async def alerte(ctx, member: discord.Member, *, reason: str):
         color=0xff0000  # Couleur rouge
     )
 
-    # Mentionner le rôle dans l'embed
-    embed.add_field(name="Ping Rôle", value=f"<@&{ping_role_id}>", inline=False)
-
-    # Envoi de l'embed
-    await ctx.send(embed=embed)
+    # Envoi de l'embed dans le même salon
+    await channel.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

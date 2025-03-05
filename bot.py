@@ -859,6 +859,11 @@ async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
 
 @bot.command()
 async def mute(ctx, member: discord.Member, duration: str, unit: str, *, reason="Aucune raison spécifiée"):
+    # Vérification si l'utilisateur a le rôle autorisé
+    if not any(role.id == 1168109892851204166 for role in ctx.author.roles):
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
+        return
+
     # Vérification de la validité de la durée
     try:
         duration = int(duration)  # Conversion de la durée en entier
@@ -876,7 +881,7 @@ async def mute(ctx, member: discord.Member, duration: str, unit: str, *, reason=
         elif unit.lower() in ["h", "heure", "heures"]:
             seconds = duration * 3600
             duration_str = f"{duration} heure(s)"
-        elif unit.lower() in ["j", "jour", "jours"]:
+        elif unit.lower() in ["d", "jour", "jours"]:
             seconds = duration * 86400
             duration_str = f"{duration} jour(s)"
         else:
@@ -892,7 +897,6 @@ async def mute(ctx, member: discord.Member, duration: str, unit: str, *, reason=
         await ctx.send(f"{member.mention} a été démuté après {duration_str}.")
         await send_log(ctx, member, "Unmute automatique", "Fin de la durée de mute")
         await send_dm(member, "Unmute", "Fin de la durée de mute")
-
 
 @bot.command()
 async def unmute(ctx, member: discord.Member):

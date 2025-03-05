@@ -588,6 +588,86 @@ async def troll(ctx, member: discord.Member = None):
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
 
+# Commande +prison
+@bot.command()
+@commands.has_role('1165936153418006548')  # Assurez-vous que le rôle peut l'utiliser
+async def prison(ctx, member: discord.Member = None):
+    if not member:
+        await ctx.send("Vous n'avez ciblé personne.")
+        return
+
+    embed = discord.Embed(
+        title="La Police Etheryenne vous arrête !",
+        description="Te voilà privé d'accès de l'économie !",
+        color=0xffcc00
+    )
+    embed.set_image(url="https://i.imgur.com/dX0DSGh.jpeg")
+    await ctx.send(embed=embed)
+
+    # Retirer et ajouter les rôles
+    await member.remove_roles(discord.Object(id=1344407004739014706))
+    await member.add_roles(discord.Object(id=1344453363261116468))
+
+# Commande +arrestation
+@bot.command()
+@commands.has_role('1165936153418006548')
+async def arrestation(ctx, member: discord.Member = None):
+    if not member:
+        await ctx.send("Vous n'avez ciblé personne.")
+        return
+
+    embed = discord.Embed(
+        title="Vous avez été arrêté lors d'une tentative de braquage",
+        description="Braquer les fourgons c'est pas bien !",
+        color=0xff0000
+    )
+    embed.set_image(url="https://i.imgur.com/uVNxDX2.jpeg")
+    await ctx.send(embed=embed)
+
+    # Retirer et ajouter les rôles
+    await member.remove_roles(discord.Object(id=1344407004739014706))
+    await member.add_roles(discord.Object(id=1344453363261116468))
+
+# Commande +liberation
+@bot.command()
+@commands.has_role('1165936153418006548')
+async def liberation(ctx, member: discord.Member = None):
+    if not member:
+        await ctx.send("Vous n'avez ciblé personne.")
+        return
+
+    embed = discord.Embed(
+        title="La Police Étheryenne a décidé de vous laisser sortir de prison !",
+        description="En revanche, si vous refaites une erreur c'est au cachot direct !",
+        color=0x00ff00
+    )
+    embed.set_image(url="https://i.imgur.com/Xh7vqh7.jpeg")
+    await ctx.send(embed=embed)
+
+    # Ajouter et retirer les rôles
+    await member.add_roles(discord.Object(id=1344407004739014706))
+    await member.remove_roles(discord.Object(id=1344453363261116468))
+
+# Commande +evasion
+@bot.command()
+@commands.has_role('1344591867068809268')
+async def evasion(ctx):
+    # Le rôle de l'auteur de la commande pour s'évader
+    member = ctx.author
+
+    embed = discord.Embed(
+        title="Un joueur s'évade de prison !",
+        description="Grâce a un ticket trouvé a la fête foraine !!",
+        color=0x0000ff
+    )
+    embed.set_image(url="https://i.imgur.com/X8Uje39.jpeg")
+    await ctx.send(embed=embed)
+
+    # Retirer et ajouter les rôles
+    await member.add_roles(discord.Object(id=1344407004739014706))
+    await member.remove_roles(discord.Object(id=1344453363261116468))
+    await member.remove_roles(discord.Object(id=1344591867068809268))
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

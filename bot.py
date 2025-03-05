@@ -367,6 +367,27 @@ async def racist(ctx, member: discord.Member = None):
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
 
+@bot.command()
+async def love(ctx, member: discord.Member = None):
+    if not member:
+        await ctx.send("Tu n'as pas mentionné de membre ! Utilise +love @membre.")
+        return
+
+    # Générer un pourcentage d'amour aléatoire
+    love_percentage = random.randint(0, 100)
+
+    # Création de l'embed
+    embed = discord.Embed(
+        title="L'Amour Etheryen",
+        description=f"L'amour entre {ctx.author.mention} et {member.mention} est de **{love_percentage}%** !",
+        color=discord.Color.red() if love_percentage > 50 else discord.Color.blue()
+    )
+    embed.set_footer(text="Que l'amour vous guide !")
+    embed.set_thumbnail(url="https://i.imgur.com/dX0DSGh.jpeg")  # Image que tu veux dans l'embed (personnalisable)
+
+    # Envoi de l'embed
+    await ctx.send(embed=embed)
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

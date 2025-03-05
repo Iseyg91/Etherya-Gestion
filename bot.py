@@ -290,6 +290,11 @@ async def aide(ctx):
             new_embed.add_field(name="🤫 +whisper @user [message]", value="[membre] a chuchoté à [ton nom] : [message].", inline=False)
             new_embed.add_field(name="🌟 +compliment @user", value="Envoie un compliment aléatoire à [membre], comme 'Tu es plus génial que tout le chocolat du monde !'.", inline=False)
             new_embed.add_field(name="😜 +troll @user", value="Une blague aléatoire ou une phrase troll envers le membre, avec une image rigolote.", inline=False)
+        elif category == "Utilitaire":
+            new_embed.title = "⚙️ **Commandes Utilitaires**"
+            new_embed.description = "Bienvenue dans la section utilitaire ! 🛠️\nCes commandes sont conçues pour offrir des statistiques en temps réel et envoyer des alertes."
+            new_embed.add_field(name="📊 +vc", value="Affiche les statistiques du serveur en temps réel 📊.\n*Suivez l'évolution du serveur en direct !*.", inline=False)
+            new_embed.add_field(name="🚨 +alerte", value="Envoie une alerte au staff en cas de comportement inapproprié (insultes, spam, etc.) 🚨.\n*Note : Si cette commande est utilisée abusivement, des sanctions sévères seront appliquées !*.", inline=False)
         elif category == "Crédits":
             new_embed.title = "💖 **Crédits**"
             new_embed.description = "Un immense merci à **Iseyg** pour le développement de ce bot incroyable ! 🙏\n\nGrâce à lui, ce bot est ce qu'il est aujourd'hui. Merci à toute la communauté pour son soutien continu ! 💙"

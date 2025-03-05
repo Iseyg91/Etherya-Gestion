@@ -208,6 +208,136 @@ async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
     except discord.HTTPException as e:
         await ctx.send(f"Une erreur est survenue : {e}")
 
+@bot.command()
+async def nuke(ctx):
+    # Vérifie si l'utilisateur a les permissions nécessaires (admin ou le rôle spécifique)
+    if ctx.author.guild_permissions.administrator or 1171489794698784859 in [role.id for role in ctx.author.roles]:
+        # Vérifie que la commande a été lancée dans un salon texte
+        if isinstance(ctx.channel, discord.TextChannel):
+            # Récupère le salon actuel
+            channel = ctx.channel
+
+            # Sauvegarde les informations du salon
+            overwrites = channel.overwrites
+            channel_name = channel.name
+            category = channel.category
+            position = channel.position
+
+            # Récupère l'ID du salon pour le recréer
+            guild = channel.guild
+
+            try:
+                # Crée un nouveau salon avec les mêmes permissions et la même position
+                await channel.delete()  # Supprime le salon actuel
+
+                # Crée un nouveau salon avec les mêmes permissions, catégorie et position
+                new_channel = await guild.create_text_channel(
+                    name=channel_name,
+                    overwrites=overwrites,
+                    category=category
+                )  # Crée le nouveau salon
+
+                # Réajuste la position du salon
+                await new_channel.edit(position=position)
+
+                # Envoie un message dans le salon d'origine pour prévenir de la suppression avant de le recréer
+                await ctx.send(f"{ctx.author.mention} a nuke le salon {channel_name}. Le salon a été recréé avec succès.")
+
+                # Envoie un message dans le nouveau salon pour confirmer la recréation
+                await new_channel.send(
+                    f"Le salon {channel_name} a été supprimé et recréé, {ctx.author.mention}."
+                )
+            except Exception as e:
+                await ctx.send(f"Une erreur est survenue lors de la recréation du salon : {e}")
+        else:
+            await ctx.send("Cette commande doit être utilisée dans un salon texte.")
+    else:
+        await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+    
+@bot.command()
+async def aide(ctx):
+    # Vérifier si un message a déjà été envoyé
+    if hasattr(ctx, 'sent_embed') and ctx.sent_embed:
+        return  # Empêcher l'envoi en double si un embed a déjà été envoyé
+    
+    # Création de l'embed avec un titre et une description clairs
+    embed = discord.Embed(
+        title="📜 Commandes du Bot Etherya",
+        description="Voici la liste complète des commandes disponibles pour interagir avec le bot.",
+        color=discord.Color(0x1abc9c)  # Couleur plus douce et moderne
+    )
+
+    # Ajout de l'icône du bot à gauche de l'embed
+    embed.set_thumbnail(url=bot.user.avatar.url)
+
+    # Ajout des champs pour chaque commande avec des descriptions améliorées
+    embed.add_field(
+        name="🔨 **+clear (nombre entre 2 et 100)**", 
+        value="Supprime un certain nombre de messages dans un salon. "
+              "Entrez un nombre entre 2 et 100 pour que le bot nettoie les messages.",
+        inline=False
+    )
+    embed.add_field(
+        name="❌ **+delrole @user @rôle**", 
+        value="Retire un rôle spécifique d'un utilisateur. "
+              "Ciblez un utilisateur et le rôle à retirer.",
+        inline=False
+    )
+    embed.add_field(
+        name="✅ **+addrole @user @rôle**", 
+        value="Attribue un rôle à un utilisateur spécifié. "
+              "Ciblez un utilisateur et le rôle à attribuer.",
+        inline=False
+    )
+    embed.add_field(
+        name="📊 **+vc**", 
+        value="Affiche les statistiques actuelles du serveur, y compris les membres en ligne.",
+        inline=False
+    )
+    embed.add_field(
+        name="💥 **+nuke**", 
+        value="Efface tous les messages du salon actuel (nuke). "
+              "Utilisé avec précaution pour éviter toute perte de données importante.",
+        inline=False
+    )
+    
+    # Image à inclure
+    embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+    
+    # Mention du créateur en bas
+    embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
+
+    # Envoi de l'embed dans le salon
+    await ctx.send(embed=embed)
+    
+    # Marquer comme envoyé pour éviter la duplication
+    ctx.sent_embed = True
+    
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+
+@bot.command()
+async def gay(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+    
+    percentage = random.randint(0, 100)
+    
+    embed = discord.Embed(
+        title=f"Analyse de gayitude 🌈", 
+        description=f"{member.mention} est gay à **{percentage}%** !\n\n*Le pourcentage varie en fonction des pulsions du membre.*", 
+        color=discord.Color.purple()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    
+    await ctx.send(embed=embed)
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

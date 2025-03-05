@@ -304,13 +304,12 @@ async def aide(ctx):
     )
     embed.add_field(
         name="🌈 **+gay @user**", 
-        value="Evalue le taux de gayitude d'un membres  "
+        value="Évalue le taux de gayitude d'un membre.",
         inline=False
     )
     embed.add_field(
         name="🪄 **+racist @user**", 
-        value="Efface tous les messages du salon actuel (nuke). "
-        value="Evalue le taux de racisme d'un membres  "
+        value="Évalue le taux de racisme d'un membre.",
         inline=False
     )
     # Image à inclure

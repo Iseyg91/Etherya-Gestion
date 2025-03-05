@@ -855,6 +855,27 @@ async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await send_log(ctx, member, "Warn", reason)
         await send_dm(member, "Warn", reason)
         
+
+# ID du rôle à prendre
+role_id = 1168109892851204166
+
+@bot.command()
+async def alerte(ctx, member: discord.Member, *, reason: str):
+    # Vérification si l'utilisateur a le bon rôle pour exécuter la commande
+    if role_id not in [role.id for role in ctx.author.roles]:
+        await ctx.send("Vous n'avez pas les permissions nécessaires pour utiliser cette commande.")
+        return
+    
+    # Création de l'embed
+    embed = Embed(
+        title="Alerte Émise",
+        description=f"**Utilisateur:** {member.mention}\n**Raison:** {reason}",
+        color=0xff0000  # Couleur rouge
+    )
+
+    # Envoi de l'embed
+    await ctx.send(embed=embed)
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

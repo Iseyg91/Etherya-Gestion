@@ -854,24 +854,27 @@ async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await ctx.send(f"{member.mention} a reçu un avertissement.")
         await send_log(ctx, member, "Warn", reason)
         await send_dm(member, "Warn", reason)
-        
 
-# ID du rôle à prendre
-role_id = 1168109892851204166
+# ID des rôles
+access_role_id = 1166113718602575892  # Rôle qui peut utiliser la commande
+ping_role_id = 1168109892851204166  # Rôle à mentionner dans l'embed
 
 @bot.command()
 async def alerte(ctx, member: discord.Member, *, reason: str):
-    # Vérification si l'utilisateur a le bon rôle pour exécuter la commande
-    if role_id not in [role.id for role in ctx.author.roles]:
+    # Vérification si l'utilisateur a le rôle nécessaire pour exécuter la commande
+    if access_role_id not in [role.id for role in ctx.author.roles]:
         await ctx.send("Vous n'avez pas les permissions nécessaires pour utiliser cette commande.")
         return
-    
+
     # Création de l'embed
     embed = Embed(
         title="Alerte Émise",
         description=f"**Utilisateur:** {member.mention}\n**Raison:** {reason}",
         color=0xff0000  # Couleur rouge
     )
+
+    # Mentionner le rôle dans l'embed
+    embed.add_field(name="Ping Rôle", value=f"<@&{ping_role_id}>", inline=False)
 
     # Envoi de l'embed
     await ctx.send(embed=embed)

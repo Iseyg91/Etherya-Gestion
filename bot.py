@@ -161,6 +161,53 @@ async def vc(ctx):
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
 
+@bot.command()
+async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
+    """Ajoute un rôle à un utilisateur."""
+    # Vérifier si l'utilisateur a le rôle [𝑺ץ] Co-Owner
+    if not any(role.id == 1244339296706760726 for role in ctx.author.roles):
+        await ctx.send("Erreur : vous devez avoir le rôle [𝑺ץ] Co-Owner pour utiliser cette commande.")
+        return
+
+    # Vérifier si les arguments sont bien fournis
+    if user is None or role is None:
+        await ctx.send("Erreur : veuillez suivre ce format : +addrole @user @rôle")
+        return
+
+    try:
+        # Ajouter le rôle à l'utilisateur
+        await user.add_roles(role)
+        await ctx.send(f"{user.mention} a maintenant le rôle {role.name} !")
+    except discord.Forbidden:
+        await ctx.send("Je n'ai pas les permissions nécessaires pour attribuer ce rôle.")
+    except discord.HTTPException as e:
+        await ctx.send(f"Une erreur est survenue : {e}")
+        
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
+    
+@bot.command()
+async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
+    """Retire un rôle à un utilisateur."""
+    # Vérifier si l'utilisateur a le rôle [𝑺ץ] Co-Owner
+    if not any(role.id == 1244339296706760726 for role in ctx.author.roles):
+        await ctx.send("Erreur : vous devez avoir le rôle [𝑺ץ] Co-Owner pour utiliser cette commande.")
+        return
+
+    # Vérifier si les arguments sont bien fournis
+    if user is None or role is None:
+        await ctx.send("Erreur : veuillez suivre ce format : +delrole @user @rôle")
+        return
+
+    try:
+        # Retirer le rôle à l'utilisateur
+        await user.remove_roles(role)
+        await ctx.send(f"{user.mention} n'a plus le rôle {role.name} !")
+    except discord.Forbidden:
+        await ctx.send("Je n'ai pas les permissions nécessaires pour retirer ce rôle.")
+    except discord.HTTPException as e:
+        await ctx.send(f"Une erreur est survenue : {e}")
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

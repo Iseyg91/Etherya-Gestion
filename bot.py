@@ -258,9 +258,10 @@ async def nuke(ctx):
     
 @bot.command()
 async def aide(ctx):
-    # Vérifier si un message a déjà été envoyé
-    if hasattr(ctx, 'sent_embed') and ctx.sent_embed:
-        return  # Empêcher l'envoi en double si un embed a déjà été envoyé
+    role_id = 1166113718602575892  # ID du rôle requis
+    if not any(role.id == role_id for role in ctx.author.roles):
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
+        return
     
     # Création de l'embed avec un titre et une description clairs
     embed = discord.Embed(

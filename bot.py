@@ -278,53 +278,55 @@ async def aide(ctx):
     embed.set_footer(text="Développé avec ❤️ par Iseyg. Merci pour votre soutien !")
     embed.set_image(url=banner_url)  # Ajout de la bannière en bas de l'embed
 
-    class HelpMenu(View):
-        def __init__(self):
-            super().__init__()
-            self.add_item(
-                discord.ui.Select(
-                    placeholder="Choisissez une catégorie 👇", 
-                    options=[
-                        discord.SelectOption(label="Gestion", description="📚 Commandes pour gérer le serveur", emoji="🔧"),
-                        discord.SelectOption(label="Modération / Économie", description="⚖️ Commandes modération et économie", emoji="💰"),
-                        discord.SelectOption(label="Fun", description="🎉 Commandes fun et divertissantes", emoji="🎲"),
-                        discord.SelectOption(label="Crédits", description="💖 Remerciements et crédits", emoji="🙏")
-                    ], 
-                    custom_id="help_select"
-                )
-            )
+    # Création du menu déroulant
+    select = discord.ui.Select(
+        placeholder="Choisissez une catégorie 👇", 
+        options=[
+            discord.SelectOption(label="Gestion", description="📚 Commandes pour gérer le serveur", emoji="🔧"),
+            discord.SelectOption(label="Modération / Économie", description="⚖️ Commandes modération et économie", emoji="💰"),
+            discord.SelectOption(label="Fun", description="🎉 Commandes fun et divertissantes", emoji="🎲"),
+            discord.SelectOption(label="Crédits", description="💖 Remerciements et crédits", emoji="🙏")
+        ], 
+        custom_id="help_select"
+    )
 
-        async def on_select(self, interaction: discord.Interaction):
-            category = interaction.data['values'][0]
-            new_embed = discord.Embed(color=discord.Color(0x1abc9c))
-            new_embed.set_image(url=banner_url)  # Ajout de la bannière dans chaque catégorie
+    # Définir la méthode pour gérer l'interaction du menu déroulant
+    async def on_select(interaction: discord.Interaction):
+        category = interaction.data['values'][0]
+        new_embed = discord.Embed(color=discord.Color(0x1abc9c))
+        new_embed.set_image(url=banner_url)  # Ajout de la bannière dans chaque catégorie
 
-            if category == "Gestion":
-                new_embed.title = "🔨 **Commandes de Gestion**"
-                new_embed.add_field(name="+clear (2-100)", value="Supprime des messages dans le salon 📬.", inline=False)
-                new_embed.add_field(name="+nuke", value="Efface **tous** les messages du salon 🚨.", inline=False)
-                new_embed.add_field(name="+addrole @user @rôle", value="Ajoute un rôle à un utilisateur 👤.", inline=False)
-                new_embed.add_field(name="+delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.", inline=False)
-            elif category == "Modération / Économie":
-                new_embed.title = "⚖️ **Commandes de Modération et Économie**"
-                new_embed.add_field(name="+prison @user", value="Mets un utilisateur en prison pour non-paiement des taxes 🏰.", inline=False)
-                new_embed.add_field(name="+arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.", inline=False)
-                new_embed.add_field(name="+liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.", inline=False)
-                new_embed.add_field(name="+evasion", value="Permet de s'évader après un braquage raté 🔓.", inline=False)
-            elif category == "Fun":
-                new_embed.title = "🎉 **Commandes Fun**"
-                new_embed.add_field(name="+gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.", inline=False)
-                new_embed.add_field(name="+racist @user", value="Détermine le taux de racisme d'un utilisateur 😤.", inline=False)
-                new_embed.add_field(name="+love @user", value="Affiche le niveau de compatibilité amoureuse 💘.", inline=False)
-                new_embed.add_field(name="+rat @user", value="Détermine le taux de ratitude d'un utilisateur 🐀.", inline=False)
-                new_embed.add_field(name="+roll", value="Lance un dé pour générer un nombre aléatoire entre 1 et 500 🎲.", inline=False)
-            elif category == "Crédits":
-                new_embed.title = "💖 **Crédits**"
-                new_embed.description = "Un immense merci à **Iseyg** pour le développement de ce bot incroyable ! 🙏"
+        if category == "Gestion":
+            new_embed.title = "🔨 **Commandes de Gestion**"
+            new_embed.add_field(name="+clear (2-100)", value="Supprime des messages dans le salon 📬.", inline=False)
+            new_embed.add_field(name="+nuke", value="Efface **tous** les messages du salon 🚨.", inline=False)
+            new_embed.add_field(name="+addrole @user @rôle", value="Ajoute un rôle à un utilisateur 👤.", inline=False)
+            new_embed.add_field(name="+delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.", inline=False)
+        elif category == "Modération / Économie":
+            new_embed.title = "⚖️ **Commandes de Modération et Économie**"
+            new_embed.add_field(name="+prison @user", value="Mets un utilisateur en prison pour non-paiement des taxes 🏰.", inline=False)
+            new_embed.add_field(name="+arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.", inline=False)
+            new_embed.add_field(name="+liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.", inline=False)
+            new_embed.add_field(name="+evasion", value="Permet de s'évader après un braquage raté 🔓.", inline=False)
+        elif category == "Fun":
+            new_embed.title = "🎉 **Commandes Fun**"
+            new_embed.add_field(name="+gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.", inline=False)
+            new_embed.add_field(name="+racist @user", value="Détermine le taux de racisme d'un utilisateur 😤.", inline=False)
+            new_embed.add_field(name="+love @user", value="Affiche le niveau de compatibilité amoureuse 💘.", inline=False)
+            new_embed.add_field(name="+rat @user", value="Détermine le taux de ratitude d'un utilisateur 🐀.", inline=False)
+            new_embed.add_field(name="+roll", value="Lance un dé pour générer un nombre aléatoire entre 1 et 500 🎲.", inline=False)
+        elif category == "Crédits":
+            new_embed.title = "💖 **Crédits**"
+            new_embed.description = "Un immense merci à **Iseyg** pour le développement de ce bot incroyable ! 🙏"
 
-            await interaction.response.edit_message(embed=new_embed)
+        await interaction.response.edit_message(embed=new_embed)
 
-    view = HelpMenu()
+    select.callback = on_select  # Attacher la fonction de callback à l'élément select
+
+    # Afficher le message avec le menu déroulant
+    view = discord.ui.View()
+    view.add_item(select)
+    
     await ctx.send(embed=embed, view=view)
 
 ROLE_ID = 1166113718602575892  # ID du rôle requis

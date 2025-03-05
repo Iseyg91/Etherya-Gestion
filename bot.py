@@ -765,22 +765,29 @@ async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await send_dm(member, "Kick", reason)
 
 @bot.command()
-async def mute(ctx, member: discord.Member, duration: int, unit: str, *, reason="Aucune raison spécifiée"):
+async def mute(ctx, member: discord.Member, duration: str, *, reason="Aucune raison spécifiée"):
     if await check_permissions(ctx):
         muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
         await member.add_roles(muted_role)
         
-        if unit.lower() in ["m", "minute", "minutes"]:
-            seconds = duration * 60
-            duration_str = f"{duration} minute(s)"
-        elif unit.lower() in ["h", "heure", "heures"]:
-            seconds = duration * 3600
-            duration_str = f"{duration} heure(s)"
-        elif unit.lower() in ["d", "jour", "jours"]:
-            seconds = duration * 86400
-            duration_str = f"{duration} jour(s)"
+        try:
+            time_value = int(duration[:-1])
+            unit = duration[-1].lower()
+        except ValueError:
+            await ctx.send("Format invalide ! Utilisez un nombre suivi de 'm' (minutes), 'h' (heures) ou 'd' (jours). Exemple: 10m, 2h, 1d")
+            return
+
+        if unit == "m":
+            seconds = time_value * 60
+            duration_str = f"{time_value} minute(s)"
+        elif unit == "h":
+            seconds = time_value * 3600
+            duration_str = f"{time_value} heure(s)"
+        elif unit == "d":
+            seconds = time_value * 86400
+            duration_str = f"{time_value} jour(s)"
         else:
-            await ctx.send("Unité de temps invalide ! Utilisez m (minutes), h (heures) ou d (jours).")
+            await ctx.send("Unité de temps invalide ! Utilisez 'm' (minutes), 'h' (heures) ou 'd' (jours).")
             return
 
         await ctx.send(f"{member.mention} a été muté pour {duration_str}.")

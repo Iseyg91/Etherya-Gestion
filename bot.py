@@ -484,7 +484,7 @@ async def hug(ctx, member: discord.Member = None):
         description="Les câlins sont la meilleure chose au monde !",
         color=discord.Color.blue()
     )
-    embed.set_image(url="https://tenor.com/czDJQhtoLFC.gif")
+    embed.set_image(url="https://media.tenor.com/P6FsFii7pnoAAAAM/hug-warm-hug.gif")
     embed.set_thumbnail(url=member.avatar.url)
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
@@ -503,7 +503,7 @@ async def slap(ctx, member: discord.Member = None):
         description="Oups, ça a dû faire mal 😱",
         color=discord.Color.red()
     )
-    embed.set_image(url="https://tenor.com/oK2TDp8OMVG.gif")
+    embed.set_image(url="https://media.tenor.com/QRdCcNbk18MAAAAM/slap.gif")
     embed.set_thumbnail(url=member.avatar.url)
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
@@ -522,7 +522,7 @@ async def dance(ctx, member: discord.Member = None):
         description="Admirez cette danse épique !",
         color=discord.Color.green()
     )
-    embed.set_image(url="https://tenor.com/hX9vQlp7HIU.gif")
+    embed.set_image(url="https://media.tenor.com/d7ibtS6MLQgAAAAM/dancing-kid.gif")
     embed.set_thumbnail(url=member.avatar.url)
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
@@ -541,7 +541,7 @@ async def flirt(ctx, member: discord.Member = None):
         description="Vous êtes irrésistible !",
         color=discord.Color.purple()
     )
-    embed.set_image(url="https://tenor.com/bHF6F.gif")
+    embed.set_image(url="https://media.tenor.com/HDdV-0Km1QAAAAAM/hello-sugar.gif")
     embed.set_thumbnail(url=member.avatar.url)
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
@@ -578,7 +578,7 @@ async def troll(ctx, member: discord.Member = None):
         description=f"Oups, {member.name} s'est fait avoir !",
         color=discord.Color.orange()
     )
-    embed.set_image(url="https://tenor.com/iyeBOwNwBOD.gif")
+    embed.set_image(url="https://media.tenor.com/7Q8TRpW2ZXkAAAAM/yeet-lol.gif")
     embed.set_thumbnail(url=member.avatar.url)
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)

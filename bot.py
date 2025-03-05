@@ -480,13 +480,13 @@ async def hug(ctx, member: discord.Member = None):
 
     # Créer l'embed
     embed = discord.Embed(
-        title=f"Tu as donné un câlin à {member.mention} ! 🤗",  # Utilisation de member.mention pour la mention dynamique
+        title=f"Tu as donné un câlin à {member.name} ! 🤗",  # Utilisation de member.name pour afficher le nom simple
         description="Les câlins sont la meilleure chose au monde !",
         color=discord.Color.blue()
     )
     embed.set_image(url="https://tenor.com/czDJQhtoLFC.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.mention}", icon_url=ctx.author.avatar.url)  # Mentionner l'auteur
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
 
 
@@ -499,13 +499,13 @@ async def slap(ctx, member: discord.Member = None):
 
     # Créer l'embed
     embed = discord.Embed(
-        title=f"Tu as giflé {member.mention} !",  # Utilisation de member.mention pour la mention dynamique
+        title=f"Tu as giflé {member.name} !",  # Utilisation de member.name
         description="Oups, ça a dû faire mal 😱",
         color=discord.Color.red()
     )
     embed.set_image(url="https://tenor.com/oK2TDp8OMVG.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.mention}", icon_url=ctx.author.avatar.url)  # Mentionner l'auteur
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
 
 
@@ -518,13 +518,13 @@ async def dance(ctx, member: discord.Member = None):
 
     # Créer l'embed
     embed = discord.Embed(
-        title=f"{member.mention} danse comme un pro ! 💃🕺",  # Utilisation de member.mention pour la mention dynamique
+        title=f"{member.name} danse comme un pro ! 💃🕺",  # Utilisation de member.name
         description="Admirez cette danse épique !",
         color=discord.Color.green()
     )
     embed.set_image(url="https://tenor.com/hX9vQlp7HIU.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.mention}", icon_url=ctx.author.avatar.url)  # Mentionner l'auteur
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
 
 
@@ -537,13 +537,13 @@ async def flirt(ctx, member: discord.Member = None):
 
     # Créer l'embed
     embed = discord.Embed(
-        title=f"Vous avez charmé {member.mention} avec un sourire éclatant ! 😍",  # Utilisation de member.mention pour la mention dynamique
+        title=f"Vous avez charmé {member.name} avec un sourire éclatant ! 😍",  # Utilisation de member.name
         description="Vous êtes irrésistible !",
         color=discord.Color.purple()
     )
     embed.set_image(url="https://tenor.com/bHF6F.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.mention}", icon_url=ctx.author.avatar.url)  # Mentionner l'auteur
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
 
 
@@ -556,7 +556,7 @@ async def whisper(ctx, member: discord.Member = None, *, message):
 
     # Créer l'embed
     embed = discord.Embed(
-        title=f"Chuchotement de {ctx.author.mention} à {member.mention}",  # Utilisation de member.mention pour la mention dynamique
+        title=f"Chuchotement de {ctx.author.name} à {member.name}",  # Utilisation de member.name et ctx.author.name
         description=f"*{message}*",
         color=discord.Color.greyple()
     )
@@ -574,13 +574,13 @@ async def troll(ctx, member: discord.Member = None):
 
     # Créer l'embed
     embed = discord.Embed(
-        title=f"Tu as trollé {member.mention} ! 😆",  # Utilisation de member.mention pour la mention dynamique
-        description=f"Oups, {member.mention} s'est fait avoir !",
+        title=f"Tu as trollé {member.name} ! 😆",  # Utilisation de member.name
+        description=f"Oups, {member.name} s'est fait avoir !",
         color=discord.Color.orange()
     )
     embed.set_image(url="https://tenor.com/iyeBOwNwBOD.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.mention}", icon_url=ctx.author.avatar.url)  # Mentionner l'auteur
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)

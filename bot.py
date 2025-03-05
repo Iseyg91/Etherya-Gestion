@@ -396,7 +396,7 @@ async def love(ctx, member: discord.Member = None):
     
     await ctx.send(embed=embed)
 
-    @bot.command()
+@bot.command()
 @has_required_role()
 async def rat(ctx, member: discord.Member = None):
     if member is None:

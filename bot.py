@@ -6,6 +6,7 @@ import random
 import asyncio
 from keep_alive import keep_alive
 from discord.ui import Button, View
+from discord.ui import View, Select
 
 token = os.environ['ETHERYA']
 intents = discord.Intents.default()

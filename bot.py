@@ -57,29 +57,7 @@ async def on_message(message):
         view.add_item(button)
 
         await message.channel.send(embed=embed, view=view)
-        return  # N'oubliez pas d'ajouter un return ici pour ne pas appeler process_commands après
 
-    # Vérifier si le message mentionne le bot directement
-    if bot.user.mentioned_in(message):
-        embed = discord.Embed(
-            title="📜 Commandes du Bot Etherya",
-            description="Voici la liste des commandes disponibles :",
-            color=discord.Color(0xFFFFFF)
-        )
-        embed.set_thumbnail(url=bot.user.avatar.url)
-        embed.add_field(name="🔨 **+clear (nombre entre 2 et 100)**", value="Supprime un certain nombre de messages...", inline=False)
-        embed.add_field(name="❌ **+delrole @user @rôle**", value="Retire un rôle spécifique d'un utilisateur.", inline=False)
-        embed.add_field(name="✅ **+addrole @user @rôle**", value="Attribue un rôle à un utilisateur spécifié.", inline=False)
-        embed.add_field(name="📊 **+vc**", value="Affiche les statistiques actuelles du serveur.", inline=False)
-        embed.add_field(name="💥 **+nuke**", value="Efface tous les messages du salon actuel.", inline=False)
-        embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
-        embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
-
-        await message.channel.send(embed=embed)
-
-    # Toujours appeler process_commands pour que les autres commandes fonctionnent
-    await bot.process_commands(message)
-    
 # Fonction pour la commande clear
 @bot.command()
 async def clear(ctx, amount: int = None):
@@ -276,6 +254,65 @@ async def gay(ctx, member: discord.Member = None):
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
+
+@bot.command()
+async def aide(ctx):
+    # Vérifier si un message a déjà été envoyé
+    if hasattr(ctx, 'sent_embed') and ctx.sent_embed:
+        return  # Empêcher l'envoi en double si un embed a déjà été envoyé
+    
+    # Création de l'embed avec un titre et une description clairs
+    embed = discord.Embed(
+        title="📜 Commandes du Bot Etherya",
+        description="Voici la liste complète des commandes disponibles pour interagir avec le bot.",
+        color=discord.Color(0x1abc9c)  # Couleur plus douce et moderne
+    )
+
+    # Ajout de l'icône du bot à gauche de l'embed
+    embed.set_thumbnail(url=bot.user.avatar.url)
+
+    # Ajout des champs pour chaque commande avec des descriptions améliorées
+    embed.add_field(
+        name="🔨 **+clear (nombre entre 2 et 100)**", 
+        value="Supprime un certain nombre de messages dans un salon. "
+              "Entrez un nombre entre 2 et 100 pour que le bot nettoie les messages.",
+        inline=False
+    )
+    embed.add_field(
+        name="❌ **+delrole @user @rôle**", 
+        value="Retire un rôle spécifique d'un utilisateur. "
+              "Ciblez un utilisateur et le rôle à retirer.",
+        inline=False
+    )
+    embed.add_field(
+        name="✅ **+addrole @user @rôle**", 
+        value="Attribue un rôle à un utilisateur spécifié. "
+              "Ciblez un utilisateur et le rôle à attribuer.",
+        inline=False
+    )
+    embed.add_field(
+        name="📊 **+vc**", 
+        value="Affiche les statistiques actuelles du serveur, y compris les membres en ligne.",
+        inline=False
+    )
+    embed.add_field(
+        name="💥 **+nuke**", 
+        value="Efface tous les messages du salon actuel (nuke). "
+              "Utilisé avec précaution pour éviter toute perte de données importante.",
+        inline=False
+    )
+    
+    # Image à inclure
+    embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+    
+    # Mention du créateur en bas
+    embed.add_field(name="Bot développé par 👑 Iseyg", value="Merci à Iseyg pour ce bot incroyable !", inline=False)
+
+    # Envoi de l'embed dans le salon
+    await ctx.send(embed=embed)
+    
+    # Marquer comme envoyé pour éviter la duplication
+    ctx.sent_embed = True
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

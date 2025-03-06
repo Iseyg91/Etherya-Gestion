@@ -828,16 +828,14 @@ async def reverse(ctx, *, text: str = None):
     reversed_text = text[::-1]  # Inverser le texte
     await ctx.send(f"Texte inversé : {reversed_text}")
 
-
 @bot.command()
-async def note(ctx, member: discord.Member = None, note: int = None):
-    if member is None or note is None:
-        await ctx.send("Tu n'as pas précisé l'utilisateur ni la note !")
+async def note(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Tu n'as pas précisé l'utilisateur !")
         return
 
-    if not 1 <= note <= 10:
-        await ctx.send("La note doit être entre 1 et 10.")
-        return
+    # Générer une note aléatoire entre 1 et 10
+    note = random.randint(1, 10)
 
     # Créer l'embed
     embed = discord.Embed(
@@ -850,11 +848,27 @@ async def note(ctx, member: discord.Member = None, note: int = None):
     await ctx.send(embed=embed)
 
 
+AUTHORIZED_ROLES = ["1216432076128129144"]
 @bot.command()
 async def say(ctx, *, text: str = None):
+    # Vérifie si l'utilisateur a le rôle avec l'ID spécifié
+        await ctx.send("Tu n'as pas les permissions nécessaires pour utiliser cette commande.")
+        return
+    
     if text is None:
         await ctx.send("Tu n'as pas écrit de texte à dire !")
         return
+
+    # Supprime le message originel
+    await ctx.message.delete()
+
+    # Envoie le texte demandé
+    await ctx.send(text)
+
+    # Supprime le message originel
+    await ctx.message.delete()
+
+    # Envoie le texte demandé
     await ctx.send(text)
 
 

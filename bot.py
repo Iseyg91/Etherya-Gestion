@@ -297,6 +297,9 @@ async def aide(ctx):
             new_embed.description = "Bienvenue dans la section modération ! 🚨\nCes commandes sont conçues pour gérer et contrôler l'activité du serveur, en assurant une expérience sûre et agréable pour tous les membres."
             new_embed.add_field(name="📊 +vc", value="Affiche les statistiques du serveur en temps réel .\n*Suivez l'évolution du serveur en direct !*.", inline=False)
             new_embed.add_field(name="🚨 +alerte @user <reason>", value="Envoie une alerte au staff en cas de comportement inapproprié (insultes, spam, etc.) .\n*Note : Si cette commande est utilisée abusivement, des sanctions sévères seront appliquées !*.", inline=False)
+            new_embed.add_field(name="📶 +ping", value="Affiche la latence du bot en millisecondes.", inline=False)
+            new_embed.add_field(name="⏳ +uptime", value="Affiche depuis combien de temps le bot est en ligne.", inline=False)
+            new_embed.add_field(name="ℹ️ +rôle info <nom_du_rôle>", value="Affiche les informations détaillées sur un rôle spécifique.", inline=False)
         elif category == "Modération":
             new_embed.title = "🔑 **Commandes Modération**"
             new_embed.add_field(name="🚫 +ban @user", value="Exile un membre du serveur pour un comportement inacceptable .\nL'action de bannir un utilisateur est irréversible et est utilisée pour des infractions graves aux règles du serveur.*", inline=False)
@@ -1033,43 +1036,6 @@ async def cautionpayer(ctx, member: discord.Member = None):
     if role_remove:
         await member.remove_roles(role_remove)
 
-@bot.command()
-async def ping(ctx):
-    latency = round(bot.latency * 1000)  # Latence en ms
-    embed = discord.Embed(title="Pong!", description=f"Latence: {latency}ms", color=discord.Color.green())
-    await ctx.send(embed=embed)
-
-@bot.command()
-async def roleinfo(ctx, *, role_name: str):
-    # Cherche le rôle par son nom
-    role = discord.utils.get(ctx.guild.roles, name=role_name)
-
-    if role is None:
-        embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())
-        await ctx.send(embed=embed)
-        return
-    else:
-        embed = discord.Embed(title=f"Informations sur le rôle: {role.name}", color=role.color)
-        embed.add_field(name="ID", value=role.id)
-        embed.add_field(name="Couleur", value=str(role.color))
-        embed.add_field(name="Nombre de membres", value=len(role.members))
-        embed.add_field(name="Position", value=role.position)
-        await ctx.send(embed=embed)
-
-@bot.command()
-async def uptime(ctx):
-    uptime_seconds = round(time.time() - start_time)
-    days = uptime_seconds // (24 * 3600)
-    hours = (uptime_seconds % (24 * 3600)) // 3600
-    minutes = (uptime_seconds % 3600) // 60
-    seconds = uptime_seconds % 60
-    embed = discord.Embed(
-        title="Uptime du bot",
-        description=f"Le bot est en ligne depuis : {days} jours, {hours} heures, {minutes} minutes, {seconds} secondes",
-        color=discord.Color.blue()
-    )
-    await ctx.send(embed=embed)
-
 AUTHORIZED_ROLES = ["1341458600559644672"]
 
 @bot.command()
@@ -1247,7 +1213,7 @@ access_role_id = 1166113718602575892  # Rôle qui peut utiliser la commande
 ping_role_id = 1168109892851204166  # Rôle à mentionner avant l'embed
 channel_id = 1345369756148170805  # Salon où l'alerte doit être envoyée
 
-#------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte
+#------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte, +uptime, +ping, +roleinfo
 @bot.command()
 async def alerte(ctx, member: discord.Member, *, reason: str):
     # Vérification si l'utilisateur a le rôle nécessaire pour exécuter la commande
@@ -1296,6 +1262,42 @@ async def vc(ctx):
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
     
+@bot.command()
+async def ping(ctx):
+    latency = round(bot.latency * 1000)  # Latence en ms
+    embed = discord.Embed(title="Pong!", description=f"Latence: {latency}ms", color=discord.Color.green())
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def roleinfo(ctx, *, role_name: str):
+    # Cherche le rôle par son nom
+    role = discord.utils.get(ctx.guild.roles, name=role_name)
+
+    if role is None:
+        embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())
+        await ctx.send(embed=embed)
+        return
+    else:
+        embed = discord.Embed(title=f"Informations sur le rôle: {role.name}", color=role.color)
+        embed.add_field(name="ID", value=role.id)
+        embed.add_field(name="Couleur", value=str(role.color))
+        embed.add_field(name="Nombre de membres", value=len(role.members))
+        embed.add_field(name="Position", value=role.position)
+        await ctx.send(embed=embed)
+
+@bot.command()
+async def uptime(ctx):
+    uptime_seconds = round(time.time() - start_time)
+    days = uptime_seconds // (24 * 3600)
+    hours = (uptime_seconds % (24 * 3600)) // 3600
+    minutes = (uptime_seconds % 3600) // 60
+    seconds = uptime_seconds % 60
+    embed = discord.Embed(
+        title="Uptime du bot",
+        description=f"Le bot est en ligne depuis : {days} jours, {hours} heures, {minutes} minutes, {seconds} secondes",
+        color=discord.Color.blue()
+    )
+    await ctx.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

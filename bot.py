@@ -1157,19 +1157,23 @@ async def uptime(ctx):
     )
     await ctx.send(embed=embed)
     
-@bot.command()
-async def ticket_euro_million(ctx):
+@bot.command(name="ticket-euro-million", help="Génère un combiné de 5 chiffres pour l'Euro Million pour un utilisateur ciblé")
+@commands.has_role(1341458600559644672)  # Vérifie que l'utilisateur a le rôle avec l'ID spécifié
+async def ticket_euro_million(ctx, user: discord.Member):
     # Générer 5 chiffres entre 0 et 5
     numeros = [str(random.randint(0, 5)) for _ in range(5)]
     combinaison = " - ".join(numeros)
     
+    # Créer l'embed avec les informations demandées
     embed = discord.Embed(
         title="🎟️ Ticket Euro Million",
-        description=f"Voici votre combinaison : **{combinaison}**",
+        description=f"**{user.mention}** et **{ctx.author.mention}** ont tiré le combiné suivant : **{combinaison}**\n\n"
+                    f"Voici le salon où envoyer votre combiné : <#1343358346287120514>",
         color=discord.Color.gold()
     )
     embed.set_footer(text="Bonne chance ! 🍀")
     
+    # Envoie de l'embed dans le salon actuel
     await ctx.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)

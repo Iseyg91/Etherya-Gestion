@@ -849,9 +849,11 @@ async def note(ctx, member: discord.Member = None):
 
 
 AUTHORIZED_ROLES = ["1216432076128129144"]
+
 @bot.command()
 async def say(ctx, *, text: str = None):
     # Vérifie si l'utilisateur a le rôle avec l'ID spécifié
+    if str(ctx.author.id) not in AUTHORIZED_ROLES:
         await ctx.send("Tu n'as pas les permissions nécessaires pour utiliser cette commande.")
         return
     
@@ -861,6 +863,9 @@ async def say(ctx, *, text: str = None):
 
     # Supprime le message originel
     await ctx.message.delete()
+    # Envoie le texte spécifié
+    await ctx.send(text)
+
 
     # Envoie le texte demandé
     await ctx.send(text)

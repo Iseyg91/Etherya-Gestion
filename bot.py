@@ -1150,17 +1150,18 @@ async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await send_dm(member, "Kick", reason)
 
 @bot.command()
-async def mute(ctx, member: discord.Member, duration: str, unit: str, *, reason="Aucune raison spécifiée"):
+async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="Aucune raison spécifiée"):
     # Vérification si l'utilisateur a le rôle autorisé
     if not any(role.id == 1168109892851204166 for role in ctx.author.roles):
         await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
         return
-
-    # Vérification de la validité de la durée
+    
+    # Extraction de la durée et de l'unité
     try:
-        duration = int(duration)  # Conversion de la durée en entier
+        duration = int(duration_with_unit[:-1])  # Tout sauf le dernier caractère
+        unit = duration_with_unit[-1]  # Dernier caractère (unité)
     except ValueError:
-        await ctx.send("La durée doit être un nombre valide.")
+        await ctx.send("Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours). Exemple : 10m, 2h, 1j.")
         return
 
     if await check_permissions(ctx) and not await is_immune(member):
@@ -1173,7 +1174,7 @@ async def mute(ctx, member: discord.Member, duration: str, unit: str, *, reason=
         elif unit.lower() in ["h", "heure", "heures"]:
             seconds = duration * 3600
             duration_str = f"{duration} heure(s)"
-        elif unit.lower() in ["d", "jour", "jours"]:
+        elif unit.lower() in ["j", "jour", "jours"]:
             seconds = duration * 86400
             duration_str = f"{duration} jour(s)"
         else:

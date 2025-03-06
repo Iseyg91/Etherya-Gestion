@@ -1166,17 +1166,33 @@ async def ticket_euro_million(ctx, user: discord.Member):
     numeros = [str(random.randint(0, 5)) for _ in range(5)]
     combinaison = " - ".join(numeros)
     
-    # Créer l'embed avec les informations demandées
-    embed = discord.Embed(
+    # Créer l'embed pour le salon où la commande a été exécutée
+    embed_user = discord.Embed(
         title="🎟️ Ticket Euro Million",
-        description=f"**{user.mention}** et **{ctx.author.mention}** ont tiré le combiné suivant : **{combinaison}**\n\n"
-                    f"Voici le salon où envoyer votre combiné : <#1343358346287120514>",
+        description=f"Voici votre combinaison, **{user.mention}** : **{combinaison}**\n\n"
+                    f"Bonne chance ! 🍀",
         color=discord.Color.gold()
     )
-    embed.set_footer(text="Bonne chance ! 🍀")
+    embed_user.set_footer(text="Ticket généré par " + ctx.author.name)
+
+    # Envoie de l'embed dans le salon où la commande a été effectuée
+    await ctx.send(embed=embed_user)
     
-    # Envoie de l'embed dans le salon actuel
-    await ctx.send(embed=embed)
+    # Créer un deuxième embed pour le salon spécifique
+    embed_announce = discord.Embed(
+        title="🎟️ Euro Million - Résultat",
+        description=f"**{user.mention}** a tiré le combiné suivant : **{combinaison}**\n\n"
+                    f"Commande exécutée par : **{ctx.author.mention}**",
+        color=discord.Color.green()
+    )
+    embed_announce.set_footer(text="Ticket généré avec succès !")
+
+    # Envoie de l'embed dans le salon spécifique (ID du salon : 1343358346287120514)
+    salon_announce = bot.get_channel(1343358346287120514)
+    if salon_announce:
+        await salon_announce.send(embed=embed_announce)
+    else:
+        await ctx.send("Erreur : Le salon d'annonce est introuvable.")
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

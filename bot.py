@@ -1157,7 +1157,7 @@ class EuroMillion(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @discord.app_commands.command(name="ticket-euro-million", description="Génère un ticket Euro Million avec 5 chiffres entre 0 et 5.")
+@bot.tree.command(name="ticket-euro-million", description="Génère un ticket Euro Million avec 5 chiffres entre 0 et 5.")
     async def ticket_euro_million(self, interaction: discord.Interaction):
         # Génération des 5 chiffres entre 0 et 5
         numbers = [str(random.randint(0, 5)) for _ in range(5)]

@@ -232,7 +232,7 @@ async def aide(ctx):
             discord.SelectOption(label="Modération / Économie", description="💸 Commandes économie", emoji="💰"),
             discord.SelectOption(label="Fun", description="🎉 Commandes fun et divertissantes", emoji="🎲"),
             discord.SelectOption(label="Utilitaire", description="⚙️ Commandes utiles", emoji="🔔"),
-discord.SelectOption(label="Modération", description="⚖️ Commandes Modération", emoji="🔨"),
+            discord.SelectOption(label="Modération", description="⚖️ Commandes Modération", emoji="🔨"),
             discord.SelectOption(label="Crédits", description="💖 Remerciements et crédits", emoji="🙏")
         ], 
         custom_id="help_select"

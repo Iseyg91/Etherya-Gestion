@@ -36,6 +36,7 @@ async def on_ready():
     for command in bot.commands:
         print(f"- {command.name}")
 
+#------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108
 
@@ -84,6 +85,7 @@ async def on_member_join(member):
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
     
+#------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 @bot.command()
 async def clear(ctx, amount: int = None):
     # Vérifie si l'utilisateur a les permissions nécessaires (admin ou le rôle spécifique)
@@ -107,31 +109,6 @@ EMOJIS = {
     "voice": "🎤",
     "boosts": "🚀"
 }
-
-@bot.command()
-async def vc(ctx):
-    guild = ctx.guild
-    total_members = guild.member_count
-    online_members = guild.approximate_presence_count if guild.approximate_presence_count else "N/A"
-    voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
-    boosts = guild.premium_subscription_count
-
-    # Mentionner le propriétaire (to: 792755123587645461)
-    owner_member = guild.owner
-    server_invite = "https://discord.gg/X4dZAt3BME"  # Lien du serveur
-
-    embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
-    embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
-    embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
-    embed.add_field(name=f"{EMOJIS['crown']} Propriétaire", value=f"<@792755123587645461>", inline=True)  # Mention fixe pour le Owner
-    embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
-    embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
-    embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
-    embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
-    
-    await ctx.send(embed=embed)
-    # IMPORTANT : Permet au bot de continuer à traiter les commandes
-    await bot.process_commands(message)
 
 @bot.command()
 async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
@@ -225,6 +202,7 @@ async def nuke(ctx):
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
     
+#------------------------------------------------------------------------- Commandes d'aide : +aide
 @bot.command()
 async def aide(ctx):
     role_id = 1166113718602575892  # ID du rôle requis
@@ -251,9 +229,10 @@ async def aide(ctx):
         placeholder="Choisissez une catégorie 👇", 
         options=[
             discord.SelectOption(label="Gestion", description="📚 Commandes pour gérer le serveur", emoji="🔧"),
-            discord.SelectOption(label="Modération / Économie", description="⚖️ Commandes modération et économie", emoji="💰"),
+            discord.SelectOption(label="Modération / Économie", description="💸 Commandes économie", emoji="💰"),
             discord.SelectOption(label="Fun", description="🎉 Commandes fun et divertissantes", emoji="🎲"),
             discord.SelectOption(label="Utilitaire", description="⚙️ Commandes utiles", emoji="🔔"),
+discord.SelectOption(label="Modération", description="⚖️ Commandes Modération", emoji="🔨"),
             discord.SelectOption(label="Crédits", description="💖 Remerciements et crédits", emoji="🙏")
         ], 
         custom_id="help_select"
@@ -272,7 +251,7 @@ async def aide(ctx):
             new_embed.add_field(name="💥 +nuke", value="Efface **tous** les messages du salon 🚨.\n*Pour une action plus drastique en cas de chaos ou d'urgence !*.", inline=False)
             new_embed.add_field(name="➕ +addrole @user @rôle", value="Ajoute un rôle à un utilisateur 👤.\n*Pour attribuer des rôles et des privilèges spéciaux aux membres.*", inline=False)
             new_embed.add_field(name="➖ +delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.\n*Retirer un rôle en cas de sanction ou de changement de statut.*", inline=False)
-        elif category == "Modération / Économie":
+        elif category == "Économie":
             new_embed.title = "⚖️ **Commandes de Modération et Économie**"
             new_embed.description = "Bienvenue dans la section modération et économie ! 💼\nIci, vous pouvez gérer les aspects économiques et de sécurité du serveur."
             new_embed.add_field(name="🏰 +prison @user", value="Mets un utilisateur en prison pour non-paiement des taxes 🏰.\n*Assurez-vous que tout le monde respecte les règles économiques.*", inline=False)
@@ -280,14 +259,8 @@ async def aide(ctx):
             new_embed.add_field(name="⚖️ +liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
             new_embed.add_field(name="🔓 +evasion", value="Permet de s'évader après un braquage raté 🔓.\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
             new_embed.add_field(name="💰 +cautionpayer", value="Permet de payer la caution d'un membre emprisonné suite à un braquage foiré 💰.\n*Rachetez votre liberté et retrouvez l'accès à l'économie.*", inline=False)
-            new_embed.add_field(name="🚫 +ban @user", value="Exile un membre du serveur pour un comportement inacceptable 🚫.\nL'action de bannir un utilisateur est irréversible et est utilisée pour des infractions graves aux règles du serveur.*", inline=False)
-            new_embed.add_field(name="🚔 +unban @user", value="Lève le bannissement d'un utilisateur, lui permettant de revenir sur le serveur 🔓.\nUnban un utilisateur qui a été banni, après examen du cas et décision du staff..*", inline=False)
-            new_embed.add_field(name="⚖️ +mute @user", value="Rend un utilisateur silencieux en l'empêchant de parler pendant un certain temps 🤐.\nUtilisé pour punir les membres qui perturbent le serveur par des messages intempestifs ou offensants.", inline=False)
-            new_embed.add_field(name="🔓 +unmute @user", value="Annule le silence imposé à un utilisateur et lui redonne la possibilité de communiquer 🔊.\nPermet à un membre de reprendre la parole après une période de mute.", inline=False)
-            new_embed.add_field(name="⚠️ +warn @user", value="Avertit un utilisateur pour un comportement problématique ⚠️.\nUn moyen de signaler qu'un membre a enfreint une règle mineure, avant de prendre des mesures plus sévères.", inline=False)
-            new_embed.add_field(name="🚪 +kick @user", value="Expulse un utilisateur du serveur pour une infraction moins grave 🚪.\nUn kick expulse temporairement un membre sans le bannir, pour des violations légères des règles.", inline=False)
         elif category == "Fun":
-            new_embed.title = "🎉 **Commandes Fun**"
+new_embed.title = "🎉 **Commandes Fun**"
             new_embed.description = "Bienvenue dans la section Fun ! 🎲\nCes commandes sont là pour ajouter une touche d'humour et de détente au serveur. Amusez-vous !"
             new_embed.add_field(name="🌈 +gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.\n*Testez votre ouverture d'esprit !*.", inline=False)
             new_embed.add_field(name="😤 +racist @user", value="Détermine le taux de racisme d'un utilisateur 😤.\n*Un test amusant à faire avec vos amis.*", inline=False)
@@ -309,11 +282,26 @@ async def aide(ctx):
             new_embed.add_field(name="🍑 +libido @user", value="Détermine le taux de libido d'un utilisateur 🍑.\n*Testez la chaleur de vos amis sous la couette !*.", inline=False)
             new_embed.add_field(name="🪴 +pfc @user", value="Jouez à Pierre-Feuille-Ciseaux avec un utilisateur ! 🪴\n*Choisissez votre coup et voyez si vous gagnez contre votre adversaire !*.", inline=False)
             new_embed.add_field(name="🔫 +gunfight @user", value="Affrontez un autre utilisateur dans un duel de Gunfight ! 🔫\n*Acceptez ou refusez le défi et découvrez qui sera le gagnant !*", inline=False)
+            new_embed.add_field(name="💀 +kill @user", value="Tuez un autre utilisateur dans un duel de force ! 💥\n*Acceptez ou refusez le défi et découvrez qui sortira vainqueur de cette confrontation!*", inline=False)
+            new_embed.add_field(name="🔄 +reverse [texte]", value="Inverser un texte et le partager avec un autre utilisateur ! 🔄\n*Lancez un défi pour voir si votre inversion sera correcte !*", inline=False)
+            new_embed.add_field(name="⭐ +note @user [note sur 10]", value="Notez un autre utilisateur sur 10 ! 🌟\n*Exprimez votre avis sur leur comportement ou performance dans le serveur.*", inline=False)
+            new_embed.add_field(name="🗣️ +say", value="Faites dire quelque chose au bot à la place de vous ! 🗨️\n*Lancez votre message et il sera annoncé à tout le serveur !*", inline=False)
+            new_embed.add_field(name="🪙 +coinflip", value="Lancez une pièce pour voir si vous gagnez ! 🪙\n*Tentez votre chance et découvrez si vous avez un coup de chance.*", inline=False)
+            new_embed.add_field(name="🎲 +dice", value="Lancez un dé à 6 faces et voyez votre chance ! 🎲\n*Choisissez un numéro entre 1 et 6 et voyez si vous avez tiré le bon!*", inline=False)
+            new_embed.add_field(name="🥊 +fight @user", value="Lancez un duel avec un autre utilisateur ! 🥊\n*Acceptez ou refusez le combat et découvrez qui sera le champion du serveur.*", inline=False)
+            new_embed.add_field(name="🥊 +fight @user", value="Lancez un duel avec un autre utilisateur ! 🥊\n*Acceptez ou refusez le combat et découvrez qui sera le champion du serveur.*", inline=False)
         elif category == "Utilitaire":
             new_embed.title = "⚙️ **Commandes Utilitaires**"
             new_embed.description = "Bienvenue dans la section utilitaire ! 🛠️\nCes commandes sont conçues pour offrir des statistiques en temps réel et envoyer des alertes."
             new_embed.add_field(name="📊 +vc", value="Affiche les statistiques du serveur en temps réel 📊.\n*Suivez l'évolution du serveur en direct !*.", inline=False)
             new_embed.add_field(name="🚨 +alerte @user <reason>", value="Envoie une alerte au staff en cas de comportement inapproprié (insultes, spam, etc.) 🚨.\n*Note : Si cette commande est utilisée abusivement, des sanctions sévères seront appliquées !*.", inline=False)
+        elif category == "Modération"
+            new_embed.add_field(name="🚫 +ban @user", value="Exile un membre du serveur pour un comportement inacceptable 🚫.\nL'action de bannir un utilisateur est irréversible et est utilisée pour des infractions graves aux règles du serveur.*", inline=False)
+            new_embed.add_field(name="🚔 +unban @user", value="Lève le bannissement d'un utilisateur, lui permettant de revenir sur le serveur 🔓.\nUnban un utilisateur qui a été banni, après examen du cas et décision du staff..*", inline=False)
+            new_embed.add_field(name="⚖️ +mute @user", value="Rend un utilisateur silencieux en l'empêchant de parler pendant un certain temps 🤐.\nUtilisé pour punir les membres qui perturbent le serveur par des messages intempestifs ou offensants.", inline=False)
+            new_embed.add_field(name="🔓 +unmute @user", value="Annule le silence imposé à un utilisateur et lui redonne la possibilité de communiquer 🔊.\nPermet à un membre de reprendre la parole après une période de mute.", inline=False)
+            new_embed.add_field(name="⚠️ +warn @user", value="Avertit un utilisateur pour un comportement problématique ⚠️.\nUn moyen de signaler qu'un membre a enfreint une règle mineure, avant de prendre des mesures plus sévères.", inline=False)
+            new_embed.add_field(name="🚪 +kick @user", value="Expulse un utilisateur du serveur pour une infraction moins grave 🚪.\nUn kick expulse temporairement un membre sans le bannir, pour des violations légères des règles.", inline=False)
         elif category == "Crédits":
             new_embed.title = "💖 **Crédits**"
             new_embed.description = "Un immense merci à **Iseyg** pour le développement de ce bot incroyable ! 🙏\n\nGrâce à lui, ce bot est ce qu'il est aujourd'hui. Merci à toute la communauté pour son soutien continu ! 💙"
@@ -328,16 +316,7 @@ async def aide(ctx):
     
     await ctx.send(embed=embed, view=view)
 
-ROLE_ID = 1166113718602575892  # ID du rôle requis
-
-def has_required_role():
-    def predicate(ctx):
-        role = discord.utils.get(ctx.author.roles, id=ROLE_ID)
-        if role is None:
-            return False
-        return True
-    return commands.check(predicate)
-
+#------------------------------------------------------------------------- Commandes Fun : Flemme de tout lister
 @bot.command()
 @has_required_role()
 async def gay(ctx, member: discord.Member = None):
@@ -834,7 +813,105 @@ async def kiss(ctx, member: discord.Member = None):
     embed.set_thumbnail(url=member.avatar.url)
     embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
     await ctx.send(embed=embed)
-    
+
+@bot.command()
+@has_required_role()
+async def kill(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"Tu as tué {member.name} !",  # Utilisation de member.name
+        description="C'est la fin pour lui... 💀",  
+        color=discord.Color.red()
+    )
+    embed.set_image(url="https://media1.tenor.com/m/4hO2HfS9fcMAAAAd/toaru-index.gif")
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+@has_required_role()
+async def reverse(ctx, *, text: str = None):
+    if text is None:
+        await ctx.send("Tu n'as pas fourni de texte à inverser !")
+        return
+
+    reversed_text = text[::-1]  # Inverser le texte
+    await ctx.send(f"Texte inversé : {reversed_text}")
+
+
+@bot.command()
+@has_required_role()
+async def note(ctx, member: discord.Member = None, note: int = None):
+    if member is None or note is None:
+        await ctx.send("Tu n'as pas précisé l'utilisateur ni la note !")
+        return
+
+    if not 1 <= note <= 10:
+        await ctx.send("La note doit être entre 1 et 10.")
+        return
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"{member.name} a reçu une note !",
+        description=f"Note : {note}/10",
+        color=discord.Color.green()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+@has_required_role()
+async def say(ctx, *, text: str = None):
+    if text is None:
+        await ctx.send("Tu n'as pas écrit de texte à dire !")
+        return
+    await ctx.send(text)
+
+
+@bot.command()
+@has_required_role()
+async def coinflip(ctx):
+    import random
+    result = random.choice(["Pile", "Face"])
+    await ctx.send(f"Résultat du coinflip : {result}")
+
+
+@bot.command()
+@has_required_role()
+async def dice(ctx):
+    import random
+    result = random.randint(1, 6)
+    await ctx.send(f"Résultat du dé : {result}")
+
+
+@bot.command()
+@has_required_role()
+async def fight(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Tu n'as ciblé personne pour te battre !")
+        return
+
+    # Simuler un combat
+    import random
+    result = random.choice([f"{ctx.author.name} a gagné !", f"{member.name} a gagné !", "C'est une égalité !"])
+
+    # Créer l'embed
+    embed = discord.Embed(
+        title=f"Combat entre {ctx.author.name} et {member.name}",
+        description=result,
+        color=discord.Color.blue()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    await ctx.send(embed=embed)
+
+#------------------------------------------------------------------------- Commandes d'économie : +prison, +evasion, +arrestation, +liberation, +cautionpayer, +ticket_euro_million
 # Commande +prison
 @bot.command()
 @commands.has_role(1165936153418006548)  # ID du rôle sans guillemets
@@ -957,6 +1034,78 @@ async def cautionpayer(ctx, member: discord.Member = None):
     if role_remove:
         await member.remove_roles(role_remove)
 
+@bot.command()
+async def ping(ctx):
+    latency = round(bot.latency * 1000)  # Latence en ms
+    embed = discord.Embed(title="Pong!", description=f"Latence: {latency}ms", color=discord.Color.green())
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def roleinfo(ctx, *, role_name: str):
+    # Cherche le rôle par son nom
+    role = discord.utils.get(ctx.guild.roles, name=role_name)
+    
+    if role is None:
+        embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())
+        await ctx.send(embed=embed)
+    else:
+        embed = discord.Embed(title=f"Informations sur le rôle: {role.name}", color=role.color)
+        embed.add_field(name="ID", value=role.id)
+        embed.add_field(name="Couleur", value=str(role.color))
+        embed.add_field(name="Nombre de membres", value=len(role.members))
+        embed.add_field(name="Position", value=role.position)
+        await ctx.send(embed=embed)
+
+@bot.command()
+async def uptime(ctx):
+    uptime_seconds = round(time.time() - start_time)
+    days = uptime_seconds // (24 * 3600)
+    hours = (uptime_seconds % (24 * 3600)) // 3600
+    minutes = (uptime_seconds % 3600) // 60
+    seconds = uptime_seconds % 60
+    embed = discord.Embed(
+        title="Uptime du bot",
+        description=f"Le bot est en ligne depuis : {days} jours, {hours} heures, {minutes} minutes, {seconds} secondes",
+        color=discord.Color.blue()
+    )
+    await ctx.send(embed=embed)
+
+AUTHORIZED_ROLES = ["1341458600559644672"]
+
+@bot.command()
+async def ticket_euro_million(ctx, user: discord.Member):
+    # Générer 5 chiffres entre 0 et 5
+    numeros = [str(random.randint(0, 5)) for _ in range(5)]
+    combinaison = " - ".join(numeros)
+    
+    # Créer l'embed pour le salon où la commande a été exécutée
+    embed_user = discord.Embed(
+        title="🎟️ Ticket Euro Million",
+        description=f"Voici votre combinaison, **{user.mention}** : **{combinaison}**\n\n"
+                    f"Bonne chance ! 🍀",
+        color=discord.Color.gold()
+    )
+    embed_user.set_footer(text="Ticket généré par " + ctx.author.name)
+
+    # Envoie de l'embed dans le salon où la commande a été effectuée
+    await ctx.send(embed=embed_user)
+    
+    # Créer un deuxième embed pour le salon spécifique
+    embed_announce = discord.Embed(
+        title="🎟️ Euro Million - Résultat",
+        description=f"**{user.mention}** a tiré le combiné suivant : **{combinaison}**\n\n"
+                    f"Commande exécutée par : **{ctx.author.mention}**",
+        color=discord.Color.green()
+    )
+    embed_announce.set_footer(text="Ticket généré avec succès !")
+
+    # Envoie de l'embed dans le salon spécifique (ID du salon : 1343358346287120514)
+    salon_announce = bot.get_channel(1343358346287120514)
+    if salon_announce:
+        await salon_announce.send(embed=embed_announce)
+    else:
+        await ctx.send("Erreur : Le salon d'annonce est introuvable.")
+#------------------------------------------------------------------------- Commandes de Moderation : +ban, +unban, +mute, +unmute, +kick, +warn
 # Gestion des erreurs pour les commandes
 @bot.event
 async def on_command_error(ctx, error):
@@ -1098,6 +1247,7 @@ access_role_id = 1166113718602575892  # Rôle qui peut utiliser la commande
 ping_role_id = 1168109892851204166  # Rôle à mentionner avant l'embed
 channel_id = 1345369756148170805  # Salon où l'alerte doit être envoyée
 
+#------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte
 @bot.command()
 async def alerte(ctx, member: discord.Member, *, reason: str):
     # Vérification si l'utilisateur a le rôle nécessaire pour exécuter la commande
@@ -1122,77 +1272,30 @@ async def alerte(ctx, member: discord.Member, *, reason: str):
     await channel.send(embed=embed)
 
 @bot.command()
-async def ping(ctx):
-    latency = round(bot.latency * 1000)  # Latence en ms
-    embed = discord.Embed(title="Pong!", description=f"Latence: {latency}ms", color=discord.Color.green())
+async def vc(ctx):
+    guild = ctx.guild
+    total_members = guild.member_count
+    online_members = guild.approximate_presence_count if guild.approximate_presence_count else "N/A"
+    voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
+    boosts = guild.premium_subscription_count
+
+    # Mentionner le propriétaire (to: 792755123587645461)
+    owner_member = guild.owner
+    server_invite = "https://discord.gg/X4dZAt3BME"  # Lien du serveur
+
+    embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
+    embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
+    embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
+    embed.add_field(name=f"{EMOJIS['crown']} Propriétaire", value=f"<@792755123587645461>", inline=True)  # Mention fixe pour le Owner
+    embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
+    embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
+    embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
+    embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
+    
     await ctx.send(embed=embed)
-
-@bot.command()
-async def roleinfo(ctx, *, role_name: str):
-    # Cherche le rôle par son nom
-    role = discord.utils.get(ctx.guild.roles, name=role_name)
+    # IMPORTANT : Permet au bot de continuer à traiter les commandes
+    await bot.process_commands(message)
     
-    if role is None:
-        embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())
-        await ctx.send(embed=embed)
-    else:
-        embed = discord.Embed(title=f"Informations sur le rôle: {role.name}", color=role.color)
-        embed.add_field(name="ID", value=role.id)
-        embed.add_field(name="Couleur", value=str(role.color))
-        embed.add_field(name="Nombre de membres", value=len(role.members))
-        embed.add_field(name="Position", value=role.position)
-        await ctx.send(embed=embed)
-
-@bot.command()
-async def uptime(ctx):
-    uptime_seconds = round(time.time() - start_time)
-    days = uptime_seconds // (24 * 3600)
-    hours = (uptime_seconds % (24 * 3600)) // 3600
-    minutes = (uptime_seconds % 3600) // 60
-    seconds = uptime_seconds % 60
-    embed = discord.Embed(
-        title="Uptime du bot",
-        description=f"Le bot est en ligne depuis : {days} jours, {hours} heures, {minutes} minutes, {seconds} secondes",
-        color=discord.Color.blue()
-    )
-    await ctx.send(embed=embed)
-    
-#------------------------------------------------------------------------- Commandes d'économie : +ticket_euro_million
-AUTHORIZED_ROLES = ["1341458600559644672"]
-
-@bot.command()
-async def ticket_euro_million(ctx, user: discord.Member):
-    # Générer 5 chiffres entre 0 et 5
-    numeros = [str(random.randint(0, 5)) for _ in range(5)]
-    combinaison = " - ".join(numeros)
-    
-    # Créer l'embed pour le salon où la commande a été exécutée
-    embed_user = discord.Embed(
-        title="🎟️ Ticket Euro Million",
-        description=f"Voici votre combinaison, **{user.mention}** : **{combinaison}**\n\n"
-                    f"Bonne chance ! 🍀",
-        color=discord.Color.gold()
-    )
-    embed_user.set_footer(text="Ticket généré par " + ctx.author.name)
-
-    # Envoie de l'embed dans le salon où la commande a été effectuée
-    await ctx.send(embed=embed_user)
-    
-    # Créer un deuxième embed pour le salon spécifique
-    embed_announce = discord.Embed(
-        title="🎟️ Euro Million - Résultat",
-        description=f"**{user.mention}** a tiré le combiné suivant : **{combinaison}**\n\n"
-                    f"Commande exécutée par : **{ctx.author.mention}**",
-        color=discord.Color.green()
-    )
-    embed_announce.set_footer(text="Ticket généré avec succès !")
-
-    # Envoie de l'embed dans le salon spécifique (ID du salon : 1343358346287120514)
-    salon_announce = bot.get_channel(1343358346287120514)
-    if salon_announce:
-        await salon_announce.send(embed=embed_announce)
-    else:
-        await ctx.send("Erreur : Le salon d'annonce est introuvable.")
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

@@ -1157,21 +1157,18 @@ async def uptime(ctx):
     )
     await ctx.send(embed=embed)
     
-@bot.tree.command(name="ticket-euro-million", description="Génère un combiné de 5 chiffres pour l'Euro Million (de 0 à 5)")
-async def ticket_euro_million(interaction: discord.Interaction):
-    await interaction.response.defer()
-    
-    # Générer 5 chiffres entre 0 et 5
-    numeros = [str(random.randint(0, 5)) for _ in range(5)]
-    combinaison = " - ".join(numeros)
-    
+@bot.tree.command(name="calcul", description="Calcule un pourcentage d'un nombre")
+@app_commands.describe(nombre="Le nombre de base", pourcentage="Le pourcentage à appliquer (ex: 15 pour 15%)")
+async def calcul(interaction: discord.Interaction, nombre: float, pourcentage: float):
+    await interaction.response.defer()  # ✅ Correctement placé à l'intérieur de la fonction
+
+    resultat = (nombre * pourcentage) / 100
     embed = discord.Embed(
-        title="🎟️ Ticket Euro Million",
-        description=f"Voici votre combinaison : **{combinaison}**",
-        color=discord.Color.gold()
+        title="📊 Calcul de pourcentage",
+        description=f"{pourcentage}% de {nombre} = **{resultat}**",
+        color=discord.Color.green()
     )
-    embed.set_footer(text="Bonne chance ! 🍀")
-    
+
     await interaction.followup.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)

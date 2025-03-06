@@ -32,6 +32,20 @@ async def on_ready():
     except Exception as e:
         print(f"❌ Erreur de synchronisation des commandes slash : {e}")
 
+@bot.tree.command(name="calcul", description="Calcule un pourcentage d'un nombre")
+@app_commands.describe(nombre="Le nombre de base", pourcentage="Le pourcentage à appliquer (ex: 15 pour 15%)")
+async def calcul(interaction: discord.Interaction, nombre: float, pourcentage: float):
+    await interaction.response.defer()  # ✅ Correctement placé à l'intérieur de la fonction
+
+    resultat = (nombre * pourcentage) / 100
+    embed = discord.Embed(
+        title="📊 Calcul de pourcentage",
+        description=f"{pourcentage}% de {nombre} = **{resultat}**",
+        color=discord.Color.green()
+    )
+
+    await interaction.followup.send(embed=embed)
+
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108
 
@@ -1153,19 +1167,6 @@ async def uptime(ctx):
     )
     await ctx.send(embed=embed)
     
-@bot.tree.command(name="calcul", description="Calcule un pourcentage d'un nombre")
-@app_commands.describe(nombre="Le nombre de base", pourcentage="Le pourcentage à appliquer (ex: 15 pour 15%)")
-async def calcul(interaction: discord.Interaction, nombre: float, pourcentage: float):
-    await interaction.response.defer()  # ✅ Correctement placé à l'intérieur de la fonction
-
-    resultat = (nombre * pourcentage) / 100
-    embed = discord.Embed(
-        title="📊 Calcul de pourcentage",
-        description=f"{pourcentage}% de {nombre} = **{resultat}**",
-        color=discord.Color.green()
-    )
-
-    await interaction.followup.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

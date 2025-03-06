@@ -231,7 +231,7 @@ async def aide(ctx):
             discord.SelectOption(label="Gestion", description="📚 Commandes pour gérer le serveur", emoji="🔧"),
             discord.SelectOption(label="Économie", description="💸 Commandes économie", emoji="💰"),
             discord.SelectOption(label="Ludiques", description="🎉 Commandes amusantes pour détendre l'atmosphère et interagir avec les autres.", emoji="🎈"),
-            discord.SelectOption(labal="Test & Défis", description="🧠Commandes pour testez la personnalité et défiez vos amis avec des jeux et des évaluations.", emoji="🎲"),
+            discord.SelectOption(label="Test & Défis", description="🧠Commandes pour testez la personnalité et défiez vos amis avec des jeux et des évaluations.", emoji="🎲"),
             discord.SelectOption(label="Utilitaire", description="⚙️ Commandes utiles", emoji="🔔"),
             discord.SelectOption(label="Modération", description="⚖️ Commandes Modération", emoji="🔨"),
             discord.SelectOption(label="Crédits", description="💖 Remerciements et crédits", emoji="🙏")

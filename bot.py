@@ -949,7 +949,7 @@ async def cautionpayer(ctx, member: discord.Member = None):
 
     # Gestion des rôles
     role_remove = discord.utils.get(ctx.guild.roles, id=1344453363261116468)
-    
+    role_remove = discord.utils.get(ctx.guild.roles, id=1347165421958205470)
     if role_remove:
         await member.remove_roles(role_remove)
 

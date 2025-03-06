@@ -318,7 +318,6 @@ async def aide(ctx):
 
 #------------------------------------------------------------------------- Commandes Fun : Flemme de tout lister
 @bot.command()
-@has_required_role()
 async def gay(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -337,7 +336,6 @@ async def gay(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def racist(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -356,7 +354,6 @@ async def racist(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def love(ctx, member: discord.Member = None):
     if not member:
         await ctx.send("Tu n'as pas mentionné de membre ! Utilise +love @membre.")
@@ -375,7 +372,6 @@ async def love(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def rat(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -394,7 +390,6 @@ async def rat(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def con(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -413,7 +408,6 @@ async def con(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def libido(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -491,7 +485,6 @@ async def roll(ctx, x: str = None):
     await ctx.send(embed=embed)
     
 @bot.command()
-@has_required_role()
 async def zizi(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -513,7 +506,6 @@ async def zizi(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def fou(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -532,7 +524,6 @@ async def fou(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def testo(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -686,7 +677,6 @@ async def gunfight(ctx, member: discord.Member = None):
     await ctx.send(embed=embed, view=view)
     
 @bot.command()
-@has_required_role()
 async def hug(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -705,7 +695,6 @@ async def hug(ctx, member: discord.Member = None):
 
 
 @bot.command()
-@has_required_role()
 async def slap(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -724,7 +713,6 @@ async def slap(ctx, member: discord.Member = None):
 
 
 @bot.command()
-@has_required_role()
 async def dance(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -743,7 +731,6 @@ async def dance(ctx, member: discord.Member = None):
 
 
 @bot.command()
-@has_required_role()
 async def flirt(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -762,7 +749,6 @@ async def flirt(ctx, member: discord.Member = None):
 
 
 @bot.command()
-@has_required_role()
 async def whisper(ctx, member: discord.Member = None, *, message):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -779,7 +765,6 @@ async def whisper(ctx, member: discord.Member = None, *, message):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def troll(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -797,7 +782,6 @@ async def troll(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def kiss(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -815,7 +799,6 @@ async def kiss(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
-@has_required_role()
 async def kill(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -834,7 +817,6 @@ async def kill(ctx, member: discord.Member = None):
 
 
 @bot.command()
-@has_required_role()
 async def reverse(ctx, *, text: str = None):
     if text is None:
         await ctx.send("Tu n'as pas fourni de texte à inverser !")
@@ -845,7 +827,6 @@ async def reverse(ctx, *, text: str = None):
 
 
 @bot.command()
-@has_required_role()
 async def note(ctx, member: discord.Member = None, note: int = None):
     if member is None or note is None:
         await ctx.send("Tu n'as pas précisé l'utilisateur ni la note !")
@@ -867,7 +848,6 @@ async def note(ctx, member: discord.Member = None, note: int = None):
 
 
 @bot.command()
-@has_required_role()
 async def say(ctx, *, text: str = None):
     if text is None:
         await ctx.send("Tu n'as pas écrit de texte à dire !")
@@ -876,7 +856,6 @@ async def say(ctx, *, text: str = None):
 
 
 @bot.command()
-@has_required_role()
 async def coinflip(ctx):
     import random
     result = random.choice(["Pile", "Face"])
@@ -884,7 +863,6 @@ async def coinflip(ctx):
 
 
 @bot.command()
-@has_required_role()
 async def dice(ctx):
     import random
     result = random.randint(1, 6)
@@ -892,7 +870,6 @@ async def dice(ctx):
 
 
 @bot.command()
-@has_required_role()
 async def fight(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Tu n'as ciblé personne pour te battre !")

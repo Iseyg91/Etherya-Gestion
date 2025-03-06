@@ -295,7 +295,7 @@ async def aide(ctx):
             new_embed.description = "Bienvenue dans la section utilitaire ! 🛠️\nCes commandes sont conçues pour offrir des statistiques en temps réel et envoyer des alertes."
             new_embed.add_field(name="📊 +vc", value="Affiche les statistiques du serveur en temps réel 📊.\n*Suivez l'évolution du serveur en direct !*.", inline=False)
             new_embed.add_field(name="🚨 +alerte @user <reason>", value="Envoie une alerte au staff en cas de comportement inapproprié (insultes, spam, etc.) 🚨.\n*Note : Si cette commande est utilisée abusivement, des sanctions sévères seront appliquées !*.", inline=False)
-        elif category == "Modération"
+        elif category == "Modération":
             new_embed.add_field(name="🚫 +ban @user", value="Exile un membre du serveur pour un comportement inacceptable 🚫.\nL'action de bannir un utilisateur est irréversible et est utilisée pour des infractions graves aux règles du serveur.*", inline=False)
             new_embed.add_field(name="🚔 +unban @user", value="Lève le bannissement d'un utilisateur, lui permettant de revenir sur le serveur 🔓.\nUnban un utilisateur qui a été banni, après examen du cas et décision du staff..*", inline=False)
             new_embed.add_field(name="⚖️ +mute @user", value="Rend un utilisateur silencieux en l'empêchant de parler pendant un certain temps 🤐.\nUtilisé pour punir les membres qui perturbent le serveur par des messages intempestifs ou offensants.", inline=False)

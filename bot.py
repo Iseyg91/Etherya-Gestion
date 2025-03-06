@@ -1157,8 +1157,10 @@ async def uptime(ctx):
     )
     await ctx.send(embed=embed)
     
-@bot.command(name="ticket-euro-million", help="Génère un combiné de 5 chiffres pour l'Euro Million pour un utilisateur ciblé")
-@commands.has_role(1341458600559644672)  # Vérifie que l'utilisateur a le rôle avec l'ID spécifié
+#------------------------------------------------------------------------- Commandes d'économie : +ticket_euro_million
+AUTHORIZED_ROLES = ["1341458600559644672"]
+
+@bot.command()
 async def ticket_euro_million(ctx, user: discord.Member):
     # Générer 5 chiffres entre 0 et 5
     numeros = [str(random.randint(0, 5)) for _ in range(5)]

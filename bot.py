@@ -576,7 +576,7 @@ class PFCView(View):
         for choice in ['Pierre', 'Feuille', 'Ciseau']:
             self.add_item(PFCButton(choice, self))
 
-    async def check_winner(self, interaction):
+    async def check_winner(self):
         if len(self.choices) == 2:
             p1_choice = self.choices[self.player1]
             p2_choice = self.choices[self.player2]
@@ -589,7 +589,9 @@ class PFCView(View):
             }
             
             embed = discord.Embed(title="Résultat du Pierre-Feuille-Ciseaux !", description=f"{self.player1.mention} a choisi **{p1_choice}**\n{self.player2.mention} a choisi **{p2_choice}**\n\n{winner_text[result]}", color=0x00FF00)
-            await interaction.response.edit_message(embed=embed, view=None)
+            await self.player1.send(embed=embed)
+            await self.player2.send(embed=embed)
+            await self.message.edit(embed=embed, view=None)
 
 class PFCButton(Button):
     def __init__(self, choice, view):
@@ -602,7 +604,8 @@ class PFCButton(Button):
             if interaction.user not in self.pfc_view.choices:
                 self.pfc_view.choices[interaction.user] = self.choice
                 await interaction.response.send_message(f"{interaction.user.mention} a choisi **{self.choice}**", ephemeral=True)
-                await self.pfc_view.check_winner(interaction)
+                if len(self.pfc_view.choices) == 2:
+                    await self.pfc_view.check_winner()
             else:
                 await interaction.response.send_message("Tu as déjà choisi !", ephemeral=True)
         else:
@@ -652,10 +655,6 @@ async def pfc(ctx, member: discord.Member = None):
     
     embed = discord.Embed(title="Défi Pierre-Feuille-Ciseaux", description=f"{member.mention}, acceptes-tu le défi de {ctx.author.mention} ?", color=0xFFA500)
     await ctx.send(embed=embed, view=AcceptView(ctx, ctx.author, member))
-
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user}')
 
 @bot.command()
 async def gunfight(ctx, member: discord.Member = None):

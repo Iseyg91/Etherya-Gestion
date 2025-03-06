@@ -260,7 +260,7 @@ discord.SelectOption(label="Modération", description="⚖️ Commandes Modérat
             new_embed.add_field(name="🔓 +evasion", value="Permet de s'évader après un braquage raté 🔓.\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
             new_embed.add_field(name="💰 +cautionpayer", value="Permet de payer la caution d'un membre emprisonné suite à un braquage foiré 💰.\n*Rachetez votre liberté et retrouvez l'accès à l'économie.*", inline=False)
         elif category == "Fun":
-new_embed.title = "🎉 **Commandes Fun**"
+            new_embed.title = "🎉 **Commandes Fun**"
             new_embed.description = "Bienvenue dans la section Fun ! 🎲\nCes commandes sont là pour ajouter une touche d'humour et de détente au serveur. Amusez-vous !"
             new_embed.add_field(name="🌈 +gay @user", value="Détermine le taux de gayitude d'un utilisateur 🌈.\n*Testez votre ouverture d'esprit !*.", inline=False)
             new_embed.add_field(name="😤 +racist @user", value="Détermine le taux de racisme d'un utilisateur 😤.\n*Un test amusant à faire avec vos amis.*", inline=False)

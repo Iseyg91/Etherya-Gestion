@@ -1153,6 +1153,30 @@ async def uptime(ctx):
     )
     await ctx.send(embed=embed)
 
+class EuroMillion(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @discord.app_commands.command(name="ticket-euro-million", description="Génère un ticket Euro Million avec 5 chiffres entre 0 et 5.")
+    async def ticket_euro_million(self, interaction: discord.Interaction):
+        # Génération des 5 chiffres entre 0 et 5
+        numbers = [str(random.randint(0, 5)) for _ in range(5)]
+        ticket = " - ".join(numbers)
+
+        # Création d'un embed stylé
+        embed = discord.Embed(
+            title="🎟️ Ticket Euro Million",
+            description=f"Voici ton ticket :\n```{ticket}```",
+            color=discord.Color.gold()
+        )
+        embed.set_footer(text="Bonne chance ! 🍀")
+
+        await interaction.response.send_message(embed=embed)
+
+# Ajouter le cog au bot
+async def setup(bot):
+    await bot.add_cog(EuroMillion(bot))
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

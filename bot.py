@@ -258,7 +258,7 @@ async def aide(ctx):
             new_embed.add_field(name="🚔 +arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.\n*Appliquez les sanctions après un braquage raté ou une tentative échouée.*", inline=False)
             new_embed.add_field(name="⚖️ +liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
             new_embed.add_field(name="🔓 +evasion", value="Permet de s'évader après un braquage raté 🔓.\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
-            new_embed.add_field(name="💰 +cautionpayer", value="Permet de payer la caution d'un membre emprisonné suite à un braquage foiré 💰.\n*Rachetez votre liberté et retrouvez l'accès à l'économie.*", inline=False)
+            new_embed.add_field(name="💰 +cautionpayer @user", value="Permet de payer la caution d'un membre emprisonné suite à un braquage foiré 💰.\n*Rachetez votre liberté et retrouvez l'accès à l'économie.*", inline=False)
         elif category == "Fun":
             new_embed.title = "🎉 **Commandes Fun**"
             new_embed.description = "Bienvenue dans la section Fun ! 🎲\nCes commandes sont là pour ajouter une touche d'humour et de détente au serveur. Amusez-vous !"
@@ -288,7 +288,6 @@ async def aide(ctx):
             new_embed.add_field(name="🗣️ +say", value="Faites dire quelque chose au bot à la place de vous ! 🗨️\n*Lancez votre message et il sera annoncé à tout le serveur !*", inline=False)
             new_embed.add_field(name="🪙 +coinflip", value="Lancez une pièce pour voir si vous gagnez ! 🪙\n*Tentez votre chance et découvrez si vous avez un coup de chance.*", inline=False)
             new_embed.add_field(name="🎲 +dice", value="Lancez un dé à 6 faces et voyez votre chance ! 🎲\n*Choisissez un numéro entre 1 et 6 et voyez si vous avez tiré le bon!*", inline=False)
-            new_embed.add_field(name="🥊 +fight @user", value="Lancez un duel avec un autre utilisateur ! 🥊\n*Acceptez ou refusez le combat et découvrez qui sera le champion du serveur.*", inline=False)
             new_embed.add_field(name="🥊 +fight @user", value="Lancez un duel avec un autre utilisateur ! 🥊\n*Acceptez ou refusez le combat et découvrez qui sera le champion du serveur.*", inline=False)
         elif category == "Utilitaire":
             new_embed.title = "⚙️ **Commandes Utilitaires**"

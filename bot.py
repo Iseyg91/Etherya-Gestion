@@ -1043,10 +1043,11 @@ async def ping(ctx):
 async def roleinfo(ctx, *, role_name: str):
     # Cherche le rôle par son nom
     role = discord.utils.get(ctx.guild.roles, name=role_name)
-    
+
     if role is None:
         embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())
         await ctx.send(embed=embed)
+        return
     else:
         embed = discord.Embed(title=f"Informations sur le rôle: {role.name}", color=role.color)
         embed.add_field(name="ID", value=role.id)

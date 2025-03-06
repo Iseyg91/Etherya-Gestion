@@ -252,7 +252,7 @@ async def aide(ctx):
             new_embed.add_field(name="➕ +addrole @user @rôle", value="Ajoute un rôle à un utilisateur 👤.\n*Pour attribuer des rôles et des privilèges spéciaux aux membres.*", inline=False)
             new_embed.add_field(name="➖ +delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.\n*Retirer un rôle en cas de sanction ou de changement de statut.*", inline=False)
         elif category == "Économie":
-            new_embed.title = "⚖️ **Commandes de Modération et Économie**"
+            new_embed.title = "⚖️ **Commandes Économie**"
             new_embed.description = "Bienvenue dans la section modération et économie ! 💼\nIci, vous pouvez gérer les aspects économiques et de sécurité du serveur."
             new_embed.add_field(name="🏰 +prison @user", value="Mets un utilisateur en prison pour non-paiement des taxes 🏰.\n*Assurez-vous que tout le monde respecte les règles économiques.*", inline=False)
             new_embed.add_field(name="🚔 +arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.\n*Appliquez les sanctions après un braquage raté ou une tentative échouée.*", inline=False)

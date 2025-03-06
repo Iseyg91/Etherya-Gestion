@@ -10,11 +10,7 @@ from discord.ui import Button, View
 from discord.ui import View, Select
 
 token = os.environ['ETHERYA']
-intents = discord.Intents.default()
-intents.message_content = True
-intents.messages = True 
-intents.members = True
-intents.guilds = True
+intents = discord.Intents.all()
 start_time = time.time()
 bot = commands.Bot(command_prefix="+", intents=intents)
 

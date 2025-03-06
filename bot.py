@@ -229,7 +229,7 @@ async def aide(ctx):
         placeholder="Choisissez une catégorie 👇", 
         options=[
             discord.SelectOption(label="Gestion", description="📚 Commandes pour gérer le serveur", emoji="🔧"),
-            discord.SelectOption(label="Modération / Économie", description="💸 Commandes économie", emoji="💰"),
+            discord.SelectOption(label="Économie", description="💸 Commandes économie", emoji="💰"),
             discord.SelectOption(label="Fun", description="🎉 Commandes fun et divertissantes", emoji="🎲"),
             discord.SelectOption(label="Utilitaire", description="⚙️ Commandes utiles", emoji="🔔"),
             discord.SelectOption(label="Modération", description="⚖️ Commandes Modération", emoji="🔨"),

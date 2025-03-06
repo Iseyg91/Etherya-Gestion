@@ -409,10 +409,6 @@ async def rat(ctx, member: discord.Member = None):
     
     await ctx.send(embed=embed)
 
-import random
-import discord
-from discord.ext import commands
-
 @bot.command()
 @has_required_role()
 async def con(ctx, member: discord.Member = None):
@@ -647,7 +643,7 @@ class AcceptButton(Button):
         else:
             await interaction.message.edit(content=f"Le +pfc a été refusé par {self.accept_view.player2.mention}", embed=None, view=None)
 
-@commands.command()
+@bot.command()
 async def pfc(ctx, member: discord.Member = None):
     if not member:
         return await ctx.send("Vous devez mentionner un adversaire pour jouer !")

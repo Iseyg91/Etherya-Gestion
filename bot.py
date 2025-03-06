@@ -794,7 +794,6 @@ async def whisper(ctx, member: discord.Member = None, *, message):
     embed.set_thumbnail(url=member.avatar.url)
     await ctx.send(embed=embed)
 
-
 @bot.command()
 @has_required_role()
 async def troll(ctx, member: discord.Member = None):

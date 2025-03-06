@@ -274,12 +274,13 @@ async def aide(ctx):
             new_embed.add_field(name="🚔 +arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.\n*Appliquez les sanctions après un braquage raté ou une tentative échouée.*", inline=False)
             new_embed.add_field(name="⚖️ +liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées ⚖️.\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
             new_embed.add_field(name="🔓 +evasion", value="Permet de s'évader après un braquage raté 🔓.\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
+            new_embed.add_field(name="💰 +cautionpayer", value="Permet de payer la caution d'un membre emprisonné suite à un braquage foiré 💰.\n*Rachetez votre liberté et retrouvez l'accès à l'économie.*", inline=False)
             new_embed.add_field(name="🚫 +ban @user", value="Exile un membre du serveur pour un comportement inacceptable 🚫.\nL'action de bannir un utilisateur est irréversible et est utilisée pour des infractions graves aux règles du serveur.*", inline=False)
             new_embed.add_field(name="🚔 +unban @user", value="Lève le bannissement d'un utilisateur, lui permettant de revenir sur le serveur 🔓.\nUnban un utilisateur qui a été banni, après examen du cas et décision du staff..*", inline=False)
             new_embed.add_field(name="⚖️ +mute @user", value="Rend un utilisateur silencieux en l'empêchant de parler pendant un certain temps 🤐.\nUtilisé pour punir les membres qui perturbent le serveur par des messages intempestifs ou offensants.", inline=False)
             new_embed.add_field(name="🔓 +unmute @user", value="Annule le silence imposé à un utilisateur et lui redonne la possibilité de communiquer 🔊.\nPermet à un membre de reprendre la parole après une période de mute.", inline=False)
             new_embed.add_field(name="⚠️ +warn @user", value="Avertit un utilisateur pour un comportement problématique ⚠️.\nUn moyen de signaler qu'un membre a enfreint une règle mineure, avant de prendre des mesures plus sévères.", inline=False)
-            new_embed.add_field(name="🔓 +kick @user", value="Expulse un utilisateur du serveur pour une infraction moins grave 🚪.\nUn kick expulse temporairement un membre sans le bannir, pour des violations légères des règles.", inline=False)
+            new_embed.add_field(name="🚪 +kick @user", value="Expulse un utilisateur du serveur pour une infraction moins grave 🚪.\nUn kick expulse temporairement un membre sans le bannir, pour des violations légères des règles.", inline=False)
         elif category == "Fun":
             new_embed.title = "🎉 **Commandes Fun**"
             new_embed.description = "Bienvenue dans la section Fun ! 🎲\nCes commandes sont là pour ajouter une touche d'humour et de détente au serveur. Amusez-vous !"
@@ -300,6 +301,9 @@ async def aide(ctx):
             new_embed.add_field(name="🤡 +con @user", value="Détermine le taux de connerie d'un utilisateur 😤.\n*Un test amusant à faire avec vos amis.*", inline=False)
             new_embed.add_field(name="🤪 +fou @user", value="Détermine le taux de folie d'un utilisateur 🤪.\n*Testez l'état mental de vos amis !*.", inline=False)
             new_embed.add_field(name="💪 +testo @user", value="Détermine le taux de testostérone d'un utilisateur 💪.\n*Testez la virilité de vos amis !*.", inline=False)
+            new_embed.add_field(name="🍑 +libido @user", value="Détermine le taux de libido d'un utilisateur 🍑.\n*Testez la chaleur de vos amis sous la couette !*.", inline=False)
+            new_embed.add_field(name="🪴 +pfc @user", value="Jouez à Pierre-Feuille-Ciseaux avec un utilisateur ! 🪴\n*Choisissez votre coup et voyez si vous gagnez contre votre adversaire !*.", inline=False)
+            new_embed.add_field(name="🔫 +gunfight @user", value="Affrontez un autre utilisateur dans un duel de Gunfight ! 🔫\n*Acceptez ou refusez le défi et découvrez qui sera le gagnant !*", inline=False)
         elif category == "Utilitaire":
             new_embed.title = "⚙️ **Commandes Utilitaires**"
             new_embed.description = "Bienvenue dans la section utilitaire ! 🛠️\nCes commandes sont conçues pour offrir des statistiques en temps réel et envoyer des alertes."
@@ -428,6 +432,25 @@ async def con(ctx, member: discord.Member = None):
     
     await ctx.send(embed=embed)
 
+@bot.command()
+@has_required_role()
+async def libido(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+    
+    percentage = random.randint(0, 100)
+    
+    embed = discord.Embed(
+        title="Analyse de libido 🔥",
+        description=f"{member.mention} a une libido à **{percentage}%** !\n\n*Le pourcentage varie en fonction de l'humeur et du climat.*",
+        color=discord.Color.red()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    
+    await ctx.send(embed=embed)
+
 # ID du rôle requis
 role_id = 1166113718602575892
 
@@ -547,6 +570,142 @@ async def testo(ctx, member: discord.Member = None):
     
     await ctx.send(embed=embed)
 
+class PFCView(View):
+    def __init__(self, player1, player2):
+        super().__init__(timeout=60)
+        self.choices = {}
+        self.player1 = player1
+        self.player2 = player2
+        
+        for choice in ['Pierre', 'Feuille', 'Ciseau']:
+            self.add_item(PFCButton(choice, self))
+
+    async def check_winner(self, interaction):
+        if len(self.choices) == 2:
+            p1_choice = self.choices[self.player1]
+            p2_choice = self.choices[self.player2]
+            result = determine_winner(p1_choice, p2_choice)
+            
+            winner_text = {
+                'win': f"{self.player1.mention} a gagné !",
+                'lose': f"{self.player2.mention} a gagné !",
+                'draw': "Match nul !"
+            }
+            
+            embed = discord.Embed(title="Résultat du Pierre-Feuille-Ciseaux !", description=f"{self.player1.mention} a choisi **{p1_choice}**\n{self.player2.mention} a choisi **{p2_choice}**\n\n{winner_text[result]}", color=0x00FF00)
+            await interaction.response.edit_message(embed=embed, view=None)
+
+class PFCButton(Button):
+    def __init__(self, choice, view):
+        super().__init__(label=choice, style=discord.ButtonStyle.primary)
+        self.choice = choice
+        self.pfc_view = view
+    
+    async def callback(self, interaction: discord.Interaction):
+        if interaction.user in [self.pfc_view.player1, self.pfc_view.player2]:
+            if interaction.user not in self.pfc_view.choices:
+                self.pfc_view.choices[interaction.user] = self.choice
+                await interaction.response.send_message(f"{interaction.user.mention} a choisi **{self.choice}**", ephemeral=True)
+                await self.pfc_view.check_winner(interaction)
+            else:
+                await interaction.response.send_message("Tu as déjà choisi !", ephemeral=True)
+        else:
+            await interaction.response.send_message("Tu ne participes pas à cette partie !", ephemeral=True)
+
+def determine_winner(choice1, choice2):
+    beats = {"Pierre": "Ciseau", "Ciseau": "Feuille", "Feuille": "Pierre"}
+    if choice1 == choice2:
+        return "draw"
+    elif beats[choice1] == choice2:
+        return "win"
+    else:
+        return "lose"
+
+class AcceptView(View):
+    def __init__(self, ctx, player1, player2):
+        super().__init__(timeout=30)
+        self.ctx = ctx
+        self.player1 = player1
+        self.player2 = player2
+
+        self.add_item(AcceptButton("✅ Accepter", discord.ButtonStyle.success, True, self))
+        self.add_item(AcceptButton("❌ Refuser", discord.ButtonStyle.danger, False, self))
+
+class AcceptButton(Button):
+    def __init__(self, label, style, accept, view):
+        super().__init__(label=label, style=style)
+        self.accept = accept
+        self.accept_view = view
+    
+    async def callback(self, interaction: discord.Interaction):
+        if interaction.user != self.accept_view.player2:
+            return await interaction.response.send_message("Ce n'est pas à toi d'accepter ou refuser !", ephemeral=True)
+        
+        if self.accept:
+            embed = discord.Embed(title="Pierre-Feuille-Ciseaux", description=f"{self.accept_view.player1.mention} VS {self.accept_view.player2.mention}\n\nCliquez sur votre choix !", color=0x00FF00)
+            await interaction.message.edit(embed=embed, view=PFCView(self.accept_view.player1, self.accept_view.player2))
+        else:
+            await interaction.message.edit(content=f"Le +pfc a été refusé par {self.accept_view.player2.mention}", embed=None, view=None)
+
+@commands.command()
+async def pfc(ctx, member: discord.Member = None):
+    if not member:
+        return await ctx.send("Vous devez mentionner un adversaire pour jouer !")
+    if member == ctx.author:
+        return await ctx.send("Vous ne pouvez pas jouer contre vous-même !")
+    
+    embed = discord.Embed(title="Défi Pierre-Feuille-Ciseaux", description=f"{member.mention}, acceptes-tu le défi de {ctx.author.mention} ?", color=0xFFA500)
+    await ctx.send(embed=embed, view=AcceptView(ctx, ctx.author, member))
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user}')
+
+@bot.command()
+async def gunfight(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send('Erreur : vous devez cibler un membre !')
+        return
+
+    if member == ctx.author:
+        await ctx.send('Vous ne pouvez pas vous défier vous-même !')
+        return
+
+    # Création des boutons
+    accept_button = Button(label="Oui", style=discord.ButtonStyle.green)
+    decline_button = Button(label="Non", style=discord.ButtonStyle.red)
+
+    # Définir les actions des boutons
+    async def accept(interaction):
+        if interaction.user != member:
+            await interaction.response.send_message('Ce n\'est pas votre duel !', ephemeral=True)
+            return
+        result = random.choice([ctx.author, member])
+        winner = result.name
+        await interaction.message.edit(content=f"{member.mention} a accepté le duel ! Le gagnant est {winner} !", view=None)
+    
+    async def decline(interaction):
+        if interaction.user != member:
+            await interaction.response.send_message('Ce n\'est pas votre duel !', ephemeral=True)
+            return
+        await interaction.message.edit(content=f"{member.mention} a refusé le duel.", view=None)
+
+    accept_button.callback = accept
+    decline_button.callback = decline
+
+    # Création de la vue avec les boutons
+    view = View()
+    view.add_item(accept_button)
+    view.add_item(decline_button)
+
+    # Envoyer l'embed pour le défi
+    embed = discord.Embed(
+        title="Défi de Gunfight",
+        description=f"{ctx.author.mention} vous défie à un duel, {member.mention}. Acceptez-vous ?",
+        color=discord.Color.blue()
+    )
+    await ctx.send(embed=embed, view=view)
+    
 @bot.command()
 @has_required_role()
 async def hug(ctx, member: discord.Member = None):
@@ -777,6 +936,27 @@ async def evasion(ctx):
         await member.remove_roles(role_remove_1)
     if role_remove_2:
         await member.remove_roles(role_remove_2)
+        
+@bot.command()
+@commands.has_role(1347165421958205470)
+async def cautionpayer(ctx, member: discord.Member = None):
+    if not member:
+        await ctx.send("Vous n'avez ciblé personne.")
+        return
+
+    embed = discord.Embed(
+        title="Caution payée avec succès !",
+        description="Vous êtes maintenant libre de retourner dans l'économie.",
+        color=0x00ff00
+    )
+    embed.set_image(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/1dnyLPXGJgsrcmMo8Bgi4.jpg?raw=true")
+    await ctx.send(embed=embed)
+
+    # Gestion des rôles
+    role_remove = discord.utils.get(ctx.guild.roles, id=1344453363261116468)
+    
+    if role_remove:
+        await member.remove_roles(role_remove)
 
 # Gestion des erreurs pour les commandes
 @bot.event

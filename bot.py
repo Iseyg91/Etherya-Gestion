@@ -360,7 +360,7 @@ async def gay(ctx, member: discord.Member = None):
         color=discord.Color.purple()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -378,7 +378,7 @@ async def racist(ctx, member: discord.Member = None):
         color=discord.Color.purple()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -395,9 +395,9 @@ async def love(ctx, member: discord.Member = None):
         description=f"L'amour entre {ctx.author.mention} et {member.mention} est de **{love_percentage}%** !",
         color=discord.Color.red() if love_percentage > 50 else discord.Color.blue()
     )
-    embed.set_footer(text="Que l'amour vous guide !")
+    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
     embed.set_thumbnail(url="https://img.freepik.com/photos-gratuite/silhouette-mains-coeur-contre-lumieres-ville-nuit_23-2150984259.jpg?ga=GA1.1.719997987.1741155829&semt=ais_hybrid")
-    
+
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -414,7 +414,7 @@ async def rat(ctx, member: discord.Member = None):
         color=discord.Color.purple()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -432,7 +432,7 @@ async def con(ctx, member: discord.Member = None):
         color=discord.Color.red()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -450,7 +450,7 @@ async def libido(ctx, member: discord.Member = None):
         color=discord.Color.red()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -510,6 +510,7 @@ async def roll(ctx, x: str = None):
         title="Résultat du tirage",
         description=f"Le nombre tiré au hasard entre 1 et {x} est : **{result}**",
         color=discord.Color.green()
+        embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
     )
     await ctx.send(embed=embed)
     
@@ -529,7 +530,7 @@ async def zizi(ctx, member: discord.Member = None):
         color=discord.Color.blue()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
     # Envoyer l'embed
     await ctx.send(embed=embed)

@@ -948,7 +948,7 @@ async def superpouvoir(ctx, user: discord.Member = None):
         "Super vitesse ⚡ - Peut courir plus vite qu'un TGV, mais oublie souvent où il va.",
         "Lecture des pensées 🧠 - Peut lire dans les esprits… sauf ceux qui ne pensent à rien.",
         "Invisibilité 🫥 - Peut disparaître… mais oublie que ses vêtements restent visibles.",
-        "Pouvoir de parler aux animaux 🦜 - Mais ils n'ont pas grand-chose d'intéressant à dire.",
+        "parler aux animaux 🦜 - Mais ils n'ont pas grand-chose d'intéressant à dire.",
         "Super force 💪 - Peut soulever une voiture, mais galère à ouvrir un pot de cornichons.",
         "Métamorphose 🦎 - Peut se transformer en n'importe quoi… mais pas revenir en humain.",
         "Chance infinie 🍀 - Gagne à tous les jeux… sauf au Uno.",
@@ -969,7 +969,7 @@ async def superpouvoir(ctx, user: discord.Member = None):
 
     embed = discord.Embed(
         title="⚡ Super-Pouvoir Débloqué !",
-        description=f"{user.mention} possède maintenant **{pouvoir}** !",
+        description=f"{user.mention} possède le pouvoir de**{pouvoir}** !",
         color=discord.Color.purple()
     )
     embed.set_footer(text="Utilise-le avec sagesse... ou pas.")

@@ -268,7 +268,7 @@ async def aide(ctx):
             new_embed.add_field(name="💘 +flirt @user", value="Vous avez charmé [membre] avec un compliment !", inline=False)
             new_embed.add_field(name="💋 +kiss @user", value="Vous avez embrassé [membre] afin de lui démontrer votre amour !", inline=False)
             new_embed.add_field(name="🤫 +whisper @user [message]", value="[membre] a chuchoté à [ton nom] : [message].", inline=False)
-            new_embed.add_field(name="🌟 +compliment @user", value="Envoie un compliment aléatoire à [membre], comme 'Tu es plus génial que tout le chocolat du monde !'.", inline=False)
+            new_embed.add_field(name="🌟 +blague", value="Envoie une blague aléatoire, comme 'Pourquoi les plongeurs plongent toujours en arrière et jamais en avant ? Parce que sinon ils tombent toujours dans le bateau !'.", inline=False)
             new_embed.add_field(name="🪙 +coinflip", value="Lancez une pièce pour voir si vous gagnez ! \n*Tentez votre chance et découvrez si vous avez un coup de chance.*", inline=False)
             new_embed.add_field(name="🎲 +dice", value="Lancez un dé à 6 faces et voyez votre chance ! \n*Choisissez un numéro entre 1 et 6 et voyez si vous avez tiré le bon!*", inline=False)
             new_embed.add_field(name="🗣️ +say", value="Faites dire quelque chose au bot à la place de vous ! 🗨\n*Lancez votre message et il sera annoncé à tout le serveur !*", inline=False)
@@ -1047,6 +1047,28 @@ async def futur(ctx, user: discord.Member = None):
     embed.set_footer(text="Le futur est incertain… mais amusant !")
 
     await ctx.send(embed=embed)
+
+# Liste de blagues
+blagues = [
+    "Pourquoi les plongeurs plongent toujours en arrière et jamais en avant ? Parce que sinon ils tombent toujours dans le bateau.",
+    "Pourquoi les canards sont toujours à l'heure ? Parce qu'ils sont dans les starting-quack !",
+    "Quel est le comble pour un électricien ? De ne pas être au courant.",
+    "Pourquoi les maths sont tristes ? Parce qu'elles ont trop de problèmes.",
+    "Que dit une imprimante à une autre imprimante ? 'T'as du papier ?'",
+    "Pourquoi les poissons détestent l'ordinateur ? Parce qu'ils ont peur du net !",
+    "Comment appelle-t-on un chat qui a perdu son GPS ? Un chat égaré.",
+    "Pourquoi les squelettes ne se battent-ils jamais entre eux ? Parce qu'ils n'ont pas de cœur !",
+    "Quel est le comble pour un plombier ? D'avoir un tuyau percé.",
+    "Comment appelle-t-on un chien magique ? Un labra-cadabra !"
+]
+
+# Commande !blague
+@bot.command()
+async def blague(ctx):
+    # Choisir une blague au hasard
+    blague_choisie = random.choice(blagues)
+    # Envoyer la blague dans le salon
+    await ctx.send(blague_choisie)
 #------------------------------------------------------------------------- Commandes d'économie : +prison, +evasion, +arrestation, +liberation, +cautionpayer, +ticket_euro_million
 # Commande +prison
 @bot.command()

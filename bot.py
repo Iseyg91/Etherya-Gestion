@@ -250,6 +250,7 @@ async def aide(ctx):
             new_embed.add_field(name="💥 +nuke", value="Efface **tous** les messages du salon 🚨.\n*Pour une action plus drastique en cas de chaos ou d'urgence !*.", inline=False)
             new_embed.add_field(name="➕ +addrole @user @rôle", value="Ajoute un rôle à un utilisateur 👤.\n*Pour attribuer des rôles et des privilèges spéciaux aux membres.*", inline=False)
             new_embed.add_field(name="➖ +delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.\n*Retirer un rôle en cas de sanction ou de changement de statut.*", inline=False)
+            new_embed.set_footer(text="♥️ by Iseyg")
         elif category == "Économie":
             new_embed.title = "⚖️ **Commandes Économie**"
             new_embed.description = "Gérez l’économie et la sécurité du serveur ici ! 💼"
@@ -259,6 +260,7 @@ async def aide(ctx):
             new_embed.add_field(name="🔓 +evasion", value="Permet de s’évader après un braquage raté.", inline=False)
             new_embed.add_field(name="💰 +cautionpayer @user", value="Payez la caution d’un membre emprisonné.", inline=False)
             new_embed.add_field(name="🎫 +ticket_euro_million @user", value="Achetez un ticket Euromillion avec un combiné.", inline=False)
+            new_embed.set_footer(text="♥️ by Iseyg")
         elif category == "Ludiques":
             new_embed.title = "🎉 **Commandes de Détente**"
             new_embed.description = "Bienvenue dans la section Détente ! 🎈\nCes commandes sont conçues pour vous amuser et interagir de manière légère et drôle. Profitez-en !"
@@ -272,6 +274,7 @@ async def aide(ctx):
             new_embed.add_field(name="🪙 +coinflip", value="Lancez une pièce pour voir si vous gagnez ! \n*Tentez votre chance et découvrez si vous avez un coup de chance.*", inline=False)
             new_embed.add_field(name="🎲 +dice", value="Lancez un dé à 6 faces et voyez votre chance ! \n*Choisissez un numéro entre 1 et 6 et voyez si vous avez tiré le bon!*", inline=False)
             new_embed.add_field(name="🗣️ +say", value="Faites dire quelque chose au bot à la place de vous ! 🗨\n*Lancez votre message et il sera annoncé à tout le serveur !*", inline=False)
+            new_embed.set_footer(text="♥️ by Iseyg")
         elif category == "Test & Défis":
             new_embed.title = "🎯 **Commandes de Tests et Défis**"
             new_embed.description = "Bienvenue dans la section Tests et Défis ! 🎲\nIci, vous pouvez évaluer les autres, tester votre compatibilité et relever des défis fun !"
@@ -296,6 +299,7 @@ async def aide(ctx):
             new_embed.add_field(name="🔮 +futur @user", value="Prédit l'avenir d'un utilisateur de manière totalement farfelue !\n*L'avenir peut être aussi improbable qu'un trésor caché rempli de bonbons ou une rencontre avec un extraterrestre amateur de chats.*", inline=False)
             new_embed.add_field(
             name="👶 +enfant @user @user", value="Crée un enfant aléatoire entre deux utilisateurs !\n*Mélangez les pseudos et les photos de profil des deux utilisateurs pour créer un bébé unique. C'est fun et surprenant !*", inline=False)
+            new_embed.set_footer(text="♥️ by Iseyg")
         elif category == "Utilitaire":
             new_embed.title = "⚙️ **Commandes Utilitaires**"
             new_embed.description = "Bienvenue dans la section modération ! 🚨\nCes commandes sont conçues pour gérer et contrôler l'activité du serveur, en assurant une expérience sûre et agréable pour tous les membres."
@@ -304,6 +308,7 @@ async def aide(ctx):
             new_embed.add_field(name="📶 +ping", value="Affiche la latence du bot en millisecondes.", inline=False)
             new_embed.add_field(name="⏳ +uptime", value="Affiche depuis combien de temps le bot est en ligne.", inline=False)
             new_embed.add_field(name="ℹ️ +rôle info <nom_du_rôle>", value="Affiche les informations détaillées sur un rôle spécifique.", inline=False)
+            new_embed.set_footer(text="♥️ by Iseyg")
         elif category == "Modération":
             new_embed.title = "🔑 **Commandes Modération**"
             new_embed.add_field(name="🚫 +ban @user", value="Exile un membre du serveur pour un comportement inacceptable .\nL'action de bannir un utilisateur est irréversible et est utilisée pour des infractions graves aux règles du serveur.*", inline=False)
@@ -312,6 +317,7 @@ async def aide(ctx):
             new_embed.add_field(name="🔓 +unmute @user", value="Annule le silence imposé à un utilisateur et lui redonne la possibilité de communiquer 🔊.\nPermet à un membre de reprendre la parole après une période de mute.", inline=False)
             new_embed.add_field(name="⚠️ +warn @user", value="Avertit un utilisateur pour un comportement problématique ⚠.\nUn moyen de signaler qu'un membre a enfreint une règle mineure, avant de prendre des mesures plus sévères.", inline=False)
             new_embed.add_field(name="🚪 +kick @user", value="Expulse un utilisateur du serveur pour une infraction moins grave .\nUn kick expulse temporairement un membre sans le bannir, pour des violations légères des règles.", inline=False)
+            new_embed.set_footer(text="♥️ by Iseyg")
         elif category == "Crédits":
             new_embed.title = "💖 **Crédits et Remerciements**"
             new_embed.description = """
@@ -327,6 +333,7 @@ async def aide(ctx):
 
             Restons unis et continuons à faire grandir cette aventure ensemble ! 🌍
             """
+            new_embed.set_footer(text="♥️ by Iseyg")
 
         await interaction.response.edit_message(embed=new_embed)
 

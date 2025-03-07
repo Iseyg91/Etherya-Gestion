@@ -258,7 +258,7 @@ async def aide(ctx):
             new_embed.add_field(name="⚖️ +liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées .\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
             new_embed.add_field(name="🔓 +evasion", value="Permet de s'évader après un braquage raté .\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
             new_embed.add_field(name="💰 +cautionpayer @user", value="Permet de payer la caution d'un membre emprisonné suite à un braquage foiré .\n*Rachetez votre liberté et retrouvez l'accès à l'économie.*", inline=False)
-            new-embed.add_field(name="🎫 +ticket_euro_million @user", value="Permet d’acheter un ticket Euromillion avec un combiné de numéros .\n*Tentez votre chance et essayez d’avoir la bonne combinaison pour remporter le jackpot !*", inline=False)
+            new-embed.add_field(name="🎫 +ticket_euro_million @user", value="Permet d’acheter un ticket Euromillion avec un combiné de numéros .\n*Tentez votre chance et essayez d’avoir la bonne combinaison !*", inline=False)
         elif category == "Ludiques":
             new_embed.title = "🎉 **Commandes de Détente**"
             new_embed.description = "Bienvenue dans la section Détente ! 🎈\nCes commandes sont conçues pour vous amuser et interagir de manière légère et drôle. Profitez-en !"

@@ -258,6 +258,7 @@ async def aide(ctx):
             new_embed.add_field(name="⚖️ +liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées .\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
             new_embed.add_field(name="🔓 +evasion", value="Permet de s'évader après un braquage raté .\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
             new_embed.add_field(name="💰 +cautionpayer @user", value="Permet de payer la caution d'un membre emprisonné suite à un braquage foiré .\n*Rachetez votre liberté et retrouvez l'accès à l'économie.*", inline=False)
+            new-embed.add_field(name="🎫 +ticket_euro_million @user", value="Permet d’acheter un ticket Euromillion avec un combiné de numéros .\n*Tentez votre chance et essayez d’avoir la bonne combinaison pour remporter le jackpot !*", inline=False)
         elif category == "Ludiques":
             new_embed.title = "🎉 **Commandes de Détente**"
             new_embed.description = "Bienvenue dans la section Détente ! 🎈\nCes commandes sont conçues pour vous amuser et interagir de manière légère et drôle. Profitez-en !"
@@ -290,6 +291,9 @@ async def aide(ctx):
             new_embed.add_field(name="⭐ +note @user [note sur 10]", value="Notez un autre utilisateur sur 10 ! \n*Exprimez votre avis sur leur comportement ou performance dans le serveur.*", inline=False)
             new_embed.add_field(name="🎲 +roll", value="Lance un dé pour générer un nombre aléatoire entre 1 et 500 .\n*Essayez votre chance !*.", inline=False)
             new_embed.add_field(name="🥊 +fight @user", value="Lancez un duel avec un autre utilisateur ! \n*Acceptez ou refusez le combat et découvrez qui sera le champion du serveur.*", inline=False)
+            new_embed.add_field(name="⚡ +superpouvoir @user", value="Déclenche un super-pouvoir épique pour un utilisateur !\n*Donne un pouvoir aléatoire allant du cool au complètement débile, comme la téléportation, la super vitesse, ou même la création de burgers.*", inline=False)
+            new_embed.add_field(name="🌿 +totem @user", value="Découvrez votre animal totem spirituel !\n*Un animal magique et spirituel vous guidera, qu’il soit un loup protecteur ou un poisson rouge distrait. Un résultat épique et amusant !*", inline=False)
+            new_embed.add_field(name="🔮 +futur @user", value="Prédit l'avenir d'un utilisateur de manière totalement farfelue !\n*L'avenir peut être aussi improbable qu'un trésor caché rempli de bonbons ou une rencontre avec un extraterrestre amateur de chats.*", inline=False)
         elif category == "Utilitaire":
             new_embed.title = "⚙️ **Commandes Utilitaires**"
             new_embed.description = "Bienvenue dans la section modération ! 🚨\nCes commandes sont conçues pour gérer et contrôler l'activité du serveur, en assurant une expérience sûre et agréable pour tous les membres."
@@ -911,6 +915,136 @@ async def fight(ctx, member: discord.Member = None):
     embed.set_thumbnail(url=member.avatar.url)
     await ctx.send(embed=embed)
 
+@bot.command()
+async def enfant(ctx, parent1: discord.Member = None, parent2: discord.Member = None):
+    if not parent1 or not parent2:
+        await ctx.send("Tu dois mentionner deux membres ! Utilise `/enfant @membre1 @membre2`.")
+        return
+    
+    # Génération du prénom en combinant les pseudos
+    prenom = parent1.name[:len(parent1.name)//2] + parent2.name[len(parent2.name)//2:]
+    
+    # Création de l'embed
+    embed = discord.Embed(
+        title="👶 Voici votre enfant !",
+        description=f"{parent1.mention} + {parent2.mention} = **{prenom}** 🍼",
+        color=discord.Color.purple()
+    )
+    embed.set_footer(text="Prenez soin de votre bébé !")
+    
+    # Ajout des photos de profil
+    embed.set_thumbnail(url=parent1.avatar.url if parent1.avatar else parent2.avatar.url)
+    
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def superpouvoir(ctx, user: discord.Member = None):
+    if not user:
+        user = ctx.author  # Si pas d’utilisateur mentionné, prendre l’auteur
+
+    pouvoirs = [
+        "Téléportation instantanée 🌀 - Peut se déplacer n'importe où en un clin d'œil.",
+        "Contrôle du feu 🔥 - Rien ne lui résiste… sauf l'eau.",
+        "Super vitesse ⚡ - Peut courir plus vite qu'un TGV, mais oublie souvent où il va.",
+        "Lecture des pensées 🧠 - Peut lire dans les esprits… sauf ceux qui ne pensent à rien.",
+        "Invisibilité 🫥 - Peut disparaître… mais oublie que ses vêtements restent visibles.",
+        "Pouvoir de parler aux animaux 🦜 - Mais ils n'ont pas grand-chose d'intéressant à dire.",
+        "Super force 💪 - Peut soulever une voiture, mais galère à ouvrir un pot de cornichons.",
+        "Métamorphose 🦎 - Peut se transformer en n'importe quoi… mais pas revenir en humain.",
+        "Chance infinie 🍀 - Gagne à tous les jeux… sauf au Uno.",
+        "Création de portails 🌌 - Peut ouvrir des portails… mais ne sait jamais où ils mènent.",
+        "Régénération 🩸 - Guérit instantanément… mais reste chatouilleux à vie.",
+        "Capacité de voler 🕊️ - Mais uniquement à 10 cm du sol.",
+        "Super charisme 😎 - Convainc tout le monde… sauf sa mère.",
+        "Vision laser 🔥 - Brûle tout sur son passage… y compris ses propres chaussures.",
+        "Invocation de clones 🧑‍🤝‍🧑 - Mais ils n’obéissent jamais.",
+        "Télékinésie ✨ - Peut déplacer des objets… mais uniquement des plumes.",
+        "Création de burgers 🍔 - Magique, mais toujours trop cuits ou trop crus.",
+        "Respiration sous l'eau 🐠 - Mais panique dès qu'il voit une méduse.",
+        "Contrôle de la gravité 🌍 - Peut voler, mais oublie souvent de redescendre.",
+        "Capacité d’arrêter le temps ⏳ - Mais uniquement quand il dort."
+    ]
+
+    pouvoir = random.choice(pouvoirs)
+
+    embed = discord.Embed(
+        title="⚡ Super-Pouvoir Débloqué !",
+        description=f"{user.mention} possède maintenant **{pouvoir}** !",
+        color=discord.Color.purple()
+    )
+    embed.set_footer(text="Utilise-le avec sagesse... ou pas.")
+    
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def totem(ctx, member: discord.Member = None):
+    if not member:
+        member = ctx.author  # Si pas de membre mentionné, prendre l'auteur  
+
+    animaux_totem = {
+        "Loup 🐺": "Fidèle et protecteur, il veille sur sa meute.",
+        "Renard 🦊": "Rusé et malin, il trouve toujours un moyen de s'en sortir.",
+        "Hibou 🦉": "Sage et observateur, il comprend tout avant les autres.",
+        "Dragon 🐉": "Puissant et imposant, il ne laisse personne indifférent.",
+        "Dauphin 🐬": "Joueur et intelligent, il adore embêter les autres.",
+        "Chat 🐱": "Mystérieux et indépendant, il fait ce qu’il veut, quand il veut.",
+        "Serpent 🐍": "Discret et patient, il attend le bon moment pour frapper.",
+        "Corbeau 🦅": "Intelligent et un peu sinistre, il voit ce que les autres ignorent.",
+        "Panda 🐼": "Calme et adorable… jusqu’à ce qu’on lui prenne son bambou.",
+        "Tortue 🐢": "Lente mais sage, elle gagne toujours à la fin.",
+        "Aigle 🦅": "Libre et fier, il vole au-dessus de tous les problèmes.",
+        "Chauve-souris 🦇": "Préférant l'obscurité, elle voit clair quand tout le monde est perdu.",
+        "Tigre 🐯": "Puissant et rapide, personne ne l’arrête.",
+        "Lapin 🐰": "Rapide et malin, mais fuit dès qu’il y a un problème.",
+        "Singe 🐵": "Curieux et joueur, il adore faire des bêtises.",
+        "Escargot 🐌": "Lent… mais au moins il arrive toujours à destination.",
+        "Pigeon 🕊️": "Increvable et partout à la fois, impossible de s'en débarrasser.",
+        "Licorne 🦄": "Rare et magique, il apporte de la lumière partout où il passe.",
+        "Poisson rouge 🐠": "Mémoire de 3 secondes, mais au moins il ne s’inquiète jamais.",
+        "Canard 🦆": "Semble idiot, mais cache une intelligence surprenante.",
+        "Raton laveur 🦝": "Petit voleur mignon qui adore piquer des trucs."
+    }
+
+    totem, description = random.choice(list(animaux_totem.items()))
+
+    embed = discord.Embed(
+        title=f"🌿 Totem de {member.name} 🌿",
+        description=f"**{totem}** : {description}",
+        color=discord.Color.green()
+    )
+    embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
+    
+    await ctx.send(embed=embed)
+    
+@bot.command()
+async def futur(ctx, user: discord.Member = None):
+    if not user:
+        user = ctx.author  # Si pas d’utilisateur mentionné, prendre l’auteur
+
+    predicions = [
+        "Dans 5 minutes, tu découvriras un trésor caché… mais il sera rempli de bonbons.",
+        "L'année prochaine, tu feras une rencontre étonnante avec un extraterrestre qui adore les chats.",
+        "Demain, tu auras une conversation intense avec un pigeon, et il te donnera un conseil de vie précieux.",
+        "Un chat va te confier un secret qui changera le cours de ton existence… mais tu ne te souviendras pas de ce secret.",
+        "Dans quelques jours, tu seras élu meilleur joueur de cache-cache, mais tu te cacheras dans une pièce vide.",
+        "Lundi, tu rencontreras quelqu'un qui aime les licornes autant que toi. Vous deviendrez amis pour la vie.",
+        "Dans un futur proche, tu réussiras à inventer un gâteau qui ne se mange pas, mais il sera étonnamment populaire.",
+        "Bientôt, un mystérieux inconnu t'offrira un paquet cadeau. Il contiendra un élastique et une noix de coco.",
+        "Dans un mois, tu vivras une aventure épique où tu devras résoudre un mystère impliquant des chaussettes perdues.",
+        "Prochainement, tu seras récompensé pour avoir trouvé une solution révolutionnaire au problème de la pizza froide.",
+        "Dans un futur lointain, tu seras le leader d'une civilisation intergalactique. Tes sujets seront principalement des pandas."
+    ]
+
+    prediction = random.choice(predicions)
+
+    embed = discord.Embed(
+        title=f"🔮 Prédiction pour {user.name} 🔮",
+        description=f"**Prédiction :**\n\n{prediction}",
+        color=discord.Color.blue()
+    )
+    embed.set_footer(text="Le futur est incertain… mais amusant !")
+
+    await ctx.send(embed=embed)
 #------------------------------------------------------------------------- Commandes d'économie : +prison, +evasion, +arrestation, +liberation, +cautionpayer, +ticket_euro_million
 # Commande +prison
 @bot.command()

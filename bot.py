@@ -252,13 +252,13 @@ async def aide(ctx):
             new_embed.add_field(name="➖ +delrole @user @rôle", value="Retire un rôle à un utilisateur 🚫.\n*Retirer un rôle en cas de sanction ou de changement de statut.*", inline=False)
         elif category == "Économie":
             new_embed.title = "⚖️ **Commandes Économie**"
-            new_embed.description = "Bienvenue dans la section économie ! 💼\nIci, vous pouvez gérer les aspects économiques et de sécurité du serveur."
-            new_embed.add_field(name="🏰 +prison @user", value="Mets un utilisateur en prison pour non-paiement des taxes .\n*Assurez-vous que tout le monde respecte les règles économiques.*", inline=False)
-            new_embed.add_field(name="🚔 +arrestation @user", value="Arrête un utilisateur après un braquage raté 🚔.\n*Appliquez les sanctions après un braquage raté ou une tentative échouée.*", inline=False)
-            new_embed.add_field(name="⚖️ +liberation @user", value="Libère un utilisateur emprisonné pour taxes impayées .\n*Libérer un membre après le paiement ou la levée des charges.*", inline=False)
-            new_embed.add_field(name="🔓 +evasion", value="Permet de s'évader après un braquage raté .\n*Les audacieux peuvent tenter de s'échapper pour éviter les conséquences.*", inline=False)
-            new_embed.add_field(name="💰 +cautionpayer @user", value="Permet de payer la caution d'un membre emprisonné suite à un braquage foiré .\n*Rachetez votre liberté et retrouvez l'accès à l'économie.*", inline=False)
-            new-embed.add_field(name="🎫 +ticket_euro_million @user", value="Permet d’acheter un ticket Euromillion avec un combiné de numéros .\n*Tentez votre chance et essayez d’avoir la bonne combinaison !*", inline=False)
+            new_embed.description = "Gérez l’économie et la sécurité du serveur ici ! 💼"
+            new_embed.add_field(name="🏰 +prison @user", value="Mets un utilisateur en prison pour taxes impayées.", inline=False)
+            new_embed.add_field(name="🚔 +arrestation @user", value="Arrête un utilisateur après un braquage raté.", inline=False)
+            new_embed.add_field(name="⚖️ +liberation @user", value="Libère un utilisateur après le paiement des taxes.", inline=False)
+            new_embed.add_field(name="🔓 +evasion", value="Permet de s’évader après un braquage raté.", inline=False)
+            new_embed.add_field(name="💰 +cautionpayer @user", value="Payez la caution d’un membre emprisonné.", inline=False)
+            new_embed.add_field(name="🎫 +ticket_euro_million @user", value="Achetez un ticket Euromillion avec un combiné.", inline=False)
         elif category == "Ludiques":
             new_embed.title = "🎉 **Commandes de Détente**"
             new_embed.description = "Bienvenue dans la section Détente ! 🎈\nCes commandes sont conçues pour vous amuser et interagir de manière légère et drôle. Profitez-en !"

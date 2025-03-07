@@ -1469,7 +1469,6 @@ async def roleinfo(ctx, *, role_name: str):
         embed.add_field(name="Couleur", value=str(role.color))
         embed.add_field(name="Nombre de membres", value=len(role.members))
         embed.add_field(name="Position", value=role.position)
-    )
         embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
         await ctx.send(embed=embed)

@@ -510,7 +510,6 @@ async def roll(ctx, x: str = None):
         title="Résultat du tirage",
         description=f"Le nombre tiré au hasard entre 1 et {x} est : **{result}**",
         color=discord.Color.green()
-        embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
     )
     await ctx.send(embed=embed)
     

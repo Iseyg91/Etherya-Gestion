@@ -378,7 +378,7 @@ async def racist(ctx, member: discord.Member = None):
         color=discord.Color.purple()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -395,7 +395,7 @@ async def love(ctx, member: discord.Member = None):
         description=f"L'amour entre {ctx.author.mention} et {member.mention} est de **{love_percentage}%** !",
         color=discord.Color.red() if love_percentage > 50 else discord.Color.blue()
     )
-    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     embed.set_thumbnail(url="https://img.freepik.com/photos-gratuite/silhouette-mains-coeur-contre-lumieres-ville-nuit_23-2150984259.jpg?ga=GA1.1.719997987.1741155829&semt=ais_hybrid")
 
     await ctx.send(embed=embed)
@@ -414,7 +414,7 @@ async def rat(ctx, member: discord.Member = None):
         color=discord.Color.purple()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -432,7 +432,7 @@ async def con(ctx, member: discord.Member = None):
         color=discord.Color.red()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -450,7 +450,7 @@ async def libido(ctx, member: discord.Member = None):
         color=discord.Color.red()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -529,7 +529,7 @@ async def zizi(ctx, member: discord.Member = None):
         color=discord.Color.blue()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name} ♥️by Iseyg", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
     # Envoyer l'embed
     await ctx.send(embed=embed)
@@ -548,7 +548,7 @@ async def fou(ctx, member: discord.Member = None):
         color=discord.Color.green()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -566,7 +566,7 @@ async def testo(ctx, member: discord.Member = None):
         color=discord.Color.blue()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -719,7 +719,7 @@ async def hug(ctx, member: discord.Member = None):
     )
     embed.set_image(url="https://media.tenor.com/P6FsFii7pnoAAAAM/hug-warm-hug.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
 
@@ -737,7 +737,7 @@ async def slap(ctx, member: discord.Member = None):
     )
     embed.set_image(url="https://media.tenor.com/QRdCcNbk18MAAAAM/slap.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
 
@@ -755,7 +755,7 @@ async def dance(ctx, member: discord.Member = None):
     )
     embed.set_image(url="https://media.tenor.com/d7ibtS6MLQgAAAAM/dancing-kid.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
 
@@ -773,7 +773,7 @@ async def flirt(ctx, member: discord.Member = None):
     )
     embed.set_image(url="https://media.tenor.com/HDdV-0Km1QAAAAAM/hello-sugar.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
 
@@ -789,7 +789,7 @@ async def whisper(ctx, member: discord.Member = None, *, message):
         description=f"*{message}*",
         color=discord.Color.greyple()
     )
-    embed.set_footer(text="Un message secret entre vous deux...")
+    embed.set_footer(text=f"Un message secret entre vous deux... {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     embed.set_thumbnail(url=member.avatar.url)
     await ctx.send(embed=embed)
 
@@ -807,7 +807,7 @@ async def troll(ctx, member: discord.Member = None):
     )
     embed.set_image(url="https://media.tenor.com/7Q8TRpW2ZXkAAAAM/yeet-lol.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -824,7 +824,7 @@ async def kiss(ctx, member: discord.Member = None):
     )
     embed.set_image(url="https://media.tenor.com/3DHc1_2PZ-oAAAAM/kiss.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -841,7 +841,7 @@ async def kill(ctx, member: discord.Member = None):
     )
     embed.set_image(url="https://media1.tenor.com/m/4hO2HfS9fcMAAAAd/toaru-index.gif")
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)  # Utilisation de ctx.author.name
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
 
@@ -870,7 +870,7 @@ async def note(ctx, member: discord.Member = None):
         color=discord.Color.green()
     )
     embed.set_thumbnail(url=member.avatar.url)
-    embed.set_footer(text=f"Commandé par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
 
@@ -934,6 +934,7 @@ async def fight(ctx, member: discord.Member = None):
         color=discord.Color.blue()
     )
     embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -951,7 +952,7 @@ async def enfant(ctx, parent1: discord.Member = None, parent2: discord.Member = 
         description=f"{parent1.mention} + {parent2.mention} = **{prenom}** 🍼",
         color=discord.Color.purple()
     )
-    embed.set_footer(text="Prenez soin de votre bébé !")
+    embed.set_footer(text=f"Prenez soin de votre bébé ! {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     # Ajout des photos de profil
     embed.set_thumbnail(url=parent1.avatar.url if parent1.avatar else parent2.avatar.url)
@@ -993,7 +994,7 @@ async def superpouvoir(ctx, user: discord.Member = None):
         description=f"{user.mention} possède le pouvoir de**{pouvoir}** !",
         color=discord.Color.purple()
     )
-    embed.set_footer(text="Utilise-le avec sagesse... ou pas.")
+    embed.set_footer(text=f"Utilise-le avec sagesse... ou pas. {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     
     await ctx.send(embed=embed)
 
@@ -1034,7 +1035,8 @@ async def totem(ctx, member: discord.Member = None):
         color=discord.Color.green()
     )
     embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
-    
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
+
     await ctx.send(embed=embed)
     
 @bot.command()
@@ -1063,22 +1065,22 @@ async def futur(ctx, user: discord.Member = None):
         description=f"**Prédiction :**\n\n{prediction}",
         color=discord.Color.blue()
     )
-    embed.set_footer(text="Le futur est incertain… mais amusant !")
+    embed.set_footer(text=f"Le futur est incertain… mais amusant ! {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
     await ctx.send(embed=embed)
 
 # Liste de blagues
 blagues = [
-    "Pourquoi les plongeurs plongent toujours en arrière et jamais en avant ? Parce que sinon ils tombent toujours dans le bateau.",
-    "Pourquoi les canards sont toujours à l'heure ? Parce qu'ils sont dans les starting-quack !",
-    "Quel est le comble pour un électricien ? De ne pas être au courant.",
-    "Pourquoi les maths sont tristes ? Parce qu'elles ont trop de problèmes.",
-    "Que dit une imprimante à une autre imprimante ? 'T'as du papier ?'",
-    "Pourquoi les poissons détestent l'ordinateur ? Parce qu'ils ont peur du net !",
-    "Comment appelle-t-on un chat qui a perdu son GPS ? Un chat égaré.",
-    "Pourquoi les squelettes ne se battent-ils jamais entre eux ? Parce qu'ils n'ont pas de cœur !",
-    "Quel est le comble pour un plombier ? D'avoir un tuyau percé.",
-    "Comment appelle-t-on un chien magique ? Un labra-cadabra !"
+    "Pourquoi les plongeurs plongent toujours en arrière et jamais en avant ? ||Parce que sinon ils tombent toujours dans le bateau.||",
+    "Pourquoi les canards sont toujours à l'heure ? ||Parce qu'ils sont dans les starting-quack !||",
+    "Quel est le comble pour un électricien ? ||De ne pas être au courant.||",
+    "Pourquoi les maths sont tristes ? ||Parce qu'elles ont trop de problèmes.||",
+    "Que dit une imprimante à une autre imprimante ? *||'T'as du papier ?'||",
+    "Pourquoi les poissons détestent l'ordinateur ? ||Parce qu'ils ont peur du net !||",
+    "Comment appelle-t-on un chat qui a perdu son GPS ? ||Un chat égaré.||",
+    "Pourquoi les squelettes ne se battent-ils jamais entre eux ? ||Parce qu'ils n'ont pas de cœur !||",
+    "Quel est le comble pour un plombier ? ||D'avoir un tuyau percé.||",
+    "Comment appelle-t-on un chien magique ? ||Un labra-cadabra !||"
 ]
 
 # Commande !blague
@@ -1103,6 +1105,7 @@ async def prison(ctx, member: discord.Member = None):
         color=0xffcc00
     )
     embed.set_image(url="https://i.imgur.com/dX0DSGh.jpeg")
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
     # Gestion des rôles
@@ -1128,6 +1131,7 @@ async def arrestation(ctx, member: discord.Member = None):
         color=0xff0000
     )
     embed.set_image(url="https://i.imgur.com/uVNxDX2.jpeg")
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
     # Gestion des rôles
@@ -1153,6 +1157,7 @@ async def liberation(ctx, member: discord.Member = None):
         color=0x00ff00
     )
     embed.set_image(url="https://i.imgur.com/Xh7vqh7.jpeg")
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
     # Gestion des rôles
@@ -1176,6 +1181,7 @@ async def evasion(ctx):
         color=0x0000ff
     )
     embed.set_image(url="https://i.imgur.com/X8Uje39.jpeg")
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
     # Gestion des rôles
@@ -1203,6 +1209,7 @@ async def cautionpayer(ctx, member: discord.Member = None):
         color=0x00ff00
     )
     embed.set_image(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/1dnyLPXGJgsrcmMo8Bgi4.jpg?raw=true")
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     await ctx.send(embed=embed)
 
     # Gestion des rôles
@@ -1227,6 +1234,7 @@ async def ticket_euro_million(ctx, user: discord.Member):
         color=discord.Color.gold()
     )
     embed_user.set_footer(text="Ticket généré par " + ctx.author.name)
+    embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
     # Envoie de l'embed dans le salon où la commande a été effectuée
     await ctx.send(embed=embed_user)
@@ -1239,6 +1247,7 @@ async def ticket_euro_million(ctx, user: discord.Member):
         color=discord.Color.green()
     )
     embed_announce.set_footer(text="Ticket généré avec succès !")
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
     # Envoie de l'embed dans le salon spécifique (ID du salon : 1343358346287120514)
     salon_announce = bot.get_channel(1343358346287120514)
@@ -1409,7 +1418,7 @@ async def alerte(ctx, member: discord.Member, *, reason: str):
         description=f"**Utilisateur:** {member.mention}\n**Raison:** {reason}",
         color=0xff0000  # Couleur rouge
     )
-
+    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
     # Envoi de l'embed dans le même salon
     await channel.send(embed=embed)
 
@@ -1432,7 +1441,7 @@ async def vc(ctx):
     embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
     embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
     embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
-    embed.set_footer(text="📈 Statistiques mises à jour en temps réel")
+    embed.set_footer(text="📈 Statistiques mises à jour en temps réel | ♥️ by Iseyg")
     
     await ctx.send(embed=embed)
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
@@ -1442,6 +1451,9 @@ async def vc(ctx):
 async def ping(ctx):
     latency = round(bot.latency * 1000)  # Latence en ms
     embed = discord.Embed(title="Pong!", description=f"Latence: {latency}ms", color=discord.Color.green())
+    )
+    embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
+
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -1459,6 +1471,9 @@ async def roleinfo(ctx, *, role_name: str):
         embed.add_field(name="Couleur", value=str(role.color))
         embed.add_field(name="Nombre de membres", value=len(role.members))
         embed.add_field(name="Position", value=role.position)
+    )
+        embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
+
         await ctx.send(embed=embed)
 
 @bot.command()
@@ -1473,6 +1488,8 @@ async def uptime(ctx):
         description=f"Le bot est en ligne depuis : {days} jours, {hours} heures, {minutes} minutes, {seconds} secondes",
         color=discord.Color.blue()
     )
+    embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
+
     await ctx.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)

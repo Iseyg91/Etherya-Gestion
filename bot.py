@@ -1451,8 +1451,6 @@ async def vc(ctx):
 async def ping(ctx):
     latency = round(bot.latency * 1000)  # Latence en ms
     embed = discord.Embed(title="Pong!", description=f"Latence: {latency}ms", color=discord.Color.green())
-    )
-    embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
     await ctx.send(embed=embed)
 

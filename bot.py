@@ -874,7 +874,7 @@ async def note(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 
-AUTHORIZED_ROLES = ["1216432076128129144"]
+AUTHORIZED_ROLES = ["1244339296706760726"]
 
 @bot.command()
 async def say(ctx, *, text: str = None):

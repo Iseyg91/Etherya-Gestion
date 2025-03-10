@@ -86,7 +86,48 @@ async def on_member_join(member):
 
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
-    
+#------------------------------------------------------------------------- Commandes d'Administration : Detections de Mots sensible:
+# Liste des mots sensibles à détecter
+sensitive_words = [
+    "connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", 
+    "pute", "salope", "con", "raciste", "sexiste", "homophobe", "antisémite", "xenophobe", 
+    "transphobe", "tuer", "assassin", "attaquer", "viol", "torturer", "menacer", "frapper", 
+    "guerre", "pervers", "abus", "sexe", "pornographie", "nu", "masturbation", "adultère", 
+    "drogue", "cocaïne", "héroïne", "crack", "alcool", "consommation abusive", "terrorisme", 
+    "jihad", "bombardement", "suicidaire", "hack", "pirater", "voler des données", "phishing", 
+    "ddos", "raid", "flood", "spam", "crasher", "ddos attack", "botnet", "infiltrer", "spammer", 
+    "griefing", "troll", "spam bot", "server crash", "exploiter"
+]
+
+# L'ID de l'administrateur
+ADMIN_ID = 792755123587645461
+
+@client.event
+async def on_ready():
+    print(f'Nous avons connecté le bot en tant que {client.user}')
+
+@client.event
+async def on_message(message):
+    # On ignore les messages du bot lui-même
+    if message.author == client.user:
+        return
+
+    # Vérifie si l'un des mots sensibles est dans le message
+    for word in sensitive_words:
+        if word.lower() in message.content.lower():
+            # Trouver l'utilisateur et le salon
+            channel_name = message.channel.name
+            author_name = message.author.name
+
+            # Envoyer un MP à l'administrateur
+            admin = await client.fetch_user(ADMIN_ID)
+            alert_message = (f"Alerte : Un message contenant un mot sensible a été détecté !\n"
+                             f"Salon : #{channel_name}\n"
+                             f"Auteur : {author_name} ({message.author.id})\n"
+                             f"Contenu du message : {message.content}")
+            await admin.send(alert_message)
+            break
+
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 @bot.command()
 async def clear(ctx, amount: int = None):

@@ -2082,46 +2082,47 @@ async def start5(ctx):
     message = await ctx.send(embed=embed, view=MaterialRetrieval())
     print(f"Message envoyé avec vue : {message.content}")  # Ceci va t'aider à vérifier que le message est envoyé correctement.
 
-# Fonction pour démarrer l'épreuve de sabotage
-async def start_sabotage(ctx):
-    # Liste des couleurs de câbles
-    cables = ['Rouge', 'Bleu', 'Vert', 'Jaune', 'Orange']
-    
-    # Mélange aléatoire des câbles
-    random.shuffle(cables)
-
-    # Le câble à couper (celui qui ne déclenche pas l'alarme)
-    correct_cable = random.choice(cables)
-
-    # Message d'introduction
-    await ctx.send("Vous avez infiltré la salle des câbles de sécurité. Vous devez maintenant trouver le bon câble à couper parmi les suivants :")
-    await ctx.send(", ".join(cables))  # Afficher les câbles mélangés
-
-    # Demander au joueur de couper un câble
-    await ctx.send("\nQuel câble voulez-vous couper ? (Répondez avec le nom du câble)")
-
-    def check(m):
-        return m.author == ctx.author and m.content in cables
-
-    try:
-        # Attente de la réponse du joueur
-        message = await ctx.bot.wait_for('message', check=check, timeout=30)
-
-        # Vérification si le joueur a trouvé le bon câble
-        if message.content == correct_cable:
-            await ctx.send(f"Vous avez coupé le câble {correct_cable} et vous avez désactivé la sécurité avec succès !")
-            # Code pour continuer l'événement ou autre action
-        else:
-            await ctx.send(f"Erreur ! Vous avez coupé le câble {message.content}. L'alarme s'est déclenchée et vous êtes repéré !")
-            # Code pour échouer l'épreuve, par exemple, lancer une alerte ou finir l'événement
-
-    except asyncio.TimeoutError:
-        await ctx.send("Vous avez mis trop de temps à répondre. L'alarme s'est déclenchée !")
-
 # Commande pour démarrer l'épreuve
 @bot.command()
 async def start6(ctx):
-    await start_sabotage(ctx)
+    # Liste des câbles disponibles
+    cables = ['Rouge', 'Bleu', 'Vert', 'Jaune', 'Orange']
+    
+    # Mélange des câbles
+    random.shuffle(cables)
+
+    # Le câble correct
+    correct_cable = random.choice(cables)
+
+    # Créer l'embed avec une image (remplace "image_url" par l'URL de ton image)
+    embed = discord.Embed(
+        title="Épreuve de Sabotage de la Sécurité",
+        description="Vous devez couper le bon câble parmi les suivants. Choisissez avec soin!",
+        color=discord.Color.red()
+    )
+    embed.set_image(url="https://example.com/cables_image.png")  # Remplacer par ton image de câbles
+
+    # Créer des boutons pour les choix
+    buttons = [Button(label=cable, style=discord.ButtonStyle.green, custom_id=cable) for cable in cables]
+
+    # Créer la vue avec les boutons
+    view = View()
+    for button in buttons:
+        view.add_item(button)
+
+    # Envoyer l'embed avec les boutons
+    await ctx.send(embed=embed, view=view)
+
+    # Attendre l'interaction avec un bouton
+    interaction = await bot.wait_for("button_click", check=lambda i: i.user == ctx.author and i.message == ctx.message)
+
+    # Vérifier si la bonne réponse a été donnée
+    if interaction.custom_id == correct_cable:
+        await interaction.response.send_message(f"Vous avez coupé le câble {correct_cable} ! La sécurité a été désactivée avec succès.", ephemeral=True)
+        # Ajoute ici la suite de l'épreuve ou des actions de succès
+    else:
+        await interaction.response.send_message(f"Erreur ! Vous avez coupé le câble {interaction.custom_id}. L'alarme s'est déclenchée !", ephemeral=True)
+        # Ajoute ici la suite en cas d'échec (par exemple, échec de l'épreuve)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

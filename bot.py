@@ -1975,13 +1975,11 @@ class MaterialRetrieval(discord.ui.View):
         self.add_item(MaterialButton("💰 Acheter au marché noir", "acheter"))
         self.add_item(MaterialButton("🔪 Voler le vendeur", "voler"))
 
-class MaterialRetrieval(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=180)  # Temps limite
-        
-        self.add_item(MaterialButton("🔦 Infiltrer l'entrepôt", "entrepot"))
-        self.add_item(MaterialButton("💰 Acheter au marché noir", "acheter"))
-        self.add_item(MaterialButton("🔪 Voler le vendeur", "voler"))
+    async def on_timeout(self):
+        """Désactive tous les boutons après que le temps soit écoulé"""
+        for item in self.children:
+            item.disabled = True
+        await self.message.edit(view=self)
 
 class MaterialButton(discord.ui.Button):
     def __init__(self, label, action):
@@ -1990,6 +1988,10 @@ class MaterialButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         outcome = random.choice(["succès", "échec"])
+        
+        # Désactive tous les boutons après un clic
+        for item in self.view.children:
+            item.disabled = True
         
         if self.action == "entrepot":
             if outcome == "succès":
@@ -2075,7 +2077,10 @@ async def start5(ctx):
         color=discord.Color.orange()
     )
     embed.set_image(url="https://example.com/image_intro_materiel.jpg")
-    await ctx.send(embed=embed, view=MaterialRetrieval())
+    message = await ctx.send(embed=embed, view=MaterialRetrieval())
+    # On ajoute le message pour référence dans la vue
+    for item in message.components:
+        item.message = message
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

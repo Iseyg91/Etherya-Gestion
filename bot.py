@@ -1975,6 +1975,14 @@ class MaterialRetrieval(discord.ui.View):
         self.add_item(MaterialButton("💰 Acheter au marché noir", "acheter"))
         self.add_item(MaterialButton("🔪 Voler le vendeur", "voler"))
 
+class MaterialRetrieval(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=180)  # Temps limite
+        
+        self.add_item(MaterialButton("🔦 Infiltrer l'entrepôt", "entrepot"))
+        self.add_item(MaterialButton("💰 Acheter au marché noir", "acheter"))
+        self.add_item(MaterialButton("🔪 Voler le vendeur", "voler"))
+
 class MaterialButton(discord.ui.Button):
     def __init__(self, label, action):
         super().__init__(label=label, style=discord.ButtonStyle.primary)
@@ -1982,7 +1990,7 @@ class MaterialButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         outcome = random.choice(["succès", "échec"])
-
+        
         if self.action == "entrepot":
             if outcome == "succès":
                 embed = discord.Embed(
@@ -1990,39 +1998,72 @@ class MaterialButton(discord.ui.Button):
                     description=f"{interaction.user.mention} a réussi à pénétrer dans l'entrepôt et a volé du matériel sans se faire repérer !",
                     color=discord.Color.green()
                 )
-                embed.set_image(url="https://example.com/image_entrepot.jpg")  # Image infiltration
+                embed.set_image(url="https://example.com/image_entrepot.jpg")
+                await interaction.response.send_message(embed=embed, ephemeral=False, view=EscapeChallenge())
             else:
                 embed = discord.Embed(
                     title="🚨 Alarme déclenchée !",
-                    description=f"{interaction.user.mention} a été repéré en tentant d'infiltrer l'entrepôt ! Il doit fuir immédiatement !",
+                    description=f"{interaction.user.mention} a été repéré ! Il doit fuir immédiatement !",
                     color=discord.Color.red()
                 )
-                embed.set_image(url="https://example.com/image_alarme.jpg")  # Image alarme
-
+                embed.set_image(url="https://example.com/image_alarme.jpg")
+                await interaction.response.send_message(embed=embed, ephemeral=False, view=EscapeChallenge())
+        
         elif self.action == "acheter":
             embed = discord.Embed(
                 title="💰 Achat réussi",
                 description=f"{interaction.user.mention} a acheté du matériel en toute sécurité, mais cela lui a coûté quelques Ezryn Coins...",
                 color=discord.Color.blue()
             )
-            embed.set_image(url="https://example.com/image_marche_noir.jpg")  # Image marché noir
-
+            embed.set_image(url="https://example.com/image_marche_noir.jpg")
+            await interaction.response.send_message(embed=embed, ephemeral=False)
+        
         elif self.action == "voler":
             if outcome == "succès":
                 embed = discord.Embed(
                     title="🔪 Vol réussi !",
-                    description=f"{interaction.user.mention} a réussi à menacer le vendeur et s'est emparé du matériel sans payer !",
+                    description=f"{interaction.user.mention} a réussi à menacer le vendeur et s'est emparé du matériel !",
                     color=discord.Color.green()
                 )
-                embed.set_image(url="https://example.com/image_vol_reussi.jpg")  # Image vol réussi
+                embed.set_image(url="https://example.com/image_vol_reussi.jpg")
+                await interaction.response.send_message(embed=embed, ephemeral=False, view=EscapeChallenge())
             else:
                 embed = discord.Embed(
                     title="🚔 Échec !",
                     description=f"{interaction.user.mention} a tenté de voler le vendeur, mais ce dernier a riposté et alerté la police !",
                     color=discord.Color.red()
                 )
-                embed.set_image(url="https://example.com/image_police.jpg")  # Image police
+                embed.set_image(url="https://example.com/image_police.jpg")
+                await interaction.response.send_message(embed=embed, ephemeral=False, view=EscapeChallenge())
 
+class EscapeChallenge(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=60)  # Temps limite
+        self.add_item(EscapeButton("🏃 Fuir rapidement", "fuir"))
+        self.add_item(EscapeButton("🛑 Se cacher", "cacher"))
+        self.add_item(EscapeButton("🤜 Combattre", "combattre"))
+
+class EscapeButton(discord.ui.Button):
+    def __init__(self, label, action):
+        super().__init__(label=label, style=discord.ButtonStyle.danger)
+        self.action = action
+
+    async def callback(self, interaction: discord.Interaction):
+        outcome = random.choice(["succès", "échec"])
+        
+        if outcome == "succès":
+            embed = discord.Embed(
+                title="✅ Évasion réussie !",
+                description=f"{interaction.user.mention} a réussi à s'enfuir !",
+                color=discord.Color.green()
+            )
+        else:
+            embed = discord.Embed(
+                title="🚔 Capturé !",
+                description=f"{interaction.user.mention} a échoué et s'est fait attraper !",
+                color=discord.Color.red()
+            )
+        
         await interaction.response.send_message(embed=embed, ephemeral=False)
 
 @bot.command()
@@ -2033,7 +2074,7 @@ async def start5(ctx):
         description="Vous avez besoin d'équipement pour finaliser le plan. Choisissez votre méthode : infiltration, achat ou vol !",
         color=discord.Color.orange()
     )
-    embed.set_image(url="https://example.com/image_intro_materiel.jpg")  # Image intro matériel
+    embed.set_image(url="https://example.com/image_intro_materiel.jpg")
     await ctx.send(embed=embed, view=MaterialRetrieval())
 
 # Token pour démarrer le bot (à partir des secrets)

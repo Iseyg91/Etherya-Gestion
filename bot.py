@@ -1967,6 +1967,75 @@ async def start4(ctx):
     embed.set_image(url="https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/yEC-Ojkt0gIfFz-vucAWg.jpg")  # Image d'introduction
     await ctx.send(embed=embed, view=TruckTheftGame())
 
+class MaterialRetrieval(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=180)  # Temps limite
+        
+        self.add_item(MaterialButton("🔦 Infiltrer l'entrepôt", "entrepot"))
+        self.add_item(MaterialButton("💰 Acheter au marché noir", "acheter"))
+        self.add_item(MaterialButton("🔪 Voler le vendeur", "voler"))
+
+class MaterialButton(discord.ui.Button):
+    def __init__(self, label, action):
+        super().__init__(label=label, style=discord.ButtonStyle.primary)
+        self.action = action
+
+    async def callback(self, interaction: discord.Interaction):
+        outcome = random.choice(["succès", "échec"])
+
+        if self.action == "entrepot":
+            if outcome == "succès":
+                embed = discord.Embed(
+                    title="✅ Infiltration réussie !",
+                    description=f"{interaction.user.mention} a réussi à pénétrer dans l'entrepôt et a volé du matériel sans se faire repérer !",
+                    color=discord.Color.green()
+                )
+                embed.set_image(url="https://example.com/image_entrepot.jpg")  # Image infiltration
+            else:
+                embed = discord.Embed(
+                    title="🚨 Alarme déclenchée !",
+                    description=f"{interaction.user.mention} a été repéré en tentant d'infiltrer l'entrepôt ! Il doit fuir immédiatement !",
+                    color=discord.Color.red()
+                )
+                embed.set_image(url="https://example.com/image_alarme.jpg")  # Image alarme
+
+        elif self.action == "acheter":
+            embed = discord.Embed(
+                title="💰 Achat réussi",
+                description=f"{interaction.user.mention} a acheté du matériel en toute sécurité, mais cela lui a coûté quelques Ezryn Coins...",
+                color=discord.Color.blue()
+            )
+            embed.set_image(url="https://example.com/image_marche_noir.jpg")  # Image marché noir
+
+        elif self.action == "voler":
+            if outcome == "succès":
+                embed = discord.Embed(
+                    title="🔪 Vol réussi !",
+                    description=f"{interaction.user.mention} a réussi à menacer le vendeur et s'est emparé du matériel sans payer !",
+                    color=discord.Color.green()
+                )
+                embed.set_image(url="https://example.com/image_vol_reussi.jpg")  # Image vol réussi
+            else:
+                embed = discord.Embed(
+                    title="🚔 Échec !",
+                    description=f"{interaction.user.mention} a tenté de voler le vendeur, mais ce dernier a riposté et alerté la police !",
+                    color=discord.Color.red()
+                )
+                embed.set_image(url="https://example.com/image_police.jpg")  # Image police
+
+        await interaction.response.send_message(embed=embed, ephemeral=False)
+
+@bot.command()
+async def start5(ctx):
+    """Commande pour lancer l'épreuve de récupération du matériel"""
+    embed = discord.Embed(
+        title="🔧 Récupération du Matériel",
+        description="Vous avez besoin d'équipement pour finaliser le plan. Choisissez votre méthode : infiltration, achat ou vol !",
+        color=discord.Color.orange()
+    )
+    embed.set_image(url="https://example.com/image_intro_materiel.jpg")  # Image intro matériel
+    await ctx.send(embed=embed, view=MaterialRetrieval())
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

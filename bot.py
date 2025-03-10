@@ -2077,10 +2077,10 @@ async def start5(ctx):
         color=discord.Color.orange()
     )
     embed.set_image(url="https://example.com/image_intro_materiel.jpg")
+    
+    # Vérification du message envoyé avec la vue
     message = await ctx.send(embed=embed, view=MaterialRetrieval())
-    # On ajoute le message pour référence dans la vue
-    for item in message.components:
-        item.message = message
+    print(f"Message envoyé avec vue : {message.content}")  # Ceci va t'aider à vérifier que le message est envoyé correctement.
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

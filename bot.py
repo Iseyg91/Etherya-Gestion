@@ -40,7 +40,6 @@ async def on_ready():
     
     # Démarrer la boucle d'inactivité
     check_inactivity.start()
-    
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108
@@ -1520,12 +1519,6 @@ async def check_inactivity():
                 await channel.send(content=f"{role_mention} **Réveillez le chat !**", embed=embed)
     else:
         print("Le salon spécifié n'a pas été trouvé ou le bot n'a pas accès au salon.")
-
-# Assurez-vous que la boucle est démarrée lors de l'initialisation du bot
-@bot.event
-async def on_ready():
-    print(f"{bot.user} est en ligne et prêt à vérifier l'inactivité.")
-    check_inactivity.start()  # Démarre la boucle de vérification
 
 #------------------------------------------------------------------------- Commandes Braquages : Flemme de Lister
     await ctx.send(embed=embed)

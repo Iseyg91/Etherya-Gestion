@@ -8,6 +8,7 @@ import time
 from keep_alive import keep_alive
 from discord.ui import Button, View
 from discord.ui import View, Select
+from discord.ext import tasks
 
 token = os.environ['ETHERYA']
 intents = discord.Intents.all()
@@ -1487,7 +1488,6 @@ async def uptime(ctx):
     )
     embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
 #------------------------------------------------------------------------- Inactivité : Detection d'inactvité
-
 
 CHANNEL_ID = 1168118179378241576  # Remplace par l'ID du salon à surveiller
 CHECK_INTERVAL = 30  # Vérification toutes les 30 secondes

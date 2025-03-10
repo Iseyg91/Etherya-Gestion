@@ -32,11 +32,15 @@ async def on_ready():
         print(f"✅ Commandes slash synchronisées : {[cmd.name for cmd in synced]}")
     except Exception as e:
         print(f"❌ Erreur de synchronisation des commandes slash : {e}")
-    # Afficher les commandes disponibles après la synchronisation
+    
+    # Afficher les commandes disponibles après synchronisation
     print("📌 Commandes disponibles après synchronisation :")
     for command in bot.commands:
         print(f"- {command.name}")
-
+    
+    # Démarrer la boucle d'inactivité
+    check_inactivity.start()
+    
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108

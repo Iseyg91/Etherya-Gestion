@@ -1488,6 +1488,484 @@ async def uptime(ctx):
     embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
     await ctx.send(embed=embed)
+   class DynamiteGame(discord.ui.View):
+        def __init__(self):
+            super().__init__(timeout=60)
+            self.winning_spots = random.sample(range(9), 3)
+            self.grid = [
+                "<:coffrefort1:1344730431144329341>", "<:coffrefort2:1344434909602910301>", "<:coffrefort1:1344435008798195753>",
+                "<:coffrefort1:1344435054704590969>", "<:coffrefort1:1344435190352576542>", "<:coffrefort6:1344435248443953354>",
+                "<:coffrefort7:1344435296074334379>", "<:coffrefort8:1344435352047190147>", "<:coffrefort9:1344435400348799017>"
+            ]
+            self.game_over = False
+
+        def update_grid(self):
+            return "  ".join(self.grid[:3]) + "\n" + "  ".join(self.grid[3:6]) + "\n" + "  ".join(self.grid[6:])
+
+        @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji="<:1_:1344757365643153622>")
+        async def button_1(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await self.handle_click(interaction, 0, button)
+
+        @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji="<:2_:1344757389739560970>")
+        async def button_2(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await self.handle_click(interaction, 1, button)
+
+        @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji="<:3_:1344757414360252630>")
+        async def button_3(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await self.handle_click(interaction, 2, button)
+
+        @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji="<:4_:1344757434874335414>")
+        async def button_4(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await self.handle_click(interaction, 3, button)
+
+        @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji="<:5_:1344757454789148723>")
+        async def button_5(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await self.handle_click(interaction, 4, button)
+
+        @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji="<:6_:1344757502142582918>")
+        async def button_6(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await self.handle_click(interaction, 5, button)
+
+        @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji="<:7_:1344757527866507365>")
+        async def button_7(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await self.handle_click(interaction, 6, button)
+
+        @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji="<:8_:1344757546518446142>")
+        async def button_8(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await self.handle_click(interaction, 7, button)
+
+        @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji="<:9_:1344757668555788299>")
+        async def button_9(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await self.handle_click(interaction, 8, button)
+
+        async def handle_click(self, interaction: discord.Interaction, index: int, button: discord.ui.Button):
+            if self.game_over:
+                return await interaction.response.send_message("La partie est déjà terminée ! Merci d'avoir joué.", ephemeral=True)
+
+            if index in self.winning_spots:
+                button.style = discord.ButtonStyle.success
+                button.emoji = "<:Dynamite:1344744174796410981>"
+                self.game_over = True
+                embed = discord.Embed(
+                    title="💣 Braquage réussi ! 💸",
+                    description=f"{interaction.user.mention} 🎉 Vous avez réussi à braquer la banque ! 💣💸 Félicitations, vous remportez des <:EzrinCoin:1344742958804635700> !",
+                    color=discord.Color.green()
+                )
+                # Ajout du GIF comme image dans l'embed
+                embed.set_image(url="https://media1.tenor.com/m/Z8GdGNlTC5oAAAAd/ready-to-rob-pops-mask.gif")
+
+                for child in self.children:
+                    if isinstance(child, discord.ui.Button):
+                        child.disabled = True
+            else:
+                button.style = discord.ButtonStyle.danger
+                button.emoji = "<a:Alerte:1344758825273528340>"
+                self.game_over = True
+                embed = discord.Embed(
+                    title="🚨 Braquage échoué ! 🛑",
+                    description=f"{interaction.user.mention} 🚨 Oh non ! Les policiers arrivent ! 🚔 Votre tentative de braquage a échoué. 🛑",
+                    color=discord.Color.red()
+                )
+                # Ajout du GIF comme image dans l'embed
+                embed.set_image(url="https://media1.tenor.com/m/tj3ltZKxO94AAAAd/cops-police.gif")
+
+                for child in self.children:
+                    if isinstance(child, discord.ui.Button):
+                        child.disabled = True
+
+            await interaction.response.edit_message(content=self.update_grid(), view=self)
+            await interaction.channel.send(embed=embed)
+
+
+    @bot.command()
+    async def start(ctx):
+        await ctx.message.delete()
+
+        embed = discord.Embed(
+            title="<:EzrinCoin:1344742958804635700> Braquage de Banque : L'Heist ! 💣",
+            description=(
+                "🔫 *Bienvenue dans l'ultime braquage de banque !* 💥\n\n"
+                "Tentez de trouver les caches de dynamite parmi les 9 coffres, choisissez judicieusement...\n"
+                "Chaque coffre peut soit cacher de l'argent, soit... une explosion qui finira votre tentative !\n\n"
+                "Vous avez 3 chances sur 9 de réussir à braquer la banque ! \n"
+                "Bonne chance... et ne vous laissez pas surprendre par les policiers 🚔 !"
+            ),
+            color=discord.Color.red()
+        )
+        embed.set_footer(text="Les récompenses sont en <:EzrinCoin:1344742958804635700>.")
+
+        game = DynamiteGame()
+        await ctx.send(embed=embed)
+        await ctx.send(game.update_grid(), view=game)
+
+
+class LuckGame(discord.ui.View):
+    def __init__(self, health_message):
+        super().__init__()
+        self.health = 100  # Vie initiale
+        self.wins = 0
+        self.correct_button = None
+        self.choose_random_button()
+        self.health_message = health_message  # Message affichant la barre de vie
+
+    def choose_random_button(self):
+        """Choisit aléatoirement quel bouton sera gagnant (1 chance sur 4)."""
+        self.correct_button = random.choice([1, 2, 3, 4])
+
+    def gif(self):
+        """Lien du GIF."""
+        return "[GIF](https://tenor.com/view/resident-evil-4-lasers-laser-grid-laser-hallway-laser-gif-5511927577551637319)"
+
+    def update_health_bar(self):
+        """Met à jour la barre de vie visuellement."""
+        health_bar = "💖" * (self.health // 10) + "🖤" * (10 - (self.health // 10))
+        return f"**Vie : {health_bar} ({self.health}%)**"
+
+    async def update_health_message(self):
+        """Met à jour le message affichant la barre de vie."""
+        await self.health_message.edit(content=self.update_health_bar())
+
+    async def handle_button_click(self, interaction: discord.Interaction, button_number: int):
+        """Gère l'interaction des boutons et applique les conséquences."""
+        if self.correct_button == button_number:
+            self.wins += 1
+            if self.wins >= 3:
+                await interaction.response.send_message(f"{interaction.user.mention} 🎉 Vous avez esquivé tous les [lasers](https://tenor.com/view/lasers-happy-dance-break-in-deadbeat-gif-15408559) !", ephemeral=False)
+                self.stop()
+            else:
+                await interaction.response.send_message(f"{interaction.user.mention} ✅ Vous avez esquivé un laser !", ephemeral=True)
+        else:
+            damage = random.randint(5, 25)  # Dégâts aléatoires
+            self.health -= damage
+            if self.health <= 0:
+                self.health = 0
+                await interaction.response.send_message(f"{interaction.user.mention} ⚰️ Vous êtes [mort](https://tenor.com/view/coffin-dance-gif-21318528) !", ephemeral=False)
+                self.stop()
+            else:
+                await interaction.response.send_message(f"{interaction.user.mention} ❌ Vous avez perdu **{damage}** points de vie !", ephemeral=True)
+
+        await self.update_health_message()  # Met à jour la barre de vie affichée
+        self.choose_random_button()
+
+    @discord.ui.button(label="", style=discord.ButtonStyle.blurple, emoji="<:Symbol_Left_Arrow:1345159488109285477>")
+    async def button_1(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.handle_button_click(interaction, 1)
+
+    @discord.ui.button(label="", style=discord.ButtonStyle.blurple, emoji="<:Symbol_Up_Arrow:1345422014672011265>")
+    async def button_2(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.handle_button_click(interaction, 2)
+
+    @discord.ui.button(label="", style=discord.ButtonStyle.blurple, emoji="<:Symbol_Down_Arrow1:1345421982459756665>")
+    async def button_3(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.handle_button_click(interaction, 3)
+
+    @discord.ui.button(label="", style=discord.ButtonStyle.blurple, emoji="<:Symbol_Right_Arrow:1345159464407535726>")
+    async def button_4(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.handle_button_click(interaction, 4)
+
+@bot.command()
+async def start2(ctx):
+    """Démarre le jeu et affiche la barre de vie au-dessus de l'embed."""
+    await ctx.message.delete()
+
+    # Envoi initial de la barre de vie
+    health_message = await ctx.send("Chargement de la barre de vie...")
+
+    embed = discord.Embed(
+        title="🔴 Esquive les lasers !",
+        description="Choisis par où passer. ⚠️ Un mauvais choix peut être fatal (Objectif esquiver 3 fois.",
+        color=discord.Color.red()
+    )
+
+    message = await ctx.send(embed=embed)
+
+    game = LuckGame(health_message)  # Associer le message de vie au jeu
+    await game.update_health_message()  # Met à jour la barre de vie dès le début
+
+    # Envoi de l'animation et des boutons de jeu
+    await message.channel.send(content=game.gif(), view=game)
+
+class CorruptionGame(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=60)
+        self.questions = [
+            {
+                "question": "Quel est le nom du directeur du casino ?",
+                "choices": ["Jean Dupont", "Luc Besson", "Marc Bernier", "Pierre Dufresne"],
+                "correct": 0  # "Jean Dupont" est la bonne réponse (index 0)
+            },
+            {
+                "question": "Quel est le mot de passe de la salle des coffres ?",
+                "choices": ["1234", "casino42", "open sesame", "password123"],
+                "correct": 1  # "casino42" est la bonne réponse (index 1)
+            },
+            {
+                "question": "Quel est le nom du responsable de la sécurité ?",
+                "choices": ["Franck Morgan", "Emma Roy", "Sarah Dupuis", "Thomas Leclerc"],
+                "correct": 2  # "Sarah Dupuis" est la bonne réponse (index 2)
+            },
+            {
+                "question": "Quelle est la couleur de la porte secrète dans le casino ?",
+                "choices": ["Rouge", "Bleu", "Vert", "Jaune"],
+                "correct": 0  # "Rouge" est la bonne réponse (index 0)
+            },
+            {
+                "question": "Qui est le meilleur ami du directeur du casino ?",
+                "choices": ["Alfred", "Louis", "Bernard", "Paul"],
+                "correct": 3  # "Paul" est la bonne réponse (index 3)
+            }
+        ]
+        self.current_question = 0
+        self.user_score = 0
+
+    async def ask_question(self, interaction: discord.Interaction):
+        question_data = self.questions[self.current_question]
+        question = question_data["question"]
+        choices = question_data["choices"]
+
+        # URL de l'image à ajouter pour la question
+        image_url = "https://example.com/your_question_image.png"
+
+        embed = discord.Embed(
+            title="💼 Corruption de l'Employé du Casino 🕴️",
+            description=f"Question {self.current_question + 1} :\n\n{question}\n\n" + "\n".join([f"{i+1}. {choice}" for i, choice in enumerate(choices)]),
+            color=discord.Color.blue()
+        )
+        embed.set_image(url=image_url)  # Ajouter l'image
+        embed.set_footer(text="Choisissez la bonne réponse !")
+
+        # Envoie le message dans le même canal où l'interaction a eu lieu
+        await interaction.channel.send(embed=embed, view=self)
+
+    @discord.ui.button(label="1", style=discord.ButtonStyle.primary)
+    async def button_1(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.check_answer(interaction, 0)
+
+    @discord.ui.button(label="2", style=discord.ButtonStyle.primary)
+    async def button_2(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.check_answer(interaction, 1)
+
+    @discord.ui.button(label="3", style=discord.ButtonStyle.primary)
+    async def button_3(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.check_answer(interaction, 2)
+
+    @discord.ui.button(label="4", style=discord.ButtonStyle.primary)
+    async def button_4(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.check_answer(interaction, 3)
+
+    async def check_answer(self, interaction: discord.Interaction, selected_option: int):
+        question_data = self.questions[self.current_question]
+
+        # Vérification de la réponse
+        if selected_option == question_data["correct"]:
+            self.user_score += 1
+            message = "✅ Bonne réponse ! Vous gagnez un point et vous gagnez peu à peu la confiance de l'employé."
+            embed_color = discord.Color.green()
+            image_url = "https://example.com/success_image.png"  # Image pour la bonne réponse
+        else:
+            message = "❌ Mauvaise réponse... Pas grave, passons à la suite !"
+            embed_color = discord.Color.red()
+            image_url = "https://example.com/fail_image.png"  # Image pour la mauvaise réponse
+
+        self.current_question += 1
+
+        # Envoie un message avec l'état de la réponse
+        embed = discord.Embed(
+            title="Résultat de la question",
+            description=message,
+            color=embed_color
+        )
+        embed.set_image(url=image_url)  # Ajouter l'image
+        embed.set_footer(text="L'épreuve continue !")
+
+        await interaction.channel.send(embed=embed)
+
+        # Si l'utilisateur a répondu à toutes les questions
+        if self.current_question >= len(self.questions):
+            if self.user_score == len(self.questions):
+                message = "🎉 Félicitations ! Vous avez réussi à corrompre l'employé du casino ! 🎉"
+                embed_color = discord.Color.green()
+                image_url = "https://example.com/victory_image.png"  # Image de victoire
+            else:
+                message = "😞 Désolé, vous n'avez pas réussi à corrompre l'employé du casino. L'occasion est perdue."
+                embed_color = discord.Color.red()
+                image_url = "https://example.com/defeat_image.png"  # Image de défaite
+
+            # Envoie l'embed final pour tous les membres
+            embed = discord.Embed(
+                title="Résultat du Braquage : Corruption Échouée ou Réussie",
+                description=message,
+                color=embed_color
+            )
+            embed.set_image(url=image_url)  # Ajouter l'image
+            embed.set_footer(text="Merci d'avoir participé à l'épreuve.")
+            await interaction.channel.send(embed=embed)
+
+            self.stop()  # Arrêter l'épreuve
+            return
+
+        # Envoyer la prochaine question sans afficher "échec"
+        await self.ask_question(interaction)
+
+@bot.command()
+async def start3(ctx):
+    await ctx.message.delete()
+
+    # URL de l'image à ajouter pour le début du jeu
+    image_url = "https://example.com/start_image.png"
+
+    embed = discord.Embed(
+        title="💼 Corruption de l'Employé du Casino 🕴️",
+        description="Bienvenue dans l'épreuve de corruption ! Vous devez répondre correctement à des questions pour corrompre un employé du casino et obtenir des informations cruciales pour le braquage.",
+        color=discord.Color.blue()
+    )
+    embed.set_image(url=image_url)  # Ajouter l'image
+    embed.set_footer(text="Répondez vite, le temps presse !")
+
+    game = CorruptionGame()
+    await ctx.send(embed=embed)  # Utiliser ctx.send pour démarrer l'épreuve
+    await game.ask_question(ctx)  # Utiliser ctx pour envoyer la première question
+
+
+class TruckTheftGame(discord.ui.View):
+    def __init__(self, challenge=1):
+        super().__init__(timeout=180)  
+        self.challenge = challenge  
+        self.police_called = False
+        self.game_over = False
+        self.update_buttons()
+
+    def update_buttons(self):
+        """ Met à jour les boutons selon l'épreuve actuelle """
+        self.clear_items()  
+        if self.challenge == 1:  # Briser la vitre
+            self.add_item(ToolButton("Marteau", "marteau"))  # Correct
+            self.add_item(ToolButton("Tournevis", "tournevis"))
+            self.add_item(ToolButton("Caillou", "caillou"))
+        elif self.challenge == 2:  # Connecter les fils
+            self.add_item(ToolButton("Tournevis", "tournevis"))  # Correct
+            self.add_item(ToolButton("Pince", "pince"))
+            self.add_item(ToolButton("Ciseaux", "ciseaux"))
+        elif self.challenge == 3:  # Démarrer et fuir
+            self.add_item(ToolButton("Clé de contact", "cle_contact"))  # Correct
+            self.add_item(ToolButton("Carte magnétique", "carte_magnetique"))
+            self.add_item(ToolButton("Câble USB", "cable_usb"))
+
+class ToolButton(discord.ui.Button):
+    def __init__(self, label, tool):
+        super().__init__(label=label, style=discord.ButtonStyle.primary)
+        self.tool = tool
+
+    async def callback(self, interaction: discord.Interaction):
+        view = self.view  
+
+        if view.game_over:
+            return await interaction.response.send_message("Le jeu est terminé !", ephemeral=True)
+
+        if view.police_called:
+            return await interaction.response.send_message("La police est déjà sur place ! Vous avez échoué.", ephemeral=True)
+
+        # Épreuve 1 : Briser la vitre
+        if view.challenge == 1:
+            if self.tool in ["tournevis", "caillou"]:
+                view.police_called = True
+                view.game_over = True
+                embed = discord.Embed(
+                    title="🚨 Police appelées ! 🛑",
+                    description=f"{interaction.user.mention} a utilisé un {self.tool}, mais un témoin a appelé la police. 🚔",
+                    color=discord.Color.red(),
+                )
+                embed.set_image(url="https://cdn.motor1.com/images/mgl/3WAl7R/s3/unplugged-performance-upfit-tesla-model-y-police-vehicle-exterior-front-three-quarter-view.jpg")  # Image de la police
+                await interaction.response.send_message(embed=embed)
+            else:  
+                success_embed = discord.Embed(
+                    title="✅ Épreuve réussie !",
+                    description=f"{interaction.user.mention} a cassé la vitre et peut entrer dans le camion.",
+                    color=discord.Color.green(),
+                )
+                success_embed.set_image(url="https://cdn.prod.website-files.com/6413856d54d41b5f298d5953/67a48bdc0e89f1802ccff330_645a4a8c6e2c9ef89dbc922e_vitre-voiture-explosee.jpeg")  # Image de la vitre cassée
+                next_embed = discord.Embed(
+                    title="🛠️ Épreuve suivante : Bidouiller les fils",
+                    description="Utilisez le bon outil pour connecter les fils et activer le moteur.",
+                    color=discord.Color.blue(),
+                )
+                next_embed.set_image(url="https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/xSwg2kTjrOkw_-TeAl_XW.jpg")  # Image des fils à connecter
+                view.challenge = 2
+                view.update_buttons()
+                await interaction.response.send_message(embed=success_embed)
+                await interaction.followup.send(embed=next_embed, view=view)
+
+        # Épreuve 2 : Connecter les fils
+        elif view.challenge == 2:
+            if self.tool == "tournevis":
+                success_embed = discord.Embed(
+                    title="✅ Épreuve réussie !",
+                    description=f"{interaction.user.mention} a connecté les fils, le moteur est prêt !",
+                    color=discord.Color.green(),
+                )
+                success_embed.set_image(url="https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/Kmeu9uf3ybXqVeU88rDSR.jpg")  # Image des fils connectés
+                next_embed = discord.Embed(
+                    title="🚚 Épreuve finale : Démarrer et fuir",
+                    description="Trouvez le bon outil pour démarrer le camion et fuyez avant l’arrivée de la police !",
+                    color=discord.Color.blue(),
+                )
+                next_embed.set_image(url="https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/mlsYQ3-sCMCxrKMs46c5O.jpg")  # Image du camion
+                view.challenge = 3
+                view.update_buttons()
+                await interaction.response.send_message(embed=success_embed)
+                await interaction.followup.send(embed=next_embed, view=view)
+            else:
+                view.police_called = True
+                view.game_over = True
+                embed = discord.Embed(
+                    title="🚨 Mauvais outil !",
+                    description=f"{interaction.user.mention} a utilisé {self.tool}, mais cela a déclenché une alarme ! 🚔",
+                    color=discord.Color.red(),
+                )
+                embed.set_image(url="https://example.com/image_alarme.jpg")  # Image de l'alarme
+                await interaction.response.send_message(embed=embed)
+
+        # Épreuve 3 : Démarrer et fuir
+        elif view.challenge == 3:
+            if self.tool == "cle_contact":
+                success = random.choice([True, False])
+                if success:
+                    embed = discord.Embed(
+                        title="🏆 Victoire !",
+                        description=f"{interaction.user.mention} a démarré le camion et s’échappe !",
+                        color=discord.Color.green(),
+                    )
+                    embed.set_image(url="https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/6rnr8DEFvcLz7GYQi_WeL.jpg")  # Image de victoire
+                else:
+                    embed = discord.Embed(
+                        title="🚨 Démarrage échoué ! 🚨",
+                        description=f"{interaction.user.mention} n'a pas réussi à démarrer à temps. La police arrive !",
+                        color=discord.Color.red(),
+                    )
+                    embed.set_image(url="https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/uePhica-bN8bEsNJfpAre.jpg")  # Image d'échec
+                    view.game_over = True
+                await interaction.response.send_message(embed=embed, view=None)
+            else:
+                view.police_called = True
+                view.game_over = True
+                embed = discord.Embed(
+                    title="🚔 Mauvais outil !",
+                    description=f"{interaction.user.mention} a tenté avec un(e) {self.tool}, mais cela ne fonctionne pas... 🚨",
+                    color=discord.Color.red(),
+                )
+                embed.set_image(url="https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/xiR6IoHh7KD9b24CAc0B_.jpg")  # Image du mauvais outil
+                await interaction.response.send_message(embed=embed)
+                
+@bot.command()
+async def start4(ctx):
+    """Commande pour lancer l'épreuve du vol de camion"""
+    embed = discord.Embed(
+        title="🚚 Tentative de Vol de Camion 🏃‍♂️",
+        description="Après le braquage, vous devez fuir en volant un camion. Trouvez le bon outil pour entrer et démarrez le moteur avant que la police n'arrive !",
+        color=discord.Color.blue(),
+    )
+    embed.set_image(url="https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/yEC-Ojkt0gIfFz-vucAWg.jpg")  # Image d'introduction
+    await ctx.send(embed=embed, view=TruckTheftGame())
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

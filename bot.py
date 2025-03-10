@@ -120,15 +120,20 @@ async def on_message(message):
             channel_name = message.channel.name
             author_name = message.author.name
 
-            # Envoyer un MP à l'administrateur
-            admin = await client.fetch_user(ADMIN_ID)
-            alert_message = (f"Alerte : Un message contenant un mot sensible a été détecté !\n"
-                             f"Salon : #{channel_name}\n"
-                             f"Auteur : {author_name} ({message.author.id})\n"
-                             f"Contenu du message : {message.content}")
-            await admin.send(alert_message)
+            try:
+                # Tente d'envoyer un message privé à l'administrateur
+                admin = await client.fetch_user(ADMIN_ID)
+                alert_message = (f"Alerte : Un message contenant un mot sensible a été détecté !\n"
+                                 f"Salon : #{channel_name}\n"
+                                 f"Auteur : {author_name} ({message.author.id})\n"
+                                 f"Contenu du message : {message.content}")
+                await admin.send(alert_message)
+                print(f"Message privé envoyé à l'admin {admin.name}")
+            except discord.Forbidden:
+                print(f"Le bot ne peut pas envoyer de message privé à l'admin {ADMIN_ID}")
+            except Exception as e:
+                print(f"Erreur lors de l'envoi du message privé : {e}")
             break
-
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 @bot.command()
 async def clear(ctx, amount: int = None):

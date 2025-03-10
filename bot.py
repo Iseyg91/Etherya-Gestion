@@ -1488,7 +1488,7 @@ async def uptime(ctx):
     embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
     await ctx.send(embed=embed)
-   class DynamiteGame(discord.ui.View):
+class DynamiteGame(discord.ui.View):
         def __init__(self):
             super().__init__(timeout=60)
             self.winning_spots = random.sample(range(9), 3)

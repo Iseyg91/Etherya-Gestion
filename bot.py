@@ -1577,8 +1577,8 @@ class DynamiteGame(discord.ui.View):
             await interaction.channel.send(embed=embed)
 
 
-    @bot.command()
-    async def start(ctx):
+@bot.command()
+async def start(ctx):
         await ctx.message.delete()
 
         embed = discord.Embed(

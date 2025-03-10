@@ -1486,7 +1486,30 @@ async def uptime(ctx):
         color=discord.Color.blue()
     )
     embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
+#------------------------------------------------------------------------- Inactivité : Detection d'inactvité
 
+
+CHANNEL_ID = 1168118179378241576  # Remplace par l'ID du salon à surveiller
+CHECK_INTERVAL = 30  # Vérification toutes les 30 secondes
+INACTIVITY_THRESHOLD = 30  # 30 secondes d'inactivité
+WARNING_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/efL0tB_pALZ6fv0DVFXml.jpg"  # Mets une URL d'image ici
+
+@tasks.loop(seconds=CHECK_INTERVAL)
+async def check_inactivity():
+    channel = bot.get_channel(CHANNEL_ID)
+    if channel:
+        async for message in channel.history(limit=1):
+            time_diff = (discord.utils.utcnow() - message.created_at).total_seconds()
+            if time_diff > INACTIVITY_THRESHOLD:
+                embed = discord.Embed(
+                    title="💤 Le chat est endormi !",
+                    description="Il n'y a eu aucun message depuis 30 secondes ! Réveillez le chat 🗣️",
+                    color=discord.Color.red()
+                )
+                embed.set_image(url=WARNING_IMAGE_URL)
+                await channel.send(content="@here **Réveillez le chat !**", embed=embed)
+
+#------------------------------------------------------------------------- Commandes Braquages : Flemme de Lister
     await ctx.send(embed=embed)
 class DynamiteGame(discord.ui.View):
         def __init__(self):

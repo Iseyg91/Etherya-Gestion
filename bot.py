@@ -2082,9 +2082,8 @@ async def start5(ctx):
     message = await ctx.send(embed=embed, view=MaterialRetrieval())
     print(f"Message envoyé avec vue : {message.content}")  # Ceci va t'aider à vérifier que le message est envoyé correctement.
 
-# Commande pour démarrer l'épreuve
-@bot.command()
-async def start6(ctx):
+# Etape 1 : Sélectionner le bon câble
+async def step_1(ctx):
     # Liste des câbles disponibles
     cables = ['Rouge', 'Bleu', 'Vert', 'Jaune', 'Orange']
     
@@ -2096,7 +2095,7 @@ async def start6(ctx):
 
     # Créer l'embed avec une image
     embed = discord.Embed(
-        title="Épreuve de Sabotage de la Sécurité",
+        title="Étape 1: Sabotage de la Sécurité - Choisissez le bon câble",
         description="Vous devez couper le bon câble parmi les suivants. Choisissez avec soin!",
         color=discord.Color.red()
     )
@@ -2111,24 +2110,84 @@ async def start6(ctx):
         view.add_item(button)
 
     # Envoie l'embed avec les boutons
+    message = await ctx.send(embed=embed, view=view)
+
+    # Enregistrer le bon câble dans l'objet du message pour les prochaines interactions
+    view.correct_cable = correct_cable
+    # Sauvegarder également le message pour y attacher les interactions plus tard
+    view.message = message
+
+    return view, correct_cable
+
+
+# Etape 2 : Choisir une action pour continuer
+async def step_2(ctx, correct_cable):
+    # Liste des actions disponibles pour cette étape
+    actions = ['Forcer la porte', 'Utiliser un code de sécurité', 'Contacter un allié']
+
+    # Mélanger les actions
+    random.shuffle(actions)
+
+    # Créer un embed pour cette étape
+    embed = discord.Embed(
+        title="Étape 2: Sélectionner une action",
+        description="Vous devez choisir une action pour continuer l'épreuve.",
+        color=discord.Color.blue()
+    )
+
+    # Créer des boutons pour chaque action
+    buttons = [Button(label=action, style=discord.ButtonStyle.blurple, custom_id=action) for action in actions]
+
+    # Créer une vue et y ajouter les boutons
+    view = View()
+    for button in buttons:
+        view.add_item(button)
+
+    # Envoie l'embed avec les boutons
     await ctx.send(embed=embed, view=view)
+
+    # Attendre l'interaction de l'utilisateur
+    interaction = await bot.wait_for("interaction", check=lambda i: i.user == ctx.author and i.message.embeds[0].title == "Étape 2: Sélectionner une action")
+
+    # Vérifier si l'utilisateur a pris la bonne action
+    if interaction.data['custom_id'] == 'Utiliser un code de sécurité':
+        await interaction.response.send_message("Bonne décision, vous avez utilisé le bon code de sécurité.", ephemeral=True)
+        return True  # Retourner True pour indiquer que l'étape est réussie
+    else:
+        await interaction.response.send_message("Mauvaise action, cela vous a ralenti dans l'épreuve.", ephemeral=True)
+        return False
+
 
 # Gestion des interactions de boutons
 @bot.event
 async def on_interaction(interaction):
-    # Vérifier si l'interaction provient d'un bouton
     if isinstance(interaction, discord.Interaction):
-        # Obtenir le message et l'utilisateur de l'interaction
-        user = interaction.user
-        cable_choice = interaction.data['custom_id']  # Le câble sélectionné
+        # Vérifier si l'interaction provient du bon message
+        if interaction.message == interaction.view.message:
+            # Étape 1 : Choisir le bon câble
+            if interaction.message.embeds[0].title == "Étape 1: Sabotage de la Sécurité - Choisissez le bon câble":
+                cable_choice = interaction.data['custom_id']
+                correct_cable = interaction.view.correct_cable
 
-        # Si l'utilisateur a choisi le bon câble
-        if cable_choice == correct_cable:
-            await interaction.response.send_message(f"Bravo {user.mention} ! Vous avez coupé le câble {cable_choice}. La sécurité a été désactivée avec succès.", ephemeral=True)
-            # Ajouter ici la suite de l'épreuve si réussi
-        else:
-            await interaction.response.send_message(f"Dommage {user.mention} ! Vous avez coupé le câble {cable_choice}. L'alarme s'est déclenchée.", ephemeral=True)
-            # Ajouter ici la suite en cas d'échec
+                # Vérifier si l'utilisateur a choisi le bon câble
+                if cable_choice == correct_cable:
+                    await interaction.response.send_message(f"Bravo {interaction.user.mention} ! Vous avez coupé le câble {cable_choice}. La sécurité a été désactivée avec succès.", ephemeral=True)
+                    # Passer à l'étape 2
+                    success = await step_2(interaction.user, correct_cable)
+                    if success:
+                        await interaction.followup.send("Vous avez réussi l'épreuve complète!")
+                    else:
+                        await interaction.followup.send("Vous avez échoué dans une des étapes. L'épreuve est terminée.")
+                else:
+                    await interaction.response.send_message(f"Dommage {interaction.user.mention} ! Vous avez coupé le câble {cable_choice}. L'alarme s'est déclenchée.", ephemeral=True)
+                    await interaction.followup.send("L'épreuve est terminée.")
+                    return
+
+# Commande pour démarrer l'épreuve
+@bot.command()
+async def start6(ctx):
+    # Démarrer l'épreuve avec la première étape
+    await step_1(ctx)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

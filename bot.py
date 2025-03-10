@@ -13,6 +13,7 @@ from discord.ext import tasks
 token = os.environ['ETHERYA']
 intents = discord.Intents.all()
 start_time = time.time()
+client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix="+", intents=intents)
 
 STAFF_ROLE_ID = 1244339296706760726

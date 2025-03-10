@@ -2088,41 +2088,47 @@ async def start6(ctx):
     # Liste des câbles disponibles
     cables = ['Rouge', 'Bleu', 'Vert', 'Jaune', 'Orange']
     
-    # Mélange des câbles
+    # Mélange les câbles
     random.shuffle(cables)
 
-    # Le câble correct
+    # Détermine quel câble est le bon à couper
     correct_cable = random.choice(cables)
 
-    # Créer l'embed avec une image (remplace "image_url" par l'URL de ton image)
+    # Créer l'embed avec une image
     embed = discord.Embed(
         title="Épreuve de Sabotage de la Sécurité",
         description="Vous devez couper le bon câble parmi les suivants. Choisissez avec soin!",
         color=discord.Color.red()
     )
-    embed.set_image(url="https://example.com/cables_image.png")  # Remplacer par ton image de câbles
+    embed.set_image(url="https://example.com/cables_image.png")  # Remplacer par l'URL de l'image
 
-    # Créer des boutons pour les choix
+    # Créer des boutons pour chaque câble
     buttons = [Button(label=cable, style=discord.ButtonStyle.green, custom_id=cable) for cable in cables]
 
-    # Créer la vue avec les boutons
+    # Créer une vue et y ajouter les boutons
     view = View()
     for button in buttons:
         view.add_item(button)
 
-    # Envoyer l'embed avec les boutons
+    # Envoie l'embed avec les boutons
     await ctx.send(embed=embed, view=view)
 
-    # Attendre l'interaction avec un bouton
-    interaction = await bot.wait_for("button_click", check=lambda i: i.user == ctx.author and i.message == ctx.message)
+# Gestion des interactions de boutons
+@bot.event
+async def on_interaction(interaction):
+    # Vérifier si l'interaction provient d'un bouton
+    if isinstance(interaction, discord.Interaction):
+        # Obtenir le message et l'utilisateur de l'interaction
+        user = interaction.user
+        cable_choice = interaction.data['custom_id']  # Le câble sélectionné
 
-    # Vérifier si la bonne réponse a été donnée
-    if interaction.custom_id == correct_cable:
-        await interaction.response.send_message(f"Vous avez coupé le câble {correct_cable} ! La sécurité a été désactivée avec succès.", ephemeral=True)
-        # Ajoute ici la suite de l'épreuve ou des actions de succès
-    else:
-        await interaction.response.send_message(f"Erreur ! Vous avez coupé le câble {interaction.custom_id}. L'alarme s'est déclenchée !", ephemeral=True)
-        # Ajoute ici la suite en cas d'échec (par exemple, échec de l'épreuve)
+        # Si l'utilisateur a choisi le bon câble
+        if cable_choice == correct_cable:
+            await interaction.response.send_message(f"Bravo {user.mention} ! Vous avez coupé le câble {cable_choice}. La sécurité a été désactivée avec succès.", ephemeral=True)
+            # Ajouter ici la suite de l'épreuve si réussi
+        else:
+            await interaction.response.send_message(f"Dommage {user.mention} ! Vous avez coupé le câble {cable_choice}. L'alarme s'est déclenchée.", ephemeral=True)
+            # Ajouter ici la suite en cas d'échec
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

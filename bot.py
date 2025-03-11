@@ -2422,20 +2422,20 @@ def resolve_action(self, action, player):
         self.guard_hp -= damage
         return f"⚔ Vous attaquez et infligez {damage} dégâts aux gardes ! (Garde : {self.guard_hp} PV)"
         
-        elif action == "esquiver":
-            if random.random() < 0.6:
-                return "🏃 Vous esquivez avec succès ! Aucun dégât subi."
-            else:
-                self.player_hp[player] -= 5
-                return f"❌ Vous ratez votre esquive et prenez 5 dégâts ! (Vos PV : {self.player_hp[player]})"
-        
-        elif action == "assommer":
-            if random.random() < 0.4:
-                self.guard_hp = 0
-                return "💤 Vous assommez un garde avec succès ! Ils sont hors d'état de nuire."
-            else:
-                self.player_hp[player] -= 7
-                return f"❌ Vous tentez d'assommer un garde mais échouez ! Il vous frappe (-7 PV). (Vos PV : {self.player_hp[player]})"
+if action == "esquiver":
+    if random.random() < 0.6:
+        return "🏃 Vous esquivez avec succès ! Aucun dégât subi."
+    else:
+        self.player_hp[player] -= 5
+        return f"❌ Vous ratez votre esquive et prenez 5 dégâts ! (Vos PV : {self.player_hp[player]})"
+
+elif action == "assommer":
+    if random.random() < 0.4:
+        self.guard_hp = 0
+        return "💤 Vous assommez un garde avec succès ! Ils sont hors d'état de nuire."
+    else:
+        self.player_hp[player] -= 7
+        return f"❌ Vous tentez d'assommer un garde mais échouez ! Il vous frappe (-7 PV). (Vos PV : {self.player_hp[player]})"
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

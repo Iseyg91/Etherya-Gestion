@@ -2314,24 +2314,8 @@ class DiversionGame(discord.ui.View):
     def update_buttons(self):
         """Met à jour les boutons selon les scénarios disponibles"""
         self.clear_items()  # Supprime les boutons existants
-        for scenario in self.scenario_choices:
-            self.add_item(DiversionButton(scenario, self.scenario_choices[scenario]))
-
-import discord
-import random
-
-class DiversionGame(discord.ui.View):
-    def __init__(self, scenario_choices):
-        super().__init__(timeout=180)  # Le jeu dure 3 minutes
-        self.scenario_choices = scenario_choices
-        self.game_over = False
-        self.update_buttons()
-
-    def update_buttons(self):
-        """Met à jour les boutons selon les scénarios disponibles"""
-        self.clear_items()  # Supprime les boutons existants
-        for scenario in self.scenario_choices:
-            self.add_item(DiversionButton(scenario, self.scenario_choices[scenario]))
+        for scenario, success_chance in self.scenario_choices.items():
+            self.add_item(DiversionButton(scenario, success_chance))
 
 class DiversionButton(discord.ui.Button):
     def __init__(self, scenario, success_chance):
@@ -2341,61 +2325,54 @@ class DiversionButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         if self.view.game_over:
-            return await interaction.response.send_message("Le jeu est terminé !", ephemeral=True)
-
+            return await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Jeu Terminé",
+                    description="Le jeu est déjà terminé, veuillez attendre la prochaine manche.",
+                    color=discord.Color.orange()
+                ), ephemeral=True
+            )
+        
         roll = random.randint(1, 100)
-
-        # Déterminer le succès ou l'échec de la diversion
-        if roll <= self.success_chance:
-            result = "La diversion a été un succès !"
-            color = discord.Color.green()
-        else:
-            result = "La diversion a échoué... les autorités ont réagi trop vite."
-            color = discord.Color.red()
+        success = roll <= self.success_chance
 
         # Création de l'embed pour afficher le résultat
         result_embed = discord.Embed(
             title="Résultat de la Diversion",
-            description=result,
-            color=color
+            description="\n✅ La diversion a réussi !" if success else "\n❌ La diversion a échoué... Les autorités ont réagi trop vite.",
+            color=discord.Color.green() if success else discord.Color.red()
         )
-        result_embed.add_field(
-            name="Scénario Choisi",
-            value=self.scenario,
-            inline=False
-        )
-        result_embed.add_field(
-            name="Chance de Réussite",
-            value=f"{self.success_chance}%",
-            inline=False
-        )
-        result_embed.add_field(
-            name="Résultat du Lancer",
-            value=f"{roll}% - {'Succès' if roll <= self.success_chance else 'Échec'}",
-            inline=False
-        )
+        result_embed.add_field(name="🎭 Scénario Choisi", value=self.scenario, inline=False)
+        result_embed.add_field(name="🎲 Chance de Réussite", value=f"{self.success_chance}%", inline=True)
+        result_embed.add_field(name="🎯 Résultat du Lancer", value=f"{roll}% - {'Succès' if success else 'Échec'}", inline=True)
+        result_embed.set_footer(text="Une diversion bien menée peut tout changer...")
 
         self.view.game_over = True
-        await interaction.response.send_message(embed=result_embed, view=None)
+        await interaction.response.edit_message(embed=result_embed, view=None)
 
 @bot.command()
 async def start7(ctx):
     """Commande pour lancer l'épreuve de diversion"""
     embed = discord.Embed(
-        title="Choix de la Diversion",
-        description="Choisissez un scénario pour créer une diversion afin d'aider au braquage !",
+        title="🎭 Choix de la Diversion",
+        description="Sélectionnez une stratégie pour détourner l'attention et faciliter le braquage !\n\n**Les scénarios possibles :**",
         color=discord.Color.blurple()
     )
+    embed.add_field(name="🚗 Accident de voiture sur l'autoroute", value="70% de réussite", inline=False)
+    embed.add_field(name="🔫 Vol à main armée dans un autre quartier", value="60% de réussite", inline=False)
+    embed.add_field(name="🔥 Incendie dans un entrepôt abandonné", value="50% de réussite", inline=False)
+    embed.add_field(name="💣 Fausse alerte à la bombe", value="40% de réussite", inline=False)
+    embed.add_field(name="✊ Manifestation contre la police", value="30% de réussite", inline=False)
+    embed.set_footer(text="Sélectionnez un scénario ci-dessous pour commencer.")
 
     diversion_scenarios = {
-        "Accident de voiture sur l'autoroute": 70,
-        "Vol à main armée dans un autre quartier": 60,
-        "Incendie dans un entrepôt abandonné": 50,
-        "Fausse alerte à la bombe": 40,
-        "Manifestation contre la police": 30
+        "🚗 Accident de voiture sur l'autoroute": 70,
+        "🔫 Vol à main armée dans un autre quartier": 60,
+        "🔥 Incendie dans un entrepôt abandonné": 50,
+        "💣 Fausse alerte à la bombe": 40,
+        "✊ Manifestation contre la police": 30
     }
 
-    # Création des boutons pour chaque scénario
     view = DiversionGame(diversion_scenarios)
     await ctx.send(embed=embed, view=view)
 

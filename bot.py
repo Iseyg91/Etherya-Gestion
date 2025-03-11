@@ -2296,8 +2296,8 @@ diversion_scenarios = {
 async def on_ready():
     print(f"Bot connecté sous {bot.user}")
 
-@bot.command(name="start7")
-async def create_diversion(ctx):
+@bot.command()
+async def start7(ctx):
     # Création de l'embed pour la diversion
     embed = discord.Embed(
         title="Choix de la Diversion",

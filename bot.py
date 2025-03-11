@@ -1570,26 +1570,32 @@ ROLE_ID = 1166334752186433567  # ID du rôle à pinguer
 
 @tasks.loop(seconds=CHECK_INTERVAL)
 async def check_inactivity():
-    await bot.wait_until_ready()  # S'assurer que le bot est prêt avant d'exécuter la tâche
-    channel = bot.get_channel(CHANNEL_ID)
-    if not channel:
-        print("Le salon spécifié n'a pas été trouvé ou le bot n'a pas accès au salon.")
-        return
-    
-    async for message in channel.history(limit=1):
-        time_diff = (discord.utils.utcnow() - message.created_at).total_seconds()
-        print(f"Time difference: {time_diff} secondes")  # Affichage pour débogage
-        
-        if time_diff > INACTIVITY_THRESHOLD:
-            embed = discord.Embed(
-                title="💤 Le chat est endormi !",
-                description="Il n'y a eu aucun message depuis 3 heures ! Réveillez le chat 🗣️",
-                color=discord.Color.red()
-            )
-            embed.set_image(url=WARNING_IMAGE_URL)
-            role_mention = f"<@&{ROLE_ID}>"
-            await channel.send(content=f"{role_mention} **Réveillez le chat !**", embed=embed)
-            break  # Sortir de la boucle après la vérification d'un seul message
+    try:
+        await bot.wait_until_ready()  # S'assurer que le bot est prêt avant d'exécuter la tâche
+        channel = bot.get_channel(CHANNEL_ID)
+        if not channel:
+            print("Le salon spécifié n'a pas été trouvé ou le bot n'a pas accès au salon.")
+            return
+        print(f"Channel trouvé : {channel}")
+
+        async for message in channel.history(limit=1):
+            # Utilisation de datetime pour récupérer l'heure UTC
+            time_diff = (datetime.datetime.utcnow() - message.created_at.replace(tzinfo=None)).total_seconds()
+            print(f"Time difference: {time_diff} secondes")  # Affichage pour débogage
+            
+            if time_diff > INACTIVITY_THRESHOLD:
+                embed = discord.Embed(
+                    title="💤 Le chat est endormi !",
+                    description="Il n'y a eu aucun message depuis 3 heures ! Réveillez le chat 🗣️",
+                    color=discord.Color.red()
+                )
+                embed.set_image(url=WARNING_IMAGE_URL)
+                role_mention = f"<@&{ROLE_ID}>"
+                await channel.send(content=f"{role_mention} **Réveillez le chat !**", embed=embed)
+                break  # Sortir de la boucle après la vérification d'un seul message
+                
+    except Exception as e:
+        print(f"Erreur dans check_inactivity: {e}")
 
 #------------------------------------------------------------------------- Commandes Braquages : Flemme de Lister
     await ctx.send(embed=embed)

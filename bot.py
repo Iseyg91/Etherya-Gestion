@@ -105,9 +105,9 @@ sensitive_words = [
 # L'ID de l'administrateur
 ADMIN_ID = 792755123587645461
 
-@client.event
+@bot.event
 async def on_message(message):
-    if message.author == client.user:
+    if message.author == bot.user:
         return  # Ignore les messages du bot
 
     print(f"📩 Message reçu de {message.author}: {message.content}")  # Log des messages reçus
@@ -115,10 +115,12 @@ async def on_message(message):
     # Vérification des mots sensibles avec regex
     for word in sensitive_words:
         if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):  
-            print(f"🚨 Mot sensible détecté dans le message de {message.author} !")
-
+            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
             try:
-                admin = await client.fetch_user(ADMIN_ID)
+                # Vérifier si l'ID de l'admin est correct
+                admin = await bot.fetch_user(ADMIN_ID)
+                print(f"✅ Admin trouvé : {admin}")  # Log admin
+
                 alert_message = (f"🚨 **Alerte** : Mot sensible détecté !\n"
                                  f"📍 **Salon** : {message.channel.name}\n"
                                  f"👤 **Auteur** : {message.author} ({message.author.id})\n"
@@ -133,6 +135,7 @@ async def on_message(message):
                 print(f"⚠️ Erreur inconnue : {e}")
 
             break  # Arrêter après la première détection
+
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 @bot.command()
 async def clear(ctx, amount: int = None):

@@ -9,6 +9,7 @@ import datetime
 import re
 from keep_alive import keep_alive
 from discord.ui import Button, View
+from datetime import datetime
 from discord.ui import View, Select
 from discord.ext import tasks
 
@@ -117,24 +118,37 @@ async def on_message(message):
             print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
             
             # Exécuter l'envoi du message en arrière-plan pour ne pas bloquer les autres commandes
-            asyncio.create_task(send_alert_to_admin(message))
+            asyncio.create_task(send_alert_to_admin(message, word))
 
             break  # Arrêter après la première détection
 
     # Permettre aux autres commandes de s'exécuter
     await bot.process_commands(message)
 
-async def send_alert_to_admin(message):
+async def send_alert_to_admin(message, detected_word):
     try:
         admin = await bot.fetch_user(ADMIN_ID)
         print(f"✅ Admin trouvé : {admin}")
 
-        alert_message = (f"🚨 **Alerte** : Mot sensible détecté !\n"
-                         f"📍 **Salon** : {message.channel.name}\n"
-                         f"👤 **Auteur** : {message.author} ({message.author.id})\n"
-                         f"💬 **Message** : {message.content}")
-        
-        await admin.send(alert_message)
+        # Création d'un embed stylisé
+        embed = discord.Embed(
+            title="🚨 Alerte : Mot sensible détecté !",
+            description=f"Un message contenant un mot interdit a été détecté sur le serveur **{message.guild.name}**.",
+            color=discord.Color.red(),
+            timestamp=datetime.utcnow()
+        )
+        embed.add_field(name="📍 Salon", value=f"{message.channel.mention}", inline=True)
+        embed.add_field(name="👤 Auteur", value=f"{message.author.mention} (`{message.author.id}`)", inline=True)
+        embed.add_field(name="💬 Message", value=f"```{message.content}```", inline=False)
+        embed.add_field(name="⚠️ Mot détecté", value=f"`{detected_word}`", inline=True)
+
+        # Ajouter un lien vers le message si possible
+        if message.guild:
+            embed.add_field(name="🔗 Lien vers le message", value=f"[Clique ici]({message.jump_url})", inline=False)
+
+        embed.set_footer(text="Système de détection automatique", icon_url=bot.user.avatar.url)
+
+        await admin.send(embed=embed)
         print(f"✅ Alerte envoyée à l'admin {ADMIN_ID} en MP.")
     except discord.Forbidden:
         print(f"❌ Impossible d'envoyer un MP à l'admin {ADMIN_ID}. (MP bloqués)")

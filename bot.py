@@ -1344,8 +1344,6 @@ async def send_dm(member, action, reason, duration=None):
         if duration:
             embed.add_field(name="Durée:", value=duration, inline=False)
         await member.send(embed=embed)
-    except:
-        print(f"Impossible d'envoyer un MP à {member.display_name}"
 
 async def check_permissions(ctx):
     mod_role = discord.utils.get(ctx.guild.roles, id=MOD_ROLE_ID)

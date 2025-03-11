@@ -89,6 +89,59 @@ async def on_member_join(member):
 
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
+#------------------------------------------------------------------------- Commandes d'Administration : Detections de Mots sensible:
+# Liste des mots sensibles
+sensitive_words = [
+    "connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant",
+    "pute", "salope", "con", "raciste", "sexiste", "homophobe", "antisémite", "xenophobe",
+    "transphobe", "tuer", "assassin", "attaquer", "viol", "torturer", "menacer", "frapper",
+    "guerre", "pervers", "abus", "sexe", "pornographie", "nu", "masturbation", "adultère",
+    "drogue", "cocaïne", "héroïne", "crack", "alcool", "consommation abusive", "terrorisme",
+    "jihad", "bombardement", "suicidaire", "hack", "pirater", "voler des données", "phishing",
+    "ddos", "raid", "flood", "spam", "crasher", "ddos attack", "botnet", "infiltrer", "spammer",
+    "griefing", "troll", "spam bot", "server crash", "exploiter"
+]
+
+ADMIN_ID = 792755123587645461
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return  # Ignore les messages du bot
+
+    print(f"📩 Message reçu de {message.author}: {message.content}")
+
+    # Vérification des mots sensibles avec regex
+    for word in sensitive_words:
+        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
+            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
+            
+            # Exécuter l'envoi du message en arrière-plan pour ne pas bloquer les autres commandes
+            asyncio.create_task(send_alert_to_admin(message))
+
+            break  # Arrêter après la première détection
+
+    # Permettre aux autres commandes de s'exécuter
+    await bot.process_commands(message)
+
+async def send_alert_to_admin(message):
+    try:
+        admin = await bot.fetch_user(ADMIN_ID)
+        print(f"✅ Admin trouvé : {admin}")
+
+        alert_message = (f"🚨 **Alerte** : Mot sensible détecté !\n"
+                         f"📍 **Salon** : {message.channel.name}\n"
+                         f"👤 **Auteur** : {message.author} ({message.author.id})\n"
+                         f"💬 **Message** : {message.content}")
+        
+        await admin.send(alert_message)
+        print(f"✅ Alerte envoyée à l'admin {ADMIN_ID} en MP.")
+    except discord.Forbidden:
+        print(f"❌ Impossible d'envoyer un MP à l'admin {ADMIN_ID}. (MP bloqués)")
+    except discord.HTTPException as e:
+        print(f"⚠️ Erreur HTTP lors de l'envoi du MP : {e}")
+    except Exception as e:
+        print(f"⚠️ Erreur inconnue : {e}")
 
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 @bot.command()

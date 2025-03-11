@@ -2388,8 +2388,8 @@ class CasinoHeist(commands.Cog):
         self.guard_hp = 20  # PV des gardes
         self.player_hp = {}  # PV des joueurs
 
-@bot.command()
-async def start8(ctx):
+    @commands.command()
+    async def start8(self, ctx):
         """Lance l'épreuve de neutralisation de la sécurité."""
         player = ctx.author.id
         self.player_hp[player] = 20
@@ -2415,7 +2415,7 @@ async def start8(ctx):
         elif self.player_hp[player] <= 0:
             await ctx.send("❌ **Vous avez été mis hors d'état de nuire... Mission échouée !**")
 
-        def resolve_action(self, action, player):
+    def resolve_action(self, action, player):
         """Gère les actions du joueur et la réponse des gardes."""
         if action == "attaquer":
             damage = random.randint(5, 10)
@@ -2436,6 +2436,10 @@ async def start8(ctx):
             else:
                 self.player_hp[player] -= 7
                 return f"❌ Vous tentez d'assommer un garde mais échouez ! Il vous frappe (-7 PV). (Vos PV : {self.player_hp[player]})"
+
+# Ajout du Cog au bot
+async def setup(bot):
+    await bot.add_cog(CasinoHeist(bot))
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

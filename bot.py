@@ -2388,8 +2388,8 @@ class CasinoHeist(commands.Cog):
         self.guard_hp = 20  # PV des gardes
         self.player_hp = {}  # PV des joueurs
 
-@bot.command()
-async def start8(ctx):
+    @commands.command()
+    async def start8(self, ctx):
         """Lance l'épreuve de neutralisation de la sécurité."""
         player = ctx.author.id
         self.player_hp[player] = 20
@@ -2415,27 +2415,27 @@ async def start8(ctx):
         elif self.player_hp[player] <= 0:
             await ctx.send("❌ **Vous avez été mis hors d'état de nuire... Mission échouée !**")
 
-def resolve_action(self, action, player):
-    """Gère les actions du joueur et la réponse des gardes."""
-    if action == "attaquer":
-        damage = random.randint(5, 10)
-        self.guard_hp -= damage
-        return f"⚔ Vous attaquez et infligez {damage} dégâts aux gardes ! (Garde : {self.guard_hp} PV)"
+    def resolve_action(self, action, player):
+        """Gère les actions du joueur et la réponse des gardes."""
+        if action == "attaquer":
+            damage = random.randint(5, 10)
+            self.guard_hp -= damage
+            return f"⚔ Vous attaquez et infligez {damage} dégâts aux gardes ! (Garde : {self.guard_hp} PV)"
         
-if action == "esquiver":
-    if random.random() < 0.6:
-        return "🏃 Vous esquivez avec succès ! Aucun dégât subi."
-    else:
-        self.player_hp[player] -= 5
-        return f"❌ Vous ratez votre esquive et prenez 5 dégâts ! (Vos PV : {self.player_hp[player]})"
+        elif action == "esquiver":
+            if random.random() < 0.6:
+                return "🏃 Vous esquivez avec succès ! Aucun dégât subi."
+            else:
+                self.player_hp[player] -= 5
+                return f"❌ Vous ratez votre esquive et prenez 5 dégâts ! (Vos PV : {self.player_hp[player]})"
 
-elif action == "assommer":
-    if random.random() < 0.4:
-        self.guard_hp = 0
-        return "💤 Vous assommez un garde avec succès ! Ils sont hors d'état de nuire."
-    else:
-        self.player_hp[player] -= 7
-        return f"❌ Vous tentez d'assommer un garde mais échouez ! Il vous frappe (-7 PV). (Vos PV : {self.player_hp[player]})"
+        elif action == "assommer":
+            if random.random() < 0.4:
+                self.guard_hp = 0
+                return "💤 Vous assommez un garde avec succès ! Ils sont hors d'état de nuire."
+            else:
+                self.player_hp[player] -= 7
+                return f"❌ Vous tentez d'assommer un garde mais échouez ! Il vous frappe (-7 PV). (Vos PV : {self.player_hp[player]})"
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

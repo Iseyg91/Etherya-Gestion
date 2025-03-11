@@ -6,6 +6,7 @@ import random
 import asyncio
 import time
 import datetime
+import re
 from keep_alive import keep_alive
 from discord.ui import Button, View
 from discord.ui import View, Select
@@ -105,36 +106,33 @@ sensitive_words = [
 ADMIN_ID = 792755123587645461
 
 @client.event
-async def on_ready():
-    print(f'Nous avons connecté le bot en tant que {client.user}')
-
-@client.event
 async def on_message(message):
-    # On ignore les messages du bot lui-même
     if message.author == client.user:
-        return
+        return  # Ignore les messages du bot
 
-    # Vérifie si l'un des mots sensibles est dans le message
+    print(f"📩 Message reçu de {message.author}: {message.content}")  # Log des messages reçus
+
+    # Vérification des mots sensibles avec regex
     for word in sensitive_words:
-        if word.lower() in message.content.lower():
-            # Trouver l'utilisateur et le salon
-            channel_name = message.channel.name
-            author_name = message.author.name
+        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):  
+            print(f"🚨 Mot sensible détecté dans le message de {message.author} !")
 
             try:
-                # Tente d'envoyer un message privé à l'administrateur
                 admin = await client.fetch_user(ADMIN_ID)
-                alert_message = (f"Alerte : Un message contenant un mot sensible a été détecté !\n"
-                                 f"Salon : #{channel_name}\n"
-                                 f"Auteur : {author_name} ({message.author.id})\n"
-                                 f"Contenu du message : {message.content}")
+                alert_message = (f"🚨 **Alerte** : Mot sensible détecté !\n"
+                                 f"📍 **Salon** : {message.channel.name}\n"
+                                 f"👤 **Auteur** : {message.author} ({message.author.id})\n"
+                                 f"💬 **Message** : {message.content}")
                 await admin.send(alert_message)
-                print(f"Message privé envoyé à l'admin {admin.name}")
+                print(f"✅ Alerte envoyée à l'admin {ADMIN_ID} en MP.")
             except discord.Forbidden:
-                print(f"Le bot ne peut pas envoyer de message privé à l'admin {ADMIN_ID}")
+                print(f"❌ Impossible d'envoyer un MP à l'admin {ADMIN_ID}. (MP bloqués)")
+            except discord.HTTPException as e:
+                print(f"⚠️ Erreur HTTP lors de l'envoi du MP : {e}")
             except Exception as e:
-                print(f"Erreur lors de l'envoi du message privé : {e}")
-            break
+                print(f"⚠️ Erreur inconnue : {e}")
+
+            break  # Arrêter après la première détection
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 @bot.command()
 async def clear(ctx, amount: int = None):

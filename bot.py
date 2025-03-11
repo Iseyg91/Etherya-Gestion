@@ -1562,40 +1562,38 @@ async def uptime(ctx):
     )
     embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
 #------------------------------------------------------------------------- Inactivité : Detection d'inactvité
-CHANNEL_ID = 1166081599230709830  # ID du salon à surveiller
+
+CHANNEL_ID = 1168118179378241576  # Remplace par l'ID du salon à surveiller
 CHECK_INTERVAL = 30  # Vérification toutes les 30 secondes
-INACTIVITY_THRESHOLD = 10800  # 3 heures d'inactivité (en secondes)
-WARNING_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/efL0tB_pALZ6fv0DVFXml.jpg"
-ROLE_ID = 1166334752186433567  # ID du rôle à pinguer
+INACTIVITY_THRESHOLD = 30  # 30 secondes d'inactivité
+WARNING_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/efL0tB_pALZ6fv0DVFXml.jpg"  # Mets une URL d'image ici
 
 @tasks.loop(seconds=CHECK_INTERVAL)
 async def check_inactivity():
-    try:
-        await bot.wait_until_ready()  # S'assurer que le bot est prêt avant d'exécuter la tâche
-        channel = bot.get_channel(CHANNEL_ID)
-        if not channel:
-            print("Le salon spécifié n'a pas été trouvé ou le bot n'a pas accès au salon.")
-            return
-        print(f"Channel trouvé : {channel}")
-
+    # Récupérer le salon par son ID
+    channel = bot.get_channel(CHANNEL_ID)
+    if channel:
+        # Vérifier l'historique des messages
         async for message in channel.history(limit=1):
-            # Utilisation de datetime pour récupérer l'heure UTC
-            time_diff = (datetime.datetime.utcnow() - message.created_at.replace(tzinfo=None)).total_seconds()
-            print(f"Time difference: {time_diff} secondes")  # Affichage pour débogage
-            
+            # Calculer la différence de temps
+            time_diff = (discord.utils.utcnow() - message.created_at).total_seconds()
+            print(f"Time difference: {time_diff} secondes")  # Afficher la différence pour déboguer
             if time_diff > INACTIVITY_THRESHOLD:
                 embed = discord.Embed(
                     title="💤 Le chat est endormi !",
-                    description="Il n'y a eu aucun message depuis 3 heures ! Réveillez le chat 🗣️",
+                    description="Il n'y a eu aucun message depuis 30 secondes ! Réveillez le chat 🗣️",
                     color=discord.Color.red()
                 )
                 embed.set_image(url=WARNING_IMAGE_URL)
-                role_mention = f"<@&{ROLE_ID}>"
-                await channel.send(content=f"{role_mention} **Réveillez le chat !**", embed=embed)
-                break  # Sortir de la boucle après la vérification d'un seul message
-                
-    except Exception as e:
-        print(f"Erreur dans check_inactivity: {e}")
+                await channel.send(content="@here **Réveillez le chat !**", embed=embed)
+    else:
+        print("Le salon spécifié n'a pas été trouvé ou le bot n'a pas accès au salon.")
+
+# Assurez-vous que la boucle est démarrée lors de l'initialisation du bot
+@bot.event
+async def on_ready():
+    print(f"{bot.user} est en ligne et prêt à vérifier l'inactivité.")
+    check_inactivity.start()  # Démarre la boucle de vérification
 
 #------------------------------------------------------------------------- Commandes Braquages : Flemme de Lister
     await ctx.send(embed=embed)

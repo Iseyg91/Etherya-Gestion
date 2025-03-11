@@ -2394,10 +2394,14 @@ class FightView(View):
     
     async def check_winner(self, interaction):
         if self.player_hp <= 0:
-            await interaction.response.edit_message(content="💀 Vous avez perdu contre la sécurité !", view=None)
+            embed_lose = discord.Embed(title="Défaite...", description="💀 Vous avez perdu contre la sécurité !", color=discord.Color.dark_red())
+            embed_lose.set_footer(text="Retentez votre chance plus tard.")
+            await interaction.response.edit_message(embed=embed_lose, view=None)
             return True
         elif self.guard_hp <= 0:
-            await interaction.response.edit_message(content="🎉 Vous avez vaincu la sécurité et poursuivez le braquage !", view=None)
+            embed_win = discord.Embed(title="Victoire !", description="🎉 Vous avez vaincu la sécurité et poursuivez le braquage !", color=discord.Color.green())
+            embed_win.set_footer(text="Bonne chance pour la suite du braquage !")
+            await interaction.response.edit_message(embed=embed_win, view=None)
             return True
         return False
 

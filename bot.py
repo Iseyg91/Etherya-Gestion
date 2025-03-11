@@ -2380,62 +2380,73 @@ async def start7(ctx):
     view = DiversionGame(diversion_scenarios)
     await ctx.send(embed=embed, view=view)
 
+class CasinoHeistGame(View):
+    def __init__(self, bot, ctx):
+        super().__init__()
+        self.bot = bot
+        self.ctx = ctx
+        self.guard_hp = 20
+        self.player_hp = 20
+        
+        self.attack_button = Button(label="Attaquer ⚔", style=discord.ButtonStyle.red)
+        self.dodge_button = Button(label="Esquiver 🏃", style=discord.ButtonStyle.blurple)
+        self.knockout_button = Button(label="Assommer 💤", style=discord.ButtonStyle.green)
+        
+        self.attack_button.callback = self.attack
+        self.dodge_button.callback = self.dodge
+        self.knockout_button.callback = self.knockout
+        
+        self.add_item(self.attack_button)
+        self.add_item(self.dodge_button)
+        self.add_item(self.knockout_button)
+    
+    async def attack(self, interaction: discord.Interaction):
+        damage = random.randint(5, 10)
+        self.guard_hp -= damage
+        message = f"⚔ Vous attaquez et infligez {damage} dégâts aux gardes ! (Garde : {self.guard_hp} PV)"
+        await self.update_message(interaction, message)
+    
+    async def dodge(self, interaction: discord.Interaction):
+        if random.random() < 0.6:
+            message = "🏃 Vous esquivez avec succès ! Aucun dégât subi."
+        else:
+            self.player_hp -= 5
+            message = f"❌ Vous ratez votre esquive et prenez 5 dégâts ! (Vos PV : {self.player_hp})"
+        await self.update_message(interaction, message)
+    
+    async def knockout(self, interaction: discord.Interaction):
+        if random.random() < 0.4:
+            self.guard_hp = 0
+            message = "💤 Vous assommez un garde avec succès ! Ils sont hors d'état de nuire."
+        else:
+            self.player_hp -= 7
+            message = f"❌ Vous tentez d'assommer un garde mais échouez ! Il vous frappe (-7 PV). (Vos PV : {self.player_hp})"
+        await self.update_message(interaction, message)
+    
+    async def update_message(self, interaction: discord.Interaction, message: str):
+        if self.guard_hp <= 0:
+            message += "\n✅ **Les gardes sont neutralisés ! Vous pouvez avancer.**"
+            self.disable_buttons()
+        elif self.player_hp <= 0:
+            message += "\n❌ **Vous avez été mis hors d'état de nuire... Mission échouée !**"
+            self.disable_buttons()
+        
+        await interaction.response.edit_message(content=message, view=self)
+    
+    def disable_buttons(self):
+        for button in self.children:
+            button.disabled = True
+
 class CasinoHeist(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.guard_hp = 20  # PV des gardes
-        self.player_hp = {}  # PV des joueurs
-
+    
 @bot.command()
-async def start8(self, ctx):
+    async def start8(self, ctx):
         """Lance l'épreuve de neutralisation de la sécurité."""
-        player = ctx.author.id
-        self.player_hp[player] = 20
+        view = CasinoHeistGame(self.bot, ctx)
+        await ctx.send("🔫 **Épreuve : Neutraliser la sécurité** 🔫\nDes gardes vous repèrent ! Choisissez votre action :", view=view)
 
-        await ctx.send(f"🔫 **Épreuve : Neutraliser la sécurité** 🔫\nDes gardes vous repèrent ! Choisissez votre action :\n`attaquer` ⚔ | `esquiver` 🏃 | `assommer` 💤")
-
-        def check(m):
-            return m.author.id == player and m.content.lower() in ["attaquer", "esquiver", "assommer"]
-
-        while self.guard_hp > 0 and self.player_hp[player] > 0:
-            try:
-                msg = await self.bot.wait_for("message", check=check, timeout=20)
-                action = msg.content.lower()
-                result = self.resolve_action(action, player)
-                await ctx.send(result)
-            except Exception:
-                await ctx.send("⏳ Vous avez mis trop de temps à répondre ! Les gardes vous maîtrisent ! ❌")
-                self.player_hp[player] = 0
-                break
-
-        if self.guard_hp <= 0:
-            await ctx.send("✅ **Les gardes sont neutralisés ! Vous pouvez avancer.**")
-        elif self.player_hp[player] <= 0:
-            await ctx.send("❌ **Vous avez été mis hors d'état de nuire... Mission échouée !**")
-
-def resolve_action(self, action, player):
-        """Gère les actions du joueur et la réponse des gardes."""
-        if action == "attaquer":
-            damage = random.randint(5, 10)
-            self.guard_hp -= damage
-            return f"⚔ Vous attaquez et infligez {damage} dégâts aux gardes ! (Garde : {self.guard_hp} PV)"
-        
-        elif action == "esquiver":
-            if random.random() < 0.6:
-                return "🏃 Vous esquivez avec succès ! Aucun dégât subi."
-            else:
-                self.player_hp[player] -= 5
-                return f"❌ Vous ratez votre esquive et prenez 5 dégâts ! (Vos PV : {self.player_hp[player]})"
-
-        elif action == "assommer":
-            if random.random() < 0.4:
-                self.guard_hp = 0
-                return "💤 Vous assommez un garde avec succès ! Ils sont hors d'état de nuire."
-            else:
-                self.player_hp[player] -= 7
-                return f"❌ Vous tentez d'assommer un garde mais échouez ! Il vous frappe (-7 PV). (Vos PV : {self.player_hp[player]})"
-
-# Ajout du Cog au bot
 async def setup(bot):
     await bot.add_cog(CasinoHeist(bot))
 

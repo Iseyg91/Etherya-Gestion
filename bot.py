@@ -2358,13 +2358,13 @@ async def start7(ctx):
         description="Sélectionnez une stratégie pour détourner l'attention et faciliter le braquage !\n\n**Les scénarios possibles :**",
         color=discord.Color.blurple()
     )
-    embed.add_field(name="🚗 Accident de voiture sur l'autoroute", value="70% de réussite", inline=False)
-    embed.add_field(name="🔫 Vol à main armée dans un autre quartier", value="60% de réussite", inline=False)
-    embed.add_field(name="🔥 Incendie dans un entrepôt abandonné", value="50% de réussite", inline=False)
-    embed.add_field(name="💣 Fausse alerte à la bombe", value="40% de réussite", inline=False)
-    embed.add_field(name="✊ Manifestation contre la police", value="30% de réussite", inline=False)
+    embed.add_field(name="🚗 Accident de voiture sur l'autoroute", value="La circulation est complètement bloquée ! 🚧", inline=False)
+    embed.add_field(name="🔫 Vol à main armée dans un autre quartier", value="Toutes les unités sont envoyées sur place ! 🚔", inline=False)
+    embed.add_field(name="🔥 Incendie dans un entrepôt abandonné", value="Les pompiers et la police sont mobilisés ! 🚒", inline=False)
+    embed.add_field(name="💣 Fausse alerte à la bombe", value="Le quartier est évacué et sécurisé ! 🚨", inline=False)
+    embed.add_field(name="✊ Manifestation contre la police", value="Les forces de l'ordre sont débordées par la foule ! 📢", inline=False)
     embed.set_footer(text="Sélectionnez un scénario ci-dessous pour commencer.")
-
+    
     diversion_scenarios = {
         "🚗 Accident de voiture sur l'autoroute": 70,
         "🔫 Vol à main armée dans un autre quartier": 60,

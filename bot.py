@@ -2443,8 +2443,61 @@ async def start8(ctx):
     view = FightView()
     embed = view.update_embed(ctx)
     await ctx.send(embed=embed, view=view)
-
     
+class HackView(View):
+    def __init__(self):
+        super().__init__()
+        self.progress = 0  # Avancement du hack (3 étapes à réussir)
+
+    def update_embed(self, interaction):
+        embed = discord.Embed(title="Hacker les Caméras", description="Vous tentez de désactiver le système de surveillance...", color=discord.Color.blue())
+        embed.add_field(name="Progression", value=f"🔓 Étape {self.progress}/3", inline=True)
+        return embed
+
+    async def check_success(self, interaction):
+        if self.progress >= 3:
+            embed_success = discord.Embed(title="Hack Réussi !", description="🎉 Vous avez désactivé les caméras de sécurité !", color=discord.Color.green())
+            embed_success.set_footer(text="La voie est libre pour continuer le braquage !")
+            await interaction.response.edit_message(embed=embed_success, view=None)
+            return True
+        return False
+
+    @discord.ui.button(label="Forcer le mot de passe", style=discord.ButtonStyle.primary)
+    async def force_password(self, interaction: discord.Interaction, button: Button):
+        if random.random() > 0.5:
+            self.progress += 1
+            if await self.check_success(interaction):
+                return
+            await interaction.response.edit_message(content="🔑 Mot de passe forcé avec succès !", embed=self.update_embed(interaction))
+        else:
+            await interaction.response.edit_message(content="❌ Échec du forçage de mot de passe !", embed=self.update_embed(interaction))
+    
+    @discord.ui.button(label="Bypass le pare-feu", style=discord.ButtonStyle.danger)
+    async def bypass_firewall(self, interaction: discord.Interaction, button: Button):
+        if random.random() > 0.6:
+            self.progress += 1
+            if await self.check_success(interaction):
+                return
+            await interaction.response.edit_message(content="🔥 Pare-feu contourné avec succès !", embed=self.update_embed(interaction))
+        else:
+            await interaction.response.edit_message(content="🚨 Le pare-feu a détecté une intrusion !", embed=self.update_embed(interaction))
+
+    @discord.ui.button(label="Déconnecter les caméras", style=discord.ButtonStyle.success)
+    async def disconnect_cameras(self, interaction: discord.Interaction, button: Button):
+        if random.random() > 0.7:
+            self.progress += 1
+            if await self.check_success(interaction):
+                return
+            await interaction.response.edit_message(content="📷 Caméras désactivées !", embed=self.update_embed(interaction))
+        else:
+            await interaction.response.edit_message(content="❌ Tentative échouée, les caméras sont toujours actives !", embed=self.update_embed(interaction))
+
+@bot.command()
+async def start9(ctx):
+    view = HackView()
+    embed = view.update_embed(ctx)
+    await ctx.send(embed=embed, view=view)
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

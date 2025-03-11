@@ -1345,11 +1345,7 @@ async def send_dm(member, action, reason, duration=None):
             embed.add_field(name="Durée:", value=duration, inline=False)
         await member.send(embed=embed)
     except:
-        print(f"Impossible d'envoyer un MP à {member.display_name}")
-
-@bot.event
-async def on_ready():
-    print(f'Connecté en tant que {bot.user}')
+        print(f"Impossible d'envoyer un MP à {member.display_name}"
 
 async def check_permissions(ctx):
     mod_role = discord.utils.get(ctx.guild.roles, id=MOD_ROLE_ID)
@@ -2296,71 +2292,6 @@ class DiversionGame(discord.ui.View):
         for scenario in self.scenario_choices:
             self.add_item(DiversionButton(scenario, self.scenario_choices[scenario]))
 
-class DiversionButton(discord.ui.Button):
-    def __init__(self, scenario, success_chance):
-        super().__init__(label=scenario, style=discord.ButtonStyle.primary)
-        self.scenario = scenario
-        self.success_chance = success_chance
-
-    async def callback(self, interaction: discord.Interaction):
-        if self.view.game_over:
-            return await interaction.response.send_message("Le jeu est terminé !", ephemeral=True)
-
-        roll = random.randint(1, 100)
-
-        # Déterminer le succès ou l'échec de la diversion
-        if roll <= self.success_chance:
-            result = "La diversion a été un succès !"
-            color = discord.Color.green()
-        else:
-            result = "La diversion a échoué... les autorités ont réagi trop vite."
-            color = discord.Color.red()
-
-        # Création de l'embed pour afficher le résultat
-        result_embed = discord.Embed(
-            title="Résultat de la Diversion",
-            description=result,
-            color=color
-        )
-        result_embed.add_field(
-            name="Scénario Choisi",
-            value=self.scenario,
-            inline=False
-        )
-        result_embed.add_field(
-            name="Chance de Réussite",
-            value=f"{self.success_chance}%",
-            inline=False
-        )
-        result_embed.add_field(
-            name="Résultat du Lancer",
-            value=f"{roll}% - {'Succès' if roll <= self.success_chance else 'Échec'}",
-            inline=False
-        )
-
-        self.view.game_over = True
-        await interaction.response.send_message(embed=result_embed, view=None)
-
-@bot.command()
-async def start7(ctx):
-    """Commande pour lancer l'épreuve de diversion"""
-    embed = discord.Embed(
-        title="Choix de la Diversion",
-        description="Choisissez un scénario pour créer une diversion afin d'aider au braquage !",
-        color=discord.Color.blurple()
-    )
-
-    diversion_scenarios = {
-        "Accident de voiture sur l'autoroute": 70,
-        "Vol à main armée dans un autre quartier": 60,
-        "Incendie dans un entrepôt abandonné": 50,
-        "Fausse alerte à la bombe": 40,
-        "Manifestation contre la police": 30
-    }
-
-    # Création des boutons pour chaque scénario
-    view = DiversionGame(diversion_scenarios)
-    await ctx.send(embed=embed, view=view
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

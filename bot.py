@@ -2296,7 +2296,7 @@ diversion_scenarios = {
 async def on_ready():
     print(f"Bot connecté sous {bot.user}")
 
-@bot.command(name="diversion")
+@bot.command(name="start7")
 async def create_diversion(ctx):
     # Création de l'embed pour la diversion
     embed = discord.Embed(
@@ -2319,7 +2319,7 @@ async def create_diversion(ctx):
 async def launch_diversion(ctx, scenario: str):
     # Vérification que le scénario existe
     if scenario not in diversion_scenarios:
-        await ctx.send("Ce scénario n'est pas valide. Utilisez !diversion pour voir les options disponibles.")
+        await ctx.send("Ce scénario n'est pas valide. Utilisez !start7 pour voir les options disponibles.")
         return
 
     # Calcul du succès de la diversion
@@ -2357,7 +2357,7 @@ async def launch_diversion(ctx, scenario: str):
     )
 
     await ctx.send(embed=result_embed)
-    
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

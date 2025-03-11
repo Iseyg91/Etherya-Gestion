@@ -2407,8 +2407,8 @@ class FightView(View):
 
     @discord.ui.button(label="Attaquer", style=discord.ButtonStyle.danger)
     async def attack(self, interaction: discord.Interaction, button: Button):
-        player_damage = random.randint(10, 20)
-        guard_damage = random.randint(15, 25)  # Augmenté pour que le joueur perde plus de PV
+        player_damage = random.randint(15, 25)  # Augmenté pour que le joueur inflige plus de dégâts
+        guard_damage = random.randint(10, 20)  # Réduit pour équilibrer le combat
         self.guard_hp -= player_damage
         self.player_hp -= guard_damage
         
@@ -2422,7 +2422,7 @@ class FightView(View):
         if random.random() > 0.5:
             await interaction.response.edit_message(content="✨ Vous avez esquivé l'attaque des gardes !", embed=self.update_embed(interaction))
         else:
-            damage = random.randint(10, 20)  # Augmenté pour que l'échec d'esquive soit plus punitif
+            damage = random.randint(5, 15)  # Réduit pour rendre l'échec moins punitif
             self.player_hp -= damage
             if await self.check_winner(interaction):
                 return
@@ -2443,6 +2443,7 @@ async def start8(ctx):
     view = FightView()
     embed = view.update_embed(ctx)
     await ctx.send(embed=embed, view=view)
+
     
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

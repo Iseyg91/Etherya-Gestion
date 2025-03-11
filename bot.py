@@ -2442,7 +2442,7 @@ class CasinoHeist(commands.Cog):
         self.bot = bot
     
 @bot.command()
-    async def start8(self, ctx):
+async def start8(self, ctx):
         """Lance l'épreuve de neutralisation de la sécurité."""
         view = CasinoHeistGame(self.bot, ctx)
         await ctx.send("🔫 **Épreuve : Neutraliser la sécurité** 🔫\nDes gardes vous repèrent ! Choisissez votre action :", view=view)

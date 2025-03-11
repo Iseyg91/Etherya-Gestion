@@ -2415,12 +2415,12 @@ async def start8(ctx):
         elif self.player_hp[player] <= 0:
             await ctx.send("❌ **Vous avez été mis hors d'état de nuire... Mission échouée !**")
 
-        def resolve_action(self, action, player):
-        """Gère les actions du joueur et la réponse des gardes."""
-        if action == "attaquer":
-            damage = random.randint(5, 10)
-            self.guard_hp -= damage
-            return f"⚔ Vous attaquez et infligez {damage} dégâts aux gardes ! (Garde : {self.guard_hp} PV)"
+def resolve_action(self, action, player):
+    """Gère les actions du joueur et la réponse des gardes."""
+    if action == "attaquer":
+        damage = random.randint(5, 10)
+        self.guard_hp -= damage
+        return f"⚔ Vous attaquez et infligez {damage} dégâts aux gardes ! (Garde : {self.guard_hp} PV)"
         
         elif action == "esquiver":
             if random.random() < 0.6:

@@ -2170,7 +2170,7 @@ class CableView(View):
         super().__init__()
         self.correct_cable = correct_cable
 
-        cables = ['Rouge', 'Bleu', 'Vert', 'Jaune', 'Orange']
+        cables = ['🔴 Rouge', '🔵 Bleu', '🟢 Vert', '🟡 Jaune', '🟠 Orange']
         random.shuffle(cables)
 
         for cable in cables:
@@ -2181,26 +2181,35 @@ class CableView(View):
     def create_callback(self, cable):
         async def callback(interaction: discord.Interaction):
             if cable == self.correct_cable:
-                await interaction.response.send_message(
-                    f"🎉 Bravo {interaction.user.mention} ! Vous avez coupé le bon câble : **{cable}**. "
-                    "La sécurité a été désactivée avec succès.", ephemeral=True
+                embed = discord.Embed(
+                    title="✅ Câble coupé avec succès !",
+                    description=f"🎉 **Bravo {interaction.user.mention} !**\n\n"
+                                f"Tu as coupé le bon câble **{cable}** et la sécurité a été désactivée.",
+                    color=discord.Color.green()
                 )
-                await step_2(interaction, self.correct_cable)
+                embed.set_thumbnail(url="https://example.com/success.png")  # Remplace avec une vraie URL
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await step_2(interaction)
             else:
-                await interaction.response.send_message(
-                    f"🚨 Oups {interaction.user.mention} ! Mauvais choix... Vous avez coupé **{cable}**, "
-                    "mais cela a déclenché l'alarme !", ephemeral=True
+                embed = discord.Embed(
+                    title="🚨 Mauvais câble !",
+                    description=f"❌ **Oups {interaction.user.mention} !**\n\n"
+                                f"Tu as coupé **{cable}**, mais cela a déclenché l'alarme ! 🚨",
+                    color=discord.Color.red()
                 )
+                embed.set_thumbnail(url="https://example.com/fail.png")  # Remplace avec une vraie URL
+                await interaction.response.send_message(embed=embed, ephemeral=True)
         return callback
 
 
-# Étape 1 : Sélectionner le bon câble
+#  Étape 1 : Sélectionner le bon câble
 async def step_1(ctx):
-    correct_cable = random.choice(['Rouge', 'Bleu', 'Vert', 'Jaune', 'Orange'])
+    correct_cable = random.choice(['🔴 Rouge', '🔵 Bleu', '🟢 Vert', '🟡 Jaune', '🟠 Orange'])
 
     embed = discord.Embed(
-        title="🛠 Étape 1: Sabotage de la Sécurité",
-        description="Vous devez couper le bon câble pour désactiver la sécurité. Choisissez avec soin !",
+        title="🔧 Étape 1: Sabotage de la Sécurité",
+        description="🎯 **Mission :** Couper le bon câble pour désactiver la sécurité.\n\n"
+                    "⚠️ Faites attention ! Si vous vous trompez, l'alarme se déclenchera !",
         color=discord.Color.red()
     )
     embed.set_image(url="https://example.com/cables_image.png")  # Remplace par une vraie URL
@@ -2209,12 +2218,12 @@ async def step_1(ctx):
     await ctx.send(embed=embed, view=view)
 
 
-# Classe pour la deuxième étape (choix de l'action)
+#  Classe pour la deuxième étape (choix de l'action)
 class ActionView(View):
     def __init__(self):
         super().__init__()
 
-        actions = ['Forcer la porte', 'Utiliser un code de sécurité', 'Contacter un allié']
+        actions = ['🔨 Forcer la porte', '🔢 Utiliser un code de sécurité', '📞 Contacter un allié']
         random.shuffle(actions)
 
         for action in actions:
@@ -2224,26 +2233,45 @@ class ActionView(View):
 
     def create_callback(self, action):
         async def callback(interaction: discord.Interaction):
-            if action == 'Utiliser un code de sécurité':
-                await interaction.response.send_message(
-                    "✅ Bonne décision ! Vous avez utilisé le code de sécurité avec succès.", ephemeral=True
+            if action == '🔢 Utiliser un code de sécurité':
+                embed = discord.Embed(
+                    title="✅ Action réussie !",
+                    description=f"🔐 **Bravo {interaction.user.mention} !**\n\n"
+                                "Tu as utilisé le code de sécurité avec succès et la porte s'ouvre ! 🚪",
+                    color=discord.Color.green()
                 )
-                await interaction.followup.send("🎯 **Vous avez réussi l'épreuve complète !**")
+                embed.set_thumbnail(url="https://example.com/success.png")  # Remplace avec une vraie URL
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.followup.send(embed=discord.Embed(
+                    title="🎯 Mission réussie !",
+                    description="✅ **Tu as terminé l'épreuve avec succès !** 🎉",
+                    color=discord.Color.gold()
+                ))
             else:
-                await interaction.response.send_message(
-                    "❌ Mauvaise action... Cela vous a ralenti dans l'épreuve.", ephemeral=True
+                embed = discord.Embed(
+                    title="❌ Mauvaise action...",
+                    description=f"⚠️ **{interaction.user.mention}, mauvaise décision !**\n\n"
+                                "Tu as choisi **{action}**, mais cela t'a ralenti dans l'épreuve...",
+                    color=discord.Color.red()
                 )
-                await interaction.followup.send("🔚 **L'épreuve est terminée.**")
+                embed.set_thumbnail(url="https://example.com/fail.png")  # Remplace avec une vraie URL
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.followup.send(embed=discord.Embed(
+                    title="🔚 Fin de l'épreuve",
+                    description="❌ **Tu as échoué. La mission est terminée.**",
+                    color=discord.Color.dark_gray()
+                ))
         return callback
 
 
 # Étape 2 : Sélectionner une action
-async def step_2(interaction, correct_cable):
+async def step_2(interaction):
     embed = discord.Embed(
         title="🔑 Étape 2: Sélectionner une action",
-        description="Vous devez choisir une action pour continuer l'épreuve.",
+        description="🤔 **Choisissez la meilleure action pour continuer l'épreuve.**",
         color=discord.Color.blue()
     )
+    embed.set_thumbnail(url="https://example.com/action_choice.png")  # Remplace avec une vraie URL
 
     view = ActionView()
     await interaction.followup.send(embed=embed, view=view)

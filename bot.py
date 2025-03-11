@@ -2162,7 +2162,7 @@ async def start5(ctx):
     message = await ctx.send(embed=embed, view=MaterialRetrieval())
     print(f"Message envoyé avec vue : {message.content}")  # Ceci va t'aider à vérifier que le message est envoyé correctement.
 
-# Classe pour la première étape (choix du câble)
+# 🎛️ Classe pour la première étape (choix du câble)
 class CableView(View):
     def __init__(self, correct_cable):
         super().__init__()
@@ -2186,7 +2186,7 @@ class CableView(View):
                     color=discord.Color.green()
                 )
                 embed.set_thumbnail(url="https://example.com/success.png")  # Remplace avec une vraie URL
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.response.send_message(embed=embed)
                 await step_2(interaction)
             else:
                 embed = discord.Embed(
@@ -2196,11 +2196,11 @@ class CableView(View):
                     color=discord.Color.red()
                 )
                 embed.set_thumbnail(url="https://example.com/fail.png")  # Remplace avec une vraie URL
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.response.send_message(embed=embed)
         return callback
 
 
-#  Étape 1 : Sélectionner le bon câble
+# 🛠 Étape 1 : Sélectionner le bon câble
 async def step_1(ctx):
     correct_cable = random.choice(['🔴 Rouge', '🔵 Bleu', '🟢 Vert', '🟡 Jaune', '🟠 Orange'])
 
@@ -2216,7 +2216,7 @@ async def step_1(ctx):
     await ctx.send(embed=embed, view=view)
 
 
-#  Classe pour la deuxième étape (choix de l'action)
+# 🔑 Classe pour la deuxième étape (choix de l'action)
 class ActionView(View):
     def __init__(self):
         super().__init__()
@@ -2239,7 +2239,7 @@ class ActionView(View):
                     color=discord.Color.green()
                 )
                 embed.set_thumbnail(url="https://example.com/success.png")  # Remplace avec une vraie URL
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.response.send_message(embed=embed)
                 await interaction.followup.send(embed=discord.Embed(
                     title="🎯 Mission réussie !",
                     description="✅ **Tu as terminé l'épreuve avec succès !** 🎉",
@@ -2253,7 +2253,7 @@ class ActionView(View):
                     color=discord.Color.red()
                 )
                 embed.set_thumbnail(url="https://example.com/fail.png")  # Remplace avec une vraie URL
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.response.send_message(embed=embed)
                 await interaction.followup.send(embed=discord.Embed(
                     title="🔚 Fin de l'épreuve",
                     description="❌ **Tu as échoué. La mission est terminée.**",
@@ -2262,7 +2262,7 @@ class ActionView(View):
         return callback
 
 
-# Étape 2 : Sélectionner une action
+# 🏆 Étape 2 : Sélectionner une action
 async def step_2(interaction):
     embed = discord.Embed(
         title="🔑 Étape 2: Sélectionner une action",
@@ -2275,7 +2275,7 @@ async def step_2(interaction):
     await interaction.followup.send(embed=embed, view=view)
 
 
-# Commande pour démarrer l'épreuve
+# 🚀 Commande pour démarrer l'épreuve
 @bot.command()
 async def start6(ctx):
     await step_1(ctx)

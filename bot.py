@@ -2387,7 +2387,7 @@ class CasinoHeist(commands.Cog):
         self.player_hp = {}  # PV des joueurs
 
 @bot.command()
-async def start8(ctx):
+async def start8(self, ctx):
         """Lance l'épreuve de neutralisation de la sécurité."""
         player = ctx.author.id
         self.player_hp[player] = 20

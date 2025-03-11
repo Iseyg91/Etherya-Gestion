@@ -1310,6 +1310,7 @@ async def ticket_euro_million(ctx, user: discord.Member):
         await ctx.send("Erreur : Le salon d'annonce est introuvable.")
 #------------------------------------------------------------------------- Commandes de Moderation : +ban, +unban, +mute, +unmute, +kick, +warn
 # Gestion des erreurs pour les commandes
+
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingRole):
@@ -1344,10 +1345,16 @@ async def send_dm(member, action, reason, duration=None):
         if duration:
             embed.add_field(name="Durée:", value=duration, inline=False)
         await member.send(embed=embed)
+    except discord.Forbidden:
+        print(f"Impossible d'envoyer un DM à {member.display_name}.")
 
 async def check_permissions(ctx):
+    if ctx.guild is None:  # Empêche l'utilisation en DM
+        await ctx.send("Cette commande ne peut être utilisée que sur un serveur.")
+        return False
+
     mod_role = discord.utils.get(ctx.guild.roles, id=MOD_ROLE_ID)
-    if mod_role in ctx.author.roles:
+    if mod_role and mod_role in ctx.author.roles:
         return True
     else:
         await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
@@ -1355,7 +1362,7 @@ async def check_permissions(ctx):
 
 async def is_immune(member):
     immune_role = discord.utils.get(member.guild.roles, id=IMMUNE_ROLE_ID)
-    return immune_role in member.roles
+    return immune_role and immune_role in member.roles
 
 @bot.command()
 async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):

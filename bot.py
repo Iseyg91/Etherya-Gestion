@@ -1563,9 +1563,9 @@ async def uptime(ctx):
     embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
 #------------------------------------------------------------------------- Inactivité : Detection d'inactvité
 
-CHANNEL_ID = 1168118179378241576  # Remplace par l'ID du salon à surveiller
-CHECK_INTERVAL = 30  # Vérification toutes les 30 secondes
-INACTIVITY_THRESHOLD = 30  # 30 secondes d'inactivité
+CHANNEL_ID = 1166081599230709830  # Remplace par l'ID du salon à surveiller
+CHECK_INTERVAL = 600  # Vérification toutes les 10 minutes (600 sec)
+INACTIVITY_THRESHOLD = 3 * 3600  # 3 heures en secondes
 WARNING_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/efL0tB_pALZ6fv0DVFXml.jpg"  # Mets une URL d'image ici
 
 @tasks.loop(seconds=CHECK_INTERVAL)
@@ -1581,11 +1581,11 @@ async def check_inactivity():
             if time_diff > INACTIVITY_THRESHOLD:
                 embed = discord.Embed(
                     title="💤 Le chat est endormi !",
-                    description="Il n'y a eu aucun message depuis 30 secondes ! Réveillez le chat 🗣️",
+                    description="Il n'y a eu aucun message depuis 3 Heures ! Réveillez le chat 🗣️",
                     color=discord.Color.red()
                 )
                 embed.set_image(url=WARNING_IMAGE_URL)
-                await channel.send(content="@here **Réveillez le chat !**", embed=embed)
+                await channel.send(content="<@&1166334752186433567> **Réveillez le chat !**", embed=embed)
     else:
         print("Le salon spécifié n'a pas été trouvé ou le bot n'a pas accès au salon.")
 

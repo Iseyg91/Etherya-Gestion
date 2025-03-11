@@ -2448,55 +2448,61 @@ class HackView(View):
     def __init__(self):
         super().__init__()
         self.progress = 0  # Avancement du hack (3 étapes à réussir)
+        self.current_step = "password"  # Étape actuelle du hack
 
-    def update_embed(self, interaction):
-        embed = discord.Embed(title="Hacker les Caméras", description="Vous tentez de désactiver le système de surveillance...", color=discord.Color.blue())
-        embed.add_field(name="Progression", value=f"🔓 Étape {self.progress}/3", inline=True)
-        return embed
+    async def update_step(self, interaction):
+        if self.progress == 0:
+            self.current_step = "password"
+            embed = discord.Embed(title="🔑 Étape 1 : Forcer le mot de passe", description="Essayez de deviner ou de forcer le mot de passe du système !", color=discord.Color.blue())
+            view = PasswordHackView()
+        elif self.progress == 1:
+            self.current_step = "firewall"
+            embed = discord.Embed(title="🔥 Étape 2 : Bypass le pare-feu", description="Trouvez une faille pour contourner le pare-feu !", color=discord.Color.orange())
+            view = FirewallHackView()
+        elif self.progress == 2:
+            self.current_step = "cameras"
+            embed = discord.Embed(title="📷 Étape 3 : Déconnecter les caméras", description="Désactivez les caméras de surveillance pour ne pas être repéré !", color=discord.Color.green())
+            view = CameraHackView()
+        else:
+            embed = discord.Embed(title="✅ Hack Réussi !", description="🎉 Vous avez désactivé les caméras de sécurité !", color=discord.Color.green())
+            embed.set_footer(text="La voie est libre pour continuer le braquage !")
+            await interaction.response.edit_message(embed=embed, view=None)
+            return
+        
+        await interaction.response.edit_message(embed=embed, view=view)
 
-    async def check_success(self, interaction):
-        if self.progress >= 3:
-            embed_success = discord.Embed(title="Hack Réussi !", description="🎉 Vous avez désactivé les caméras de sécurité !", color=discord.Color.green())
-            embed_success.set_footer(text="La voie est libre pour continuer le braquage !")
-            await interaction.response.edit_message(embed=embed_success, view=None)
-            return True
-        return False
-
+class PasswordHackView(View):
     @discord.ui.button(label="Forcer le mot de passe", style=discord.ButtonStyle.primary)
     async def force_password(self, interaction: discord.Interaction, button: Button):
         if random.random() > 0.5:
-            self.progress += 1
-            if await self.check_success(interaction):
-                return
-            await interaction.response.edit_message(content="🔑 Mot de passe forcé avec succès !", embed=self.update_embed(interaction))
+            interaction.view.progress += 1
+            await interaction.view.update_step(interaction)
         else:
-            await interaction.response.edit_message(content="❌ Échec du forçage de mot de passe !", embed=self.update_embed(interaction))
-    
+            await interaction.response.edit_message(content="❌ Échec du forçage de mot de passe !")
+
+class FirewallHackView(View):
     @discord.ui.button(label="Bypass le pare-feu", style=discord.ButtonStyle.danger)
     async def bypass_firewall(self, interaction: discord.Interaction, button: Button):
         if random.random() > 0.6:
-            self.progress += 1
-            if await self.check_success(interaction):
-                return
-            await interaction.response.edit_message(content="🔥 Pare-feu contourné avec succès !", embed=self.update_embed(interaction))
+            interaction.view.progress += 1
+            await interaction.view.update_step(interaction)
         else:
-            await interaction.response.edit_message(content="🚨 Le pare-feu a détecté une intrusion !", embed=self.update_embed(interaction))
+            await interaction.response.edit_message(content="🚨 Le pare-feu a détecté une intrusion !")
 
+class CameraHackView(View):
     @discord.ui.button(label="Déconnecter les caméras", style=discord.ButtonStyle.success)
     async def disconnect_cameras(self, interaction: discord.Interaction, button: Button):
         if random.random() > 0.7:
-            self.progress += 1
-            if await self.check_success(interaction):
-                return
-            await interaction.response.edit_message(content="📷 Caméras désactivées !", embed=self.update_embed(interaction))
+            interaction.view.progress += 1
+            await interaction.view.update_step(interaction)
         else:
-            await interaction.response.edit_message(content="❌ Tentative échouée, les caméras sont toujours actives !", embed=self.update_embed(interaction))
+            await interaction.response.edit_message(content="❌ Tentative échouée, les caméras sont toujours actives !")
 
 @bot.command()
 async def start9(ctx):
     view = HackView()
-    embed = view.update_embed(ctx)
-    await ctx.send(embed=embed, view=view)
+    embed = discord.Embed(title="🔑 Étape 1 : Forcer le mot de passe", description="Essayez de deviner ou de forcer le mot de passe du système !", color=discord.Color.blue())
+    await ctx.send(embed=embed, view=PasswordHackView())
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

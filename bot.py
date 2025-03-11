@@ -1589,12 +1589,6 @@ async def check_inactivity():
     else:
         print("Le salon spécifié n'a pas été trouvé ou le bot n'a pas accès au salon.")
 
-# Assurez-vous que la boucle est démarrée lors de l'initialisation du bot
-@bot.event
-async def on_ready():
-    print(f"{bot.user} est en ligne et prêt à vérifier l'inactivité.")
-    check_inactivity.start()  # Démarre la boucle de vérification
-
 #------------------------------------------------------------------------- Commandes Braquages : Flemme de Lister
     await ctx.send(embed=embed)
 class DynamiteGame(discord.ui.View):

@@ -2444,7 +2444,7 @@ async def start8(ctx):
     embed = view.update_embed(ctx)
     await ctx.send(embed=embed, view=view)
     
-lass HackView(View):
+class HackView(View):
     def __init__(self):
         super().__init__()
         self.progress = 0  # Avancement du hack (3 étapes à réussir)

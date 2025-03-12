@@ -2529,27 +2529,29 @@ class EscapeDecisionView(View):
         super().__init__()
         self.escape_view = escape_view
 
-    async def handle_choice(self, interaction, choice, success_rate, result_message):
+    async def handle_choice(self, interaction, choice, success_rate, success_message, failure_message):
         if random.random() < success_rate:
             self.escape_view.choice_made = True
-            await self.escape_view.update_step(interaction)
-            await interaction.response.edit_message(content=f"✅ Succès: {result_message}")
+            embed = discord.Embed(title="✅ Succès", description=success_message, color=discord.Color.green())
+            await interaction.response.edit_message(embed=embed, view=None)
         else:
-            await interaction.response.edit_message(content=f"❌ Échec: Vous avez échoué !")
+            embed = discord.Embed(title="❌ Échec", description=failure_message, color=discord.Color.red())
+            await interaction.response.edit_message(embed=embed, view=None)
 
     @discord.ui.button(label="Désamorcer la bombe", style=discord.ButtonStyle.green)
     async def disarm_bomb(self, interaction: discord.Interaction, button: Button):
-        await self.handle_choice(interaction, "désamorcer", 0.7, "La bombe a été désamorcée avec succès, vous êtes sauvé !")
+        await self.handle_choice(interaction, "désamorcer", 0.7, "La bombe a été désamorcée avec succès, vous êtes sauvé !", "Vous avez échoué à désamorcer la bombe, elle explose !")
 
     @discord.ui.button(label="Foncez dans la voiture", style=discord.ButtonStyle.danger)
     async def crash_car(self, interaction: discord.Interaction, button: Button):
-        await self.handle_choice(interaction, "foncer", 0.4, "Vous avez réussi à foncer à travers la voiture, mais vous subissez des dégâts !")
+        await self.handle_choice(interaction, "foncer", 0.4, "Vous avez réussi à foncer à travers la voiture, mais vous subissez des dégâts !", "Vous avez foncé dans la voiture, vous subissez de lourds dégâts !")
 
 @bot.command()
 async def start10(ctx):
     view = EscapeView()
     embed = discord.Embed(title="💥 Fuite explosive", description="Une voiture piégée bloque l'issue, choisissez une option :", color=discord.Color.red())
     await ctx.send(embed=embed, view=EscapeDecisionView(view))
+
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

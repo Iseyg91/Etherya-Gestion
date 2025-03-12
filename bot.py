@@ -2449,8 +2449,14 @@ class HackView(View):
         super().__init__()
         self.progress = 0  # Avancement du hack (3 étapes à réussir)
         self.failures = 0  # Nombre d'échecs
+        self.max_failures = 3  # Nombre d'erreurs max avant échec total
 
     async def update_step(self, interaction):
+        if self.failures >= self.max_failures:
+            embed = discord.Embed(title="❌ Hack Échoué !", description="🚨 Les systèmes de sécurité vous ont repéré !", color=discord.Color.red())
+            await interaction.response.edit_message(embed=embed, view=None)
+            return
+
         if self.progress == 0:
             embed = discord.Embed(title="🔑 Étape 1 : Forcer le mot de passe", description="Essayez de deviner ou de forcer le mot de passe du système !", color=discord.Color.blue())
             view = PasswordHackView(self)
@@ -2468,56 +2474,36 @@ class HackView(View):
         
         await interaction.response.edit_message(embed=embed, view=view)
 
-class PasswordHackView(View):
+class BaseHackView(View):
     def __init__(self, hack_view):
         super().__init__()
         self.hack_view = hack_view
-    
+
+    async def attempt_hack(self, interaction, success_rate, failure_message):
+        if random.random() < success_rate:
+            self.hack_view.progress += 1
+            await self.hack_view.update_step(interaction)
+        else:
+            self.hack_view.failures += 1
+            if self.hack_view.failures >= self.hack_view.max_failures:
+                await self.hack_view.update_step(interaction)
+            else:
+                await interaction.response.edit_message(content=f"{failure_message} ({self.hack_view.failures}/{self.hack_view.max_failures} erreurs)")
+
+class PasswordHackView(BaseHackView):
     @discord.ui.button(label="Forcer le mot de passe", style=discord.ButtonStyle.primary)
     async def force_password(self, interaction: discord.Interaction, button: Button):
-        if random.random() > 0.6:  # Rendu plus difficile
-            self.hack_view.progress += 1
-            await self.hack_view.update_step(interaction)
-        else:
-            self.hack_view.failures += 1
-            if self.hack_view.failures >= 3:
-                await interaction.response.edit_message(content="🚨 Trop d'erreurs ! Le système s'est verrouillé !", view=None)
-            else:
-                await interaction.response.edit_message(content=f"❌ Échec du forçage de mot de passe ! ({self.hack_view.failures}/3 erreurs)")
+        await self.attempt_hack(interaction, 0.5, "❌ Mot de passe incorrect !")
 
-class FirewallHackView(View):
-    def __init__(self, hack_view):
-        super().__init__()
-        self.hack_view = hack_view
-    
+class FirewallHackView(BaseHackView):
     @discord.ui.button(label="Bypass le pare-feu", style=discord.ButtonStyle.danger)
     async def bypass_firewall(self, interaction: discord.Interaction, button: Button):
-        if random.random() > 0.7:  # Encore plus difficile
-            self.hack_view.progress += 1
-            await self.hack_view.update_step(interaction)
-        else:
-            self.hack_view.failures += 1
-            if self.hack_view.failures >= 3:
-                await interaction.response.edit_message(content="🚨 Alerte de sécurité déclenchée !", view=None)
-            else:
-                await interaction.response.edit_message(content=f"⚠️ Le pare-feu vous bloque ! ({self.hack_view.failures}/3 erreurs)")
+        await self.attempt_hack(interaction, 0.4, "⚠️ Le pare-feu vous bloque !")
 
-class CameraHackView(View):
-    def __init__(self, hack_view):
-        super().__init__()
-        self.hack_view = hack_view
-    
+class CameraHackView(BaseHackView):
     @discord.ui.button(label="Déconnecter les caméras", style=discord.ButtonStyle.success)
     async def disconnect_cameras(self, interaction: discord.Interaction, button: Button):
-        if random.random() > 0.75:  # Très difficile
-            self.hack_view.progress += 1
-            await self.hack_view.update_step(interaction)
-        else:
-            self.hack_view.failures += 1
-            if self.hack_view.failures >= 3:
-                await interaction.response.edit_message(content="🚨 Sécurité renforcée, hack impossible !", view=None)
-            else:
-                await interaction.response.edit_message(content=f"❌ Tentative échouée ! ({self.hack_view.failures}/3 erreurs)")
+        await self.attempt_hack(interaction, 0.35, "❌ Tentative échouée !")
 
 @bot.command()
 async def start9(ctx):

@@ -1565,7 +1565,7 @@ async def uptime(ctx):
 
 CHANNEL_ID = 1166081599230709830  # Remplace par l'ID du salon à surveiller
 CHECK_INTERVAL = 600  # Vérification toutes les 10 minutes (600 sec)
-INACTIVITY_THRESHOLD = 3 * 3600  # 3 heures en secondes
+INACTIVITY_THRESHOLD = 12 * 3600  # 12 heures en secondes
 WARNING_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/efL0tB_pALZ6fv0DVFXml.jpg"  # Mets une URL d'image ici
 
 @tasks.loop(seconds=CHECK_INTERVAL)

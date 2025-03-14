@@ -2553,6 +2553,7 @@ async def start10(ctx):
     await ctx.send(embed=embed, view=EscapeDecisionView(view))
 
 bounties = {}  # Dictionnaire stockant les primes
+ROLE_BOUNTY_MANAGER = 1244339296706760726
 
 class DuelView(discord.ui.View):
     def __init__(self, player1, player2, prize):
@@ -2585,18 +2586,42 @@ class DuelView(discord.ui.View):
             self.hp1 -= damage
             self.turn = self.player1
 
+        await self.check_winner(interaction)
+
+    @discord.ui.button(label="Esquiver", style=discord.ButtonStyle.blurple)
+    async def dodge(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user != self.turn:
+            await interaction.response.send_message("Ce n'est pas ton tour !", ephemeral=True)
+            return
+
+        success = random.random() < 0.5  # 50% de chance d'esquiver
+        if success:
+            await interaction.response.send_message(f"{interaction.user.mention} esquive l'attaque avec succès !", ephemeral=False)
+        else:
+            damage = random.randint(5, 15)
+            if self.turn == self.player1:
+                self.hp1 -= damage
+                self.turn = self.player2
+            else:
+                self.hp2 -= damage
+                self.turn = self.player1
+            await self.check_winner(interaction)
+
+    async def check_winner(self, interaction):
         if self.hp1 <= 0:
             await interaction.response.edit_message(content=f"{self.player2.mention} remporte la prime de {self.prize} Ezryn Coins !", view=None)
-            return
         elif self.hp2 <= 0:
             await interaction.response.edit_message(content=f"{self.player1.mention} remporte la prime de {self.prize} Ezryn Coins !", view=None)
-            return
-        
-        await self.update_message(interaction)
+        else:
+            await self.update_message(interaction)
 
 @bot.command()
 async def bounty(ctx, member: discord.Member, prize: int):
-    """Met une prime sur un joueur"""
+    """Met une prime sur un joueur (réservé au rôle bounty manager)"""
+    if ROLE_BOUNTY_MANAGER not in [role.id for role in ctx.author.roles]:
+        await ctx.send("Tu n'as pas la permission d'exécuter cette commande.")
+        return
+    
     bounties[member.id] = prize
     await ctx.send(f"Une prime de {prize} Ezryn Coins a été placée sur {member.mention} !")
 

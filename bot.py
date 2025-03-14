@@ -1581,7 +1581,7 @@ async def check_inactivity():
             if time_diff > INACTIVITY_THRESHOLD:
                 embed = discord.Embed(
                     title="💤 Le chat est endormi !",
-                    description="Il n'y a eu aucun message depuis 3 Heures ! Réveillez le chat 🗣️",
+                    description="Il n'y a eu aucun message depuis 12 Heures ! Réveillez le chat 🗣️",
                     color=discord.Color.red()
                 )
                 embed.set_image(url=WARNING_IMAGE_URL)

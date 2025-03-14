@@ -2552,6 +2552,64 @@ async def start10(ctx):
     embed = discord.Embed(title="💥 Fuite explosive", description="Une voiture piégée bloque l'issue, choisissez une option :", color=discord.Color.red())
     await ctx.send(embed=embed, view=EscapeDecisionView(view))
 
+bounties = {}  # Dictionnaire stockant les primes
+
+class DuelView(discord.ui.View):
+    def __init__(self, player1, player2, prize):
+        super().__init__(timeout=60)
+        self.player1 = player1
+        self.player2 = player2
+        self.hp1 = 100
+        self.hp2 = 100
+        self.turn = player1  # Le joueur 1 commence
+        self.prize = prize
+
+    async def update_message(self, interaction):
+        content = f"**Duel entre {self.player1.mention} et {self.player2.mention}**\n"
+        content += f"{self.player1.display_name} : ❤️ {self.hp1} PV\n"
+        content += f"{self.player2.display_name} : ❤️ {self.hp2} PV\n"
+        content += f"C'est au tour de {self.turn.mention} !"
+        await interaction.message.edit(content=content, view=self)
+
+    @discord.ui.button(label="Attaquer", style=discord.ButtonStyle.red)
+    async def attack(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user != self.turn:
+            await interaction.response.send_message("Ce n'est pas ton tour !", ephemeral=True)
+            return
+
+        damage = random.randint(10, 30)
+        if self.turn == self.player1:
+            self.hp2 -= damage
+            self.turn = self.player2
+        else:
+            self.hp1 -= damage
+            self.turn = self.player1
+
+        if self.hp1 <= 0:
+            await interaction.response.edit_message(content=f"{self.player2.mention} remporte la prime de {self.prize} Ezryn Coins !", view=None)
+            return
+        elif self.hp2 <= 0:
+            await interaction.response.edit_message(content=f"{self.player1.mention} remporte la prime de {self.prize} Ezryn Coins !", view=None)
+            return
+        
+        await self.update_message(interaction)
+
+@bot.command()
+async def bounty(ctx, member: discord.Member, prize: int):
+    """Met une prime sur un joueur"""
+    bounties[member.id] = prize
+    await ctx.send(f"Une prime de {prize} Ezryn Coins a été placée sur {member.mention} !")
+
+@bot.command()
+async def capture(ctx, target: discord.Member):
+    """Déclenche un duel pour capturer un joueur avec une prime"""
+    if target.id not in bounties:
+        await ctx.send("Ce joueur n'a pas de prime sur sa tête !")
+        return
+    
+    prize = bounties.pop(target.id)
+    view = DuelView(ctx.author, target, prize)
+    await ctx.send(f"{ctx.author.mention} tente de capturer {target.mention} ! Un duel commence !", view=view)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

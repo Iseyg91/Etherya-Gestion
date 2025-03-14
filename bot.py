@@ -44,6 +44,11 @@ async def on_ready():
     
     # Démarrer la boucle d'inactivité
     check_inactivity.start()
+
+@bot.tree.command(name="ping")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message("Pong ! 🏓")
+
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108

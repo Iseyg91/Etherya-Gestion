@@ -2554,9 +2554,10 @@ async def start10(ctx):
 
 bounties = {}  # Dictionnaire stockant les primes
 ROLE_BOUNTY_MANAGER = 1244339296706760726
+BOUNTY_CHANNEL_ID = 1244339296706760726  # Salon où les victoires sont annoncées
 
 class DuelView(discord.ui.View):
-    def __init__(self, player1, player2, prize):
+    def __init__(self, player1, player2, prize, ctx):
         super().__init__(timeout=60)
         self.player1 = player1
         self.player2 = player2
@@ -2564,6 +2565,7 @@ class DuelView(discord.ui.View):
         self.hp2 = 100
         self.turn = player1  # Le joueur 1 commence
         self.prize = prize
+        self.ctx = ctx
 
     async def update_message(self, interaction):
         embed = discord.Embed(title="⚔️ Duel en cours !", color=discord.Color.red())
@@ -2601,19 +2603,27 @@ class DuelView(discord.ui.View):
             damage = random.randint(5, 15)
             if self.turn == self.player1:
                 self.hp1 -= damage
-                self.turn = self.player2
             else:
                 self.hp2 -= damage
-                self.turn = self.player1
+                
             await self.check_winner(interaction)
+            return
+
+        await self.update_message(interaction)
 
     async def check_winner(self, interaction):
         if self.hp1 <= 0:
             embed = discord.Embed(title="🏆 Victoire !", description=f"{self.player2.mention} remporte la prime de {self.prize} Ezryn Coins !", color=discord.Color.green())
             await interaction.response.edit_message(embed=embed, view=None)
+            channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
+            if channel:
+                await channel.send(embed=embed)
         elif self.hp2 <= 0:
             embed = discord.Embed(title="🏆 Victoire !", description=f"{self.player1.mention} remporte la prime de {self.prize} Ezryn Coins !", color=discord.Color.green())
             await interaction.response.edit_message(embed=embed, view=None)
+            channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
+            if channel:
+                await channel.send(embed=embed)
         else:
             await self.update_message(interaction)
 
@@ -2636,7 +2646,7 @@ async def capture(ctx, target: discord.Member):
         return
     
     prize = bounties.pop(target.id)
-    view = DuelView(ctx.author, target, prize)
+    view = DuelView(ctx.author, target, prize, ctx)
     embed = discord.Embed(title="🎯 Chasse en cours !", description=f"{ctx.author.mention} tente de capturer {target.mention} ! Un duel commence !", color=discord.Color.orange())
     await ctx.send(embed=embed, view=view)
 

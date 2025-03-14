@@ -45,10 +45,6 @@ async def on_ready():
     # Démarrer la boucle d'inactivité
     check_inactivity.start()
 
-@bot.tree.command(name="ping")
-async def ping(interaction: discord.Interaction):
-    await interaction.response.send_message("Pong ! 🏓")
-
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108
@@ -161,43 +157,7 @@ async def send_alert_to_admin(message, detected_word):
         print(f"⚠️ Erreur HTTP lors de l'envoi du MP : {e}")
     except Exception as e:
         print(f"⚠️ Erreur inconnue : {e}")
-#------------------------------------------------------------------------- Commandes de Calcul : /calcul
-
-class Calcul(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    @app_commands.command(name="calcul", description="Effectue une opération mathématique entre deux nombres.")
-    @app_commands.describe(operation="Opération à effectuer (addition, soustraction, multiplication, division)",
-                           nombre1="Premier nombre",
-                           nombre2="Deuxième nombre")
-    async def calcul(self, interaction: discord.Interaction, operation: str, nombre1: float, nombre2: float):
-        operation = operation.lower()
         
-        if operation == "addition":
-            resultat = nombre1 + nombre2
-            symbole = "+"
-        elif operation == "soustraction":
-            resultat = nombre1 - nombre2
-            symbole = "-"
-        elif operation == "multiplication":
-            resultat = nombre1 * nombre2
-            symbole = "×"
-        elif operation == "division":
-            if nombre2 == 0:
-                await interaction.response.send_message("Erreur : Division par zéro impossible !", ephemeral=True)
-                return
-            resultat = nombre1 / nombre2
-            symbole = "÷"
-        else:
-            await interaction.response.send_message("Erreur : Opération invalide. Utilisez 'addition', 'soustraction', 'multiplication' ou 'division'.", ephemeral=True)
-            return
-        
-        await interaction.response.send_message(f"{nombre1} {symbole} {nombre2} = {resultat}")
-
-async def setup(bot):
-    await bot.add_cog(Calcul(bot))
-
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 
 @bot.command()

@@ -2640,6 +2640,19 @@ async def capture(ctx, target: discord.Member):
     embed = discord.Embed(title="🎯 Chasse en cours !", description=f"{ctx.author.mention} tente de capturer {target.mention} ! Un duel commence !", color=discord.Color.orange())
     await ctx.send(embed=embed, view=view)
 
+@bot.tree.command(name="calcul", description="Calcule un pourcentage d'un nombre")
+@app_commands.describe(nombre="Le nombre de base", pourcentage="Le pourcentage à appliquer (ex: 15 pour 15%)")
+async def calcul(interaction: discord.Interaction, nombre: float, pourcentage: float):
+    await interaction.response.defer()  # ✅ Correctement placé à l'intérieur de la fonction
+
+    resultat = (nombre * pourcentage) / 100
+    embed = discord.Embed(
+        title="📊 Calcul de pourcentage",
+        description=f"{pourcentage}% de {nombre} = **{resultat}**",
+        color=discord.Color.green()
+    )
+
+    await interaction.followup.send(embed=embed)
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

@@ -105,10 +105,6 @@ scheduler = AsyncIOScheduler()
 scheduler.add_job(daily_check, "cron", hour=23, minute=59)
 scheduler.start()
 
-@bot.event
-async def on_ready():
-    print(f"Connecté en tant que {bot.user}")
-
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108

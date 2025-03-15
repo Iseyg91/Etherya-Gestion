@@ -1552,39 +1552,6 @@ async def uptime(ctx):
         color=discord.Color.blue()
     )
     embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
-#------------------------------------------------------------------------- Inactivité : Detection d'inactvité
-
-CHANNEL_ID = 1166081599230709830  # Remplace par l'ID du salon à surveiller
-CHECK_INTERVAL = 600  # Vérification toutes les 10 minutes (600 sec)
-INACTIVITY_THRESHOLD = 12 * 3600  # 12 heures en secondes
-WARNING_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/efL0tB_pALZ6fv0DVFXml.jpg"  # Mets une URL d'image ici
-
-@tasks.loop(seconds=CHECK_INTERVAL)
-async def check_inactivity():
-    # Récupérer le salon par son ID
-    channel = bot.get_channel(CHANNEL_ID)
-    if channel:
-        # Vérifier l'historique des messages
-        async for message in channel.history(limit=1):
-            # Calculer la différence de temps
-            time_diff = (discord.utils.utcnow() - message.created_at).total_seconds()
-            print(f"Time difference: {time_diff} secondes")  # Afficher la différence pour déboguer
-            if time_diff > INACTIVITY_THRESHOLD:
-                embed = discord.Embed(
-                    title="💤 Le chat est endormi !",
-                    description="Il n'y a eu aucun message depuis 12 Heures ! Réveillez le chat 🗣️",
-                    color=discord.Color.red()
-                )
-                embed.set_image(url=WARNING_IMAGE_URL)
-                await channel.send(content="<@&1166334752186433567> **Réveillez le chat !**", embed=embed)
-    else:
-        print("Le salon spécifié n'a pas été trouvé ou le bot n'a pas accès au salon.")
-        
-# Assurez-vous que la boucle est démarrée lors de l'initialisation du bot
-@bot.event
-async def on_ready():
-    print(f"{bot.user} est en ligne et prêt à vérifier l'inactivité.")
-    check_inactivity.start()  # Démarre la boucle de vérification
 
 #------------------------------------------------------------------------- Commandes Braquages : Flemme de Lister
     await ctx.send(embed=embed)

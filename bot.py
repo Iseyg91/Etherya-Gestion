@@ -12,6 +12,15 @@ from discord.ui import Button, View
 from datetime import datetime
 from discord.ui import View, Select
 from discord.ext import tasks
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from collections import defaultdict
+
+intents = discord.Intents.default()
+intents.messages = True
+intents.guilds = True
+intents.message_content = True  # Nécessaire pour lire les messages
+intents.members = True  # Nécessaire pour récupérer les membres
+
 
 token = os.environ['ETHERYA']
 intents = discord.Intents.all()
@@ -40,6 +49,65 @@ async def on_ready():
         print(f"✅ Commandes slash synchronisées : {[cmd.name for cmd in synced]}")
     except Exception as e:
         print(f"❌ Erreur de synchronisation des commandes slash : {e}")
+#------------------------------------------------------------------------- Commande d'Activité : Message de God of Glory
+
+# Dictionnaire pour stocker le nombre de messages
+message_count = defaultdict(int)
+
+# ID du rôle et du salon d'annonces
+ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
+ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378  # Remplace par l'ID du salon d'annonces
+
+def get_main_guild():
+    return bot.guilds[0] if bot.guilds else None
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+    message_count[message.author.id] += 1
+    await bot.process_commands(message)
+
+async def daily_check():
+    if not message_count:
+        return  # Évite une erreur si aucun message n'a été envoyé
+
+    guild = get_main_guild()
+    if not guild:
+        return
+
+    top_user_id = max(message_count, key=message_count.get)  # Trouve l'utilisateur avec le plus de messages
+    top_user = guild.get_member(top_user_id)
+
+    if top_user:
+        role = guild.get_role(ROLE_ID)
+        if role:
+            await top_user.add_roles(role)
+
+            # Envoyer l'embed
+            channel = bot.get_channel(ANNOUNCEMENT_CHANNEL_ID)
+            if channel:
+                embed = discord.Embed(
+                    description=f"> **Le <@&{ROLE_ID}> du jour est: {top_user.mention} <a:pandaplaudie:1172809946254028802>**",
+                    color=discord.Color.gold()
+                )
+                await channel.send(embed=embed)
+
+            # Supprimer le rôle après 24h
+            await asyncio.sleep(86400)  # 24 heures en secondes
+            await top_user.remove_roles(role)
+
+    # Réinitialiser le compteur
+    message_count.clear()
+
+# Planificateur
+scheduler = AsyncIOScheduler()
+scheduler.add_job(daily_check, "cron", hour=23, minute=59)
+scheduler.start()
+
+@bot.event
+async def on_ready():
+    print(f"Connecté en tant que {bot.user}")
 
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue

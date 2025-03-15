@@ -2542,6 +2542,7 @@ async def start10(ctx):
 bounties = {}  # Dictionnaire stockant les primes
 ROLE_BOUNTY_MANAGER = 1244339296706760726
 BOUNTY_CHANNEL_ID = 1244339296706760726  # Salon où les victoires sont annoncées
+PRIME_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/MUnIIu5yOv6nMFAXKteig.jpg"
 
 class DuelView(discord.ui.View):
     def __init__(self, player1, player2, prize, ctx):
@@ -2623,6 +2624,7 @@ async def bounty(ctx, member: discord.Member, prize: int):
     
     bounties[member.id] = prize
     embed = discord.Embed(title="📜 Nouvelle Prime !", description=f"Une prime de {prize} Ezryn Coins a été placée sur {member.mention} !", color=discord.Color.gold())
+    embed.set_image(url=PRIME_IMAGE_URL)
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -2636,6 +2638,20 @@ async def capture(ctx, target: discord.Member):
     view = DuelView(ctx.author, target, prize, ctx)
     embed = discord.Embed(title="🎯 Chasse en cours !", description=f"{ctx.author.mention} tente de capturer {target.mention} ! Un duel commence !", color=discord.Color.orange())
     await ctx.send(embed=embed, view=view)
+
+@bot.tree.command(name="calcul", description="Calcule un pourcentage d'un nombre")
+@app_commands.describe(nombre="Le nombre de base", pourcentage="Le pourcentage à appliquer (ex: 15 pour 15%)")
+async def calcul(interaction: discord.Interaction, nombre: float, pourcentage: float):
+    await interaction.response.defer()  # ✅ Correctement placé à l'intérieur de la fonction
+
+    resultat = (nombre * pourcentage) / 100
+    embed = discord.Embed(
+        title="📊 Calcul de pourcentage",
+        description=f"{pourcentage}% de {nombre} = **{resultat}**",
+        color=discord.Color.green()
+    )
+
+    await interaction.followup.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

@@ -94,14 +94,7 @@ async def on_member_join(member):
 #------------------------------------------------------------------------- Commandes d'Administration : Detections de Mots sensible:
 # Liste des mots sensibles
 sensitive_words = [
-    "connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant",
-    "pute", "salope", "con", "raciste", "sexiste", "homophobe", "antisémite", "xenophobe",
-    "transphobe", "tuer", "assassin", "attaquer", "viol", "torturer", "menacer", "frapper",
-    "guerre", "pervers", "abus", "sexe", "pornographie", "nu", "masturbation", "adultère",
-    "drogue", "cocaïne", "héroïne", "crack", "alcool", "consommation abusive", "terrorisme",
-    "jihad", "bombardement", "suicidaire", "hack", "pirater", "voler des données", "phishing",
-    "ddos", "raid", "flood", "spam", "crasher", "ddos attack", "botnet", "infiltrer", "spammer",
-    "griefing", "troll", "spam bot", "server crash", "exploiter"
+"connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon", "clown", "baltringue", "fils de pute", "gros con", "sale type", "ordure", "merdeux", "guignol", "vaurien", "tocard", "branleur", "crasseux", "charognard", "raté", "raciste", "sexiste", "homophobe", "antisémite", "xénophobe", "transphobe", "islamophobe", "misogyne", "misandre", "discriminatoire", "nazi", "néonazi", "suprémaciste", "extrémiste", "fasciste", "dictateur", "esclavagiste", "terroriste", "tuer", "assassin", "attaquer", "viol", "torturer", "menacer", "frapper", "agression", "meurtre", "massacre", "guerre", "génocide", "exécution", "kidnapping", "prise d'otage", "armes", "fusillade", "terrorisme", "attentat", "jihad", "bombardement", "suicidaire", "décapitation", "immolation", "tireur", "pédocriminel", "cannibalisme", "traite humaine", "trafficking", "trafic d'armes", "pervers", "abus", "sexe", "pornographie", "nu", "masturbation", "adultère", "prostitution", "pédophilie", "inceste", "exhibition", "fétichisme", "violence conjugale", "violence sexuelle", "harcèlement", "voyeurisme", "orgie", "zoophilie", "nécrophilie", "sadomasochisme", "esclavage sexuel", "drogue", "cocaïne", "héroïne", "crack", "LSD", "ecstasy", "méthamphétamine", "opium", "cannabis", "alcool", "ivresse", "overdose", "consommation abusive", "trafic de drogue", "drogue dure", "toxicomanie", "shoot", "seringue", "hallucinogène", "hack", "pirater", "voler des données", "phishing", "ddos", "raid", "flood", "spam", "crasher", "ddos attack", "botnet", "infiltrer", "spammer", "griefing", "troll", "spam bot", "server crash", "exploiter", "ransomware", "trojan", "virus informatique", "keylogger", "backdoor", "brute force", "scam", "usurpation d'identité", "darknet", "marché noir", "fraude", "extorsion", "chantage", "blanchiment d'argent", "corruption", "pot-de-vin", "abus de pouvoir", "dictature", "oppression", "propagande", "fake news", "censure", "manipulation", "endoctrinement", "secte", "lavage de cerveau", "violence policière", "brutalité", "crime organisé", "mafia", "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute", "rébellion", "coup d'état"
 ]
 
 ADMIN_ID = 792755123587645461

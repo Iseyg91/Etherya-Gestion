@@ -2705,27 +2705,60 @@ async def calcul(interaction: discord.Interaction, nombre1: float, operation: st
 
     await interaction.followup.send(embed=embed)
 
-# Installer PyNaCl si ce n'est pas déjà fait
+# Installer PyNaCl 
 try:
     import nacl
 except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "PyNaCl"])
 
+# Commande /connect
 @bot.tree.command(name="connect", description="Connecte le bot à un salon vocal spécifié.")
 @app_commands.describe(channel="Choisissez un salon vocal où connecter le bot")
 @commands.has_permissions(administrator=True)
 async def connect(interaction: discord.Interaction, channel: discord.VoiceChannel):
     try:
-        if channel:
-            if not interaction.guild.voice_client:
-                await channel.connect()
-                await interaction.response.send_message(f"Le bot est connecté dans {channel.name}.")
-            else:
-                await interaction.response.send_message("Le bot est déjà connecté dans un salon vocal.")
+        if not interaction.guild.voice_client:
+            await channel.connect()
+            embed = discord.Embed(
+                title="✅ Connexion réussie !",
+                description=f"Le bot a rejoint **{channel.name}**.",
+                color=discord.Color.green()
+            )
+            await interaction.response.send_message(embed=embed)
         else:
-            await interaction.response.send_message("Ce salon vocal n'est pas valide.")
+            embed = discord.Embed(
+                title="⚠️ Déjà connecté",
+                description="Le bot est déjà dans un salon vocal.",
+                color=discord.Color.orange()
+            )
+            await interaction.response.send_message(embed=embed)
     except Exception as e:
-        await interaction.response.send_message(f"Une erreur est survenue : {e}")
+        embed = discord.Embed(
+            title="❌ Erreur",
+            description=f"Une erreur est survenue : `{e}`",
+            color=discord.Color.red()
+        )
+        await interaction.response.send_message(embed=embed)
+
+# Commande /disconnect
+@bot.tree.command(name="disconnect", description="Déconnecte le bot du salon vocal.")
+@commands.has_permissions(administrator=True)
+async def disconnect(interaction: discord.Interaction):
+    if interaction.guild.voice_client:
+        await interaction.guild.voice_client.disconnect()
+        embed = discord.Embed(
+            title="🚫 Déconnexion réussie",
+            description="Le bot a quitté le salon vocal.",
+            color=discord.Color.red()
+        )
+        await interaction.response.send_message(embed=embed)
+    else:
+        embed = discord.Embed(
+            title="⚠️ Pas connecté",
+            description="Le bot n'est dans aucun salon vocal.",
+            color=discord.Color.orange()
+        )
+        await interaction.response.send_message(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

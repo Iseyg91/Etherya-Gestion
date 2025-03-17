@@ -2711,6 +2711,7 @@ try:
 except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "PyNaCl"])
 
+#------------------------------------------------------------------------- Commande Voice : /connect, /disconnect
 # Commande /connect
 @bot.tree.command(name="connect", description="Connecte le bot à un salon vocal spécifié.")
 @app_commands.describe(channel="Choisissez un salon vocal où connecter le bot")
@@ -2759,6 +2760,52 @@ async def disconnect(interaction: discord.Interaction):
             color=discord.Color.orange()
         )
         await interaction.response.send_message(embed=embed)
+#------------------------------------------------------------------------- Commande de Gw : Giveaways
+
+class GiveawayForm(discord.ui.Modal, title="Créer un Giveaway"):
+    gains = discord.ui.TextInput(label="Gains", placeholder="Ex: Nitro, Role Spécial", required=True)
+    emoji = discord.ui.TextInput(label="Emoji de réaction", placeholder="Ex: 🎉", required=True)
+    salon = discord.ui.TextInput(label="Salon (ID ou #mention)", required=True)
+    duree = discord.ui.TextInput(label="Durée (en secondes)", placeholder="Ex: 3600 pour 1h", required=True)
+    gagnants = discord.ui.TextInput(label="Nombre de gagnants", placeholder="Ex: 1", required=True)
+    image = discord.ui.TextInput(label="Lien d'image (optionnel)", required=False)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            salon = bot.get_channel(int(self.salon.value.replace("<#", "").replace(">", "")))
+            duree = int(self.duree.value)
+            gagnants = int(self.gagnants.value)
+        except ValueError:
+            await interaction.response.send_message("Erreur dans les valeurs saisies.", ephemeral=True)
+            return
+        
+        embed = discord.Embed(title="🎉 Giveaway !", description=f"**Gains :** {self.gains.value}\n**Réagis avec {self.emoji.value} pour participer !" , color=discord.Color.gold())
+        if self.image.value:
+            embed.set_image(url=self.image.value)
+        
+        message = await salon.send(embed=embed)
+        await message.add_reaction(self.emoji.value)
+        await interaction.response.send_message("Giveaway lancé avec succès !", ephemeral=True)
+        
+        await asyncio.sleep(duree)
+        message = await salon.fetch_message(message.id)
+        reactions = [reaction for reaction in message.reactions if reaction.emoji == self.emoji.value]
+        participants = []
+        if reactions:
+            async for user in reactions[0].users():
+                if not user.bot:
+                    participants.append(user)
+        
+        if len(participants) < gagnants:
+            await salon.send("Pas assez de participants pour tirer un gagnant !")
+        else:
+            winners = random.sample(participants, gagnants)
+            winners_mentions = ", ".join(winner.mention for winner in winners)
+            await salon.send(f"🎉 Félicitations {winners_mentions} ! Vous avez gagné {self.gains.value} !")
+
+@bot.tree.command(name="giveaway", description="Créer un giveaway")
+async def giveaway(interaction: discord.Interaction):
+    await interaction.response.send_modal(GiveawayForm())
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

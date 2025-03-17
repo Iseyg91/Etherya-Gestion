@@ -7,6 +7,8 @@ import asyncio
 import time
 import datetime
 import re
+import subprocess
+import sys
 from keep_alive import keep_alive
 from discord.ui import Button, View
 from datetime import datetime
@@ -2703,17 +2705,20 @@ async def calcul(interaction: discord.Interaction, nombre1: float, operation: st
 
     await interaction.followup.send(embed=embed)
 
+# Installer PyNaCl si ce n'est pas déjà fait
+try:
+    import nacl
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "PyNaCl"])
+
 @bot.tree.command(name="connect", description="Connecte le bot à un salon vocal spécifié.")
 @app_commands.describe(channel="Choisissez un salon vocal où connecter le bot")
 @commands.has_permissions(administrator=True)
 async def connect(interaction: discord.Interaction, channel: discord.VoiceChannel):
     try:
-        # Vérifie si le salon vocal est valide
         if channel:
-            if not interaction.guild.voice_client:  # Si le bot n'est pas déjà connecté
-                print(f"Le bot tente de se connecter à {channel.name}...")
-                await channel.connect()  # Connecte le bot dans le salon choisi
-                print(f"Le bot est connecté dans {channel.name}.")
+            if not interaction.guild.voice_client:
+                await channel.connect()
                 await interaction.response.send_message(f"Le bot est connecté dans {channel.name}.")
             else:
                 await interaction.response.send_message("Le bot est déjà connecté dans un salon vocal.")
@@ -2721,8 +2726,6 @@ async def connect(interaction: discord.Interaction, channel: discord.VoiceChanne
             await interaction.response.send_message("Ce salon vocal n'est pas valide.")
     except Exception as e:
         await interaction.response.send_message(f"Une erreur est survenue : {e}")
-        print(f"Erreur : {e}")
-
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

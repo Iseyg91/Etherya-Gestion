@@ -2762,6 +2762,10 @@ async def disconnect(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed)
 #------------------------------------------------------------------------- Commande de Gw : Giveaways
 
+import discord
+import asyncio
+import random
+
 class GiveawayForm(discord.ui.Modal, title="Créer un Giveaway"):
     gains = discord.ui.TextInput(label="Gains", placeholder="Ex: Nitro, Role Spécial", required=True)
     emoji = discord.ui.TextInput(label="Emoji de réaction", placeholder="Ex: 🎉", required=True)
@@ -2772,7 +2776,7 @@ class GiveawayForm(discord.ui.Modal, title="Créer un Giveaway"):
 
     async def on_submit(self, interaction: discord.Interaction):
         try:
-            salon = bot.get_channel(int(self.salon.value.replace("<#", "").replace(">", "")))
+            salon = interaction.client.get_channel(int(self.salon.value.replace("<#", "").replace(">", "")))
             duree = int(self.duree.value)
             gagnants = int(self.gagnants.value)
         except ValueError:
@@ -2792,9 +2796,12 @@ class GiveawayForm(discord.ui.Modal, title="Créer un Giveaway"):
         reactions = [reaction for reaction in message.reactions if reaction.emoji == self.emoji.value]
         participants = []
         if reactions:
-            async for user in reactions[0].users():
-                if not user.bot:
-                    participants.append(user)
+            try:
+                async for user in reactions[0].users():
+                    if not user.bot:
+                        participants.append(user)
+            except Exception as e:
+                await salon.send(f"Erreur lors de la récupération des participants : {e}")
         
         if len(participants) < gagnants:
             await salon.send("Pas assez de participants pour tirer un gagnant !")

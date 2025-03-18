@@ -92,11 +92,13 @@ sensitive_words = ["connard", "crétin", "idiot", "imbécile", "salopard", "enfo
     "crime organisé", "mafia", "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute",
     "rébellion", "coup d'état"]  # Exemple réduit
 ADMIN_ID = 792755123587645461
+OWNER_ID = 1234567890  # Remplace avec l'ID de ton Owner
+ignored_role_id = 1170326040485318686  # ID du rôle à ignorer
+ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
+ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378  # ID du salon d'annonces
 
 # Dictionnaire pour stocker le nombre de messages
 message_count = defaultdict(int)
-ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
-ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378  # ID du salon d'annonces
 
 def get_main_guild():
     return bot.guilds[0] if bot.guilds else None
@@ -105,10 +107,46 @@ def get_main_guild():
 async def on_message(message):
     if message.author.bot:
         return
-    
+
+    guild = message.guild
+    member = guild.get_member(message.author.id)
+
+    # Vérifier si la personne a le rôle à ignorer
+    if any(role.id == ignored_role_id for role in member.roles):
+        return
+
+    # Vérifier si le message mentionne l'Owner
+    if f"<@{OWNER_ID}>" in message.content:
+        embed = discord.Embed(
+            title="🔹 Hey, besoin d'aide ?",  
+            description=(f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
+                         "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
+                         "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**"),
+            color=0x00aaff  # Bleu cyan chill
+        )
+        embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png") 
+        if bot.user.avatar:
+            embed.set_thumbnail(url=bot.user.avatar.url) 
+        embed.add_field(name="❓ Pourquoi éviter de mentionner le Owner ?", 
+                        value="Le Owner est souvent occupé avec la gestion du serveur. Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀", 
+                        inline=False)
+        embed.set_footer(text="Merci de ta compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
+
+        button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
+        view = View()
+        view.add_item(button)
+        await message.channel.send(embed=embed, view=view)
+
+    # Détection des mots sensibles
+    for word in sensitive_words:
+        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
+            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
+            asyncio.create_task(send_alert_to_admin(message, word))
+            break
+
     # Compteur de messages
     message_count[message.author.id] += 1
-    
+
     # Réponse automatique aux mentions du bot
     if bot.user.mentioned_in(message) and len(message.mentions) == 1:
         embed = discord.Embed(
@@ -132,14 +170,7 @@ async def on_message(message):
         button.callback = button_callback
         view.add_item(button)
         await message.channel.send(embed=embed, view=view)
-    
-    # Détection des mots sensibles
-    for word in sensitive_words:
-        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
-            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
-            asyncio.create_task(send_alert_to_admin(message, word))
-            break
-    
+
     await bot.process_commands(message)
 
 async def send_alert_to_admin(message, detected_word):
@@ -191,13 +222,130 @@ scheduler = AsyncIOScheduler()
 scheduler.add_job(daily_check, "cron", hour=23, minute=59)
 scheduler.start()
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
+import asyncio
+import discord
+from discord.ui import View
+
+private_threads = {}  # Stocke les fils privés des nouveaux membres
+
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108
 
 # Liste des salons à pinguer
 salon_ids = [
-1342179344889675827
+    1342179344889675827
 ]
+
+class GuideView(View):
+    def __init__(self, thread):
+        super().__init__()
+        self.thread = thread
+        self.message_sent = False  # Variable pour contrôler l'envoi du message
+
+    @discord.ui.button(label="📘 Guide", style=discord.ButtonStyle.success, custom_id="guide_button_unique")
+    async def guide(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not self.message_sent:  # Empêche l'envoi du message en doublon
+            await interaction.response.defer()
+            await start_tutorial(self.thread, interaction.user)
+            self.message_sent = True
+
+    @discord.ui.button(label="❌ Non merci", style=discord.ButtonStyle.danger, custom_id="no_guide_button_unique")
+    async def no_guide(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("🔒 Fermeture du fil...", ephemeral=True)
+        await asyncio.sleep(2)
+        await self.thread.delete()
+
+class NextStepView(View):
+    def __init__(self, thread):
+        super().__init__()
+        self.thread = thread
+
+    @discord.ui.button(label="➡️ Passer à la suite", style=discord.ButtonStyle.primary, custom_id="next_button")
+    async def next_step(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        user = interaction.user
+
+        # Envoi du message privé
+        await send_economy_info(user)
+
+        # Envoi du message de confirmation dans le fil privé
+        await self.thread.send("📩 Les détails de cette étape ont été envoyés en message privé.")
+
+        # Attente de 2 secondes
+        await asyncio.sleep(2)
+
+        # Message d'avertissement avant suppression
+        await self.thread.send("🗑️ Ce fil sera supprimé dans quelques instants.")
+
+        # Suppression du fil privé
+        await asyncio.sleep(3)
+        await self.thread.delete()
+
+async def wait_for_command(thread, user, command):
+    def check(msg):
+        return msg.channel == thread and msg.author == user and msg.content.startswith(command)
+
+    await thread.send(f"🕒 En attente de `{command}`...")  # Envoi du message d'attente
+    await bot.wait_for("message", check=check)  # Attente du message de la commande
+    await thread.send("✅ Commande exécutée ! Passons à la suite. 🚀")  # Confirmation après la commande
+    await asyncio.sleep(2)  # Pause avant de passer à l'étape suivante
+
+async def start_tutorial(thread, user):
+    tutorial_steps = [
+        ("💼 **Commande Travail**", "Utilise `!!work` pour gagner un salaire régulièrement !", "!!work"),
+        ("💃 **Commande Slut**", "Avec `!!slut`, tente de gagner de l'argent... Mais attention aux risques !", "!!slut"),
+        ("🔫 **Commande Crime**", "Besoin de plus de frissons ? `!!crime` te plonge dans des activités illégales !", "!!crime"),
+        ("🌿 **Commande Collecte**", "Avec `!!collect`, tu peux ramasser des ressources utiles !", "!!collect"),
+        ("📊 **Classement**", "Découvre qui a le plus d'argent en cash avec `!!lb -cash` !", "!!lb -cash"),
+        ("🕵️ **Voler un joueur**", "Tente de dérober l'argent d'un autre avec `!!rob @user` !", "!!rob"),
+        ("🏦 **Dépôt Bancaire**", "Pense à sécuriser ton argent avec `!!dep all` !", "!!dep all"),
+        ("💰 **Solde Bancaire**", "Vérifie ton argent avec `!!bal` !", "!!bal"),
+    ]
+
+    for title, desc, cmd in tutorial_steps:
+        embed = discord.Embed(title=title, description=desc, color=discord.Color.blue())
+        await thread.send(embed=embed)
+        await wait_for_command(thread, user, cmd)  # Attente de la commande de l'utilisateur
+
+    # Embed final des jeux
+    games_embed = discord.Embed(
+        title="🎲 **Autres Commandes de Jeux**",
+        description="Découvre encore plus de moyens de t'amuser et gagner des Ezryn Coins !",
+        color=discord.Color.gold()
+    )
+    games_embed.add_field(name="🐔 Cock-Fight", value="`!!cf` - Combat de Poulet !", inline=False)
+    games_embed.add_field(name="🃏 Blackjack", value="`!!bj` - Jeux de Carte !", inline=False)
+    games_embed.add_field(name="🎰 Slot Machine", value="`!!sm` - Tente un jeu risqué !", inline=False)
+    games_embed.add_field(name="🔫 Roulette Russe", value="`!!rr` - Joue avec le destin !", inline=False)
+    games_embed.add_field(name="🎡 Roulette", value="`!!roulette` - Fais tourner la roue de la fortune !", inline=False)
+    games_embed.set_footer(text="Amuse-toi bien sur Etherya ! 🚀")
+
+    await thread.send(embed=games_embed)
+    await thread.send("Clique sur **Passer à la suite** pour découvrir les systèmes impressionnants de notre Economie !", view=NextStepView(thread))
+
+async def send_economy_info(user: discord.Member):
+    try:
+        economy_embed = discord.Embed(
+            title="📌 **Lis ces salons pour optimiser tes gains !**",
+            description=(
+                "Bienvenue dans l'économie du serveur ! Pour en tirer le meilleur profit, assure-toi de lire ces salons :\n\n"
+                "💰 **Comment accéder à l'economie ?**\n➜ <#1344418391544303627>\n\n"
+                "📖 **Informations générales**\n➜ <#1340402373708746802>\n\n"
+                "💰 **Comment gagner des Coins ?**\n➜ <#1340402729272737926>\n\n"
+                "🏦 **Banque de l'Éco 1**\n➜ <#1340403431923519489>\n\n"
+                "🏦 **Banque de l'Éco 2**\n➜ <#1344309260825133100>\n\n"
+                "🎟️ **Ticket Finances** *(Pose tes questions ici !)*\n➜ <#1340443101386379486>\n\n"
+                "📈 **Astuce :** Plus tu en sais, plus tu gagnes ! Alors prends quelques minutes pour lire ces infos. 🚀"
+            ),
+            color=discord.Color.gold()
+        )
+        economy_embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/1168755764760559637.webp?size=96&quality=lossless")
+        economy_embed.set_footer(text="Bon jeu et bons profits ! 💰")
+
+        dm_channel = await user.create_dm()
+        await dm_channel.send(embed=economy_embed)
+    except discord.Forbidden:
+        print(f"Impossible d'envoyer un MP à {user.name} ({user.id})")
 
 @bot.event
 async def on_member_join(member):
@@ -222,6 +370,39 @@ async def on_member_join(member):
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
     
+    # Création d'un fil privé pour le membre
+    channel_id = 1342179655263977492  # Remplace par l'ID du salon souhaité
+    channel = bot.get_channel(channel_id)
+
+    if channel and isinstance(channel, discord.TextChannel):
+        thread = await channel.create_thread(name=f"🎉 Bienvenue {member.name} !", type=discord.ChannelType.private_thread)
+        await thread.add_user(member)
+        private_threads[member.id] = thread
+
+        # Embed de bienvenue
+        welcome_embed = discord.Embed(
+            title="🌌 Bienvenue à Etherya !",
+            description=( 
+                "Une aventure unique t'attend, entre **économie dynamique**, **stratégies** et **opportunités**. "
+                "Prêt à découvrir tout ce que le serveur a à offrir ?"
+            ),
+            color=discord.Color.blue()
+        )
+        welcome_embed.set_thumbnail(url=member.avatar.url if member.avatar else bot.user.avatar.url)
+        await thread.send(embed=welcome_embed)
+
+        # Embed du guide
+        guide_embed = discord.Embed(
+            title="📖 Besoin d'un Guide ?",
+            description=( 
+                "Nous avons préparé un **Guide de l'Économie** pour t'aider à comprendre notre système monétaire et "
+                "les différentes façons d'évoluer. Veux-tu le suivre ?"
+            ),
+            color=discord.Color.gold()
+        )
+        guide_embed.set_footer(text="Tu peux toujours y accéder plus tard via la commande /guide ! 🚀")
+        await thread.send(embed=guide_embed, view=GuideView(thread))  # Envoie le guide immédiatement
+
     # Envoi du ghost ping une seule fois par salon
     for salon_id in salon_ids:
         salon = bot.get_channel(salon_id)
@@ -236,6 +417,7 @@ async def on_member_join(member):
 
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
+
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 
 @bot.command()

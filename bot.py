@@ -39,9 +39,9 @@ async def on_ready():
     # Liste des activités à alterner
     activity_types = [
         discord.Game("Etherya"),  # Playing
-        discord.Activity(type=discord.ActivityType.watching, name="Regarder le monde d'Etherya"),  # Watching
-        discord.Activity(type=discord.ActivityType.listening, name="Écouter les murmures du passé"),  # Listening
-        discord.Activity(type=discord.ActivityType.streaming, name="Diffuser les sombres secrets", url="https://twitch.tv/ton_stream")  # Streaming
+        discord.Activity(type=discord.ActivityType.watching, name=" le monde d'Etherya"),  # Watching
+        discord.Activity(type=discord.ActivityType.listening, name=" les murmures du passé"),  # Listening
+        discord.Activity(type=discord.ActivityType.streaming, name=" les sombres secrets", url="https://twitch.tv/ton_stream")  # Streaming
     ]
 
     # Liste des statuts à alterner

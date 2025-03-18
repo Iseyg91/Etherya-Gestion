@@ -1559,8 +1559,8 @@ async def ping(ctx):
 
     await ctx.send(embed=embed)
 
-@bot.tree.command(name="roleinfo", description="Obtenez des informations détaillées sur un rôle")
-async def roleinfo(interaction: discord.Interaction, role: discord.Role):
+@bot.tree.command(name="infoserveur", description="Obtenez des informations détaillées sur le serveur")
+async def infoserveur(interaction: discord.Interaction):
     # Vérifier si le rôle existe
     if role is None:
         embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())
@@ -1586,6 +1586,46 @@ async def roleinfo(interaction: discord.Interaction, role: discord.Role):
         embed.set_footer(text=f"Commande demandée par {interaction.user.name}", icon_url=interaction.user.avatar.url)
 
         await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(name="info_serveur", description="Obtenez des informations détaillées sur le Serveur")
+async def infoserveur(ctx):
+    guild = ctx.guild  # Récupère l'instance du serveur
+
+    # Récupération des infos du serveur
+    server_name = guild.name
+    server_id = guild.id
+    owner = guild.owner
+    member_count = guild.member_count
+    boost_level = guild.premium_tier
+    boost_count = guild.premium_subscription_count
+    creation_date = guild.created_at
+    roles_count = len(guild.roles)
+    emoji_count = len(guild.emojis)
+    shard = 'Shard #681 (cluster 43)'  # Si tu utilises plusieurs shards
+    content_analysis = "Analyse tous les messages envoyés"  # Exemple, à adapter
+    verification_level = str(guild.verification_level)
+    age_restriction = "Normale"  # Exemple, à adapter
+    created_at = creation_date.strftime('%A %d %B %Y %H:%M')
+
+    # Récupération des rôles (optionnel si trop de rôles)
+    roles = [role.name for role in guild.roles[:10]]  # Limite à 10 premiers rôles
+    roles_display = ', '.join(roles) if roles else "Aucun rôle"
+
+    # Envoi du message
+    embed = discord.Embed(title=f"Informations et statistiques de {server_name}",
+                          description=f"Serveur ID: {server_id}",
+                          color=discord.Color.blue())
+    embed.add_field(name="Propriétaire", value=f"{owner} (@{owner.name})", inline=False)
+    embed.add_field(name="Membres", value=f"{member_count} membres", inline=False)
+    embed.add_field(name="Boosts", value=f"Palier {boost_level} ({boost_count} boosts)", inline=False)
+    embed.add_field(name="Analyse du contenu", value=content_analysis, inline=False)
+    embed.add_field(name="Niveau de vérification", value=verification_level, inline=False)
+    embed.add_field(name="Restriction d'âge", value=age_restriction, inline=False)
+    embed.add_field(name="Rôles", value=roles_display, inline=False)
+    embed.add_field(name="Émojis", value=f"{emoji_count} émojis", inline=False)
+    embed.add_field(name="Création du serveur", value=created_at, inline=False)
+    
+    await ctx.send(embed=embed)
 
 @bot.command()
 async def uptime(ctx):

@@ -82,22 +82,22 @@ ADMIN_ID = 792755123587645461
 
 @bot.event
 async def on_message(message):
-    if message.author.bot:
-        return  # Ignore les messages des bots
+    if message.author == bot.user:
+        return
 
-    print(f"📩 Message reçu de {message.author}: {message.content}")
-
-    # Vérification des mentions du bot
-    if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
+    if bot.user.mentioned_in(message) and len(message.mentions) == 1:
         embed = discord.Embed(
-            title="Bonjour ! 👋",
-            description=f"Salut {message.author.mention} !\n\n"
-                        f"Mon préfixe sur ce serveur est: **+**. Utilise-le pour interagir avec moi !\n\n"
-                        f"Pour voir toutes mes commandes, fais **+aide**.\n\n"
-                        f"Si tu as d'autres questions ou besoin d'aide, n'hésite pas à me pinguer à nouveau !",
+            title="🤖 Salut ! Besoin d'aide ?",
+            description="Je suis un bot développé pour gérer l'économie, la modération et d'autres fonctionnalités sur ce serveur !\n\n"
+                        "🔹 **Besoin d'aide ?** Utilise `+aide` pour voir mes commandes.\n"
+                        "🔹 **Un bug ou une suggestion ?** Contacte un administrateur.\n"
+                        "🔹 **Envie d'en savoir plus ?** Découvre mes fonctionnalités en explorant les commandes !",
             color=discord.Color.blue()
         )
+        embed.set_footer(text="Système automatique de réponse au ping")
         await message.channel.send(embed=embed)
+
+    await bot.process_commands(message)
 
     # Vérification des mots sensibles
     for word in sensitive_words:

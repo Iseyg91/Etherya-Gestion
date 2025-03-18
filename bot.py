@@ -1560,10 +1560,8 @@ async def ping(ctx):
     await ctx.send(embed=embed)
 
 @bot.tree.command(name="roleinfo", description="Obtenez des informations détaillées sur un rôle")
-async def roleinfo(interaction: discord.Interaction, role_name: str):
-    # Cherche le rôle par son nom
-    role = discord.utils.get(interaction.guild.roles, name=role_name)
-
+async def roleinfo(interaction: discord.Interaction, role: discord.Role):
+    # Vérifier si le rôle existe
     if role is None:
         embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())
         await interaction.response.send_message(embed=embed)

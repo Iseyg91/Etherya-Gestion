@@ -54,13 +54,12 @@ async def on_ready():
 #------------------------------------------------------------------------- Commande Mention : Mention Bot
 @bot.event
 async def on_message(message):
-    # Ignore les messages envoyés par le bot
-    if message.author == bot.user:
+    # Ignorer les messages envoyés par d'autres bots
+    if message.author.bot:
         return
 
-    # Vérifie si le bot est mentionné
-    if bot.user.mentioned_in(message):
-        # Crée un embed avec des informations
+    # Vérifie si le message mentionne uniquement le bot
+    if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
         embed = discord.Embed(
             title="Bonjour ! 👋",
             description=f"Salut {message.author.mention} !\n\n"

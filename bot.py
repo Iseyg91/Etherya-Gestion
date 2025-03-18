@@ -52,16 +52,6 @@ async def on_ready():
     except Exception as e:
         print(f"❌ Erreur de synchronisation des commandes slash : {e}")
 #------------------------------------------------------------------------- Commande Mention : Mention Bot
-# Dictionnaire pour stocker le nombre de messages
-message_count = defaultdict(int)
-
-# ID du rôle et du salon d'annonces
-ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
-ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378  # Remplace par l'ID du salon d'annonces
-
-def get_main_guild():
-    return bot.guilds[0] if bot.guilds else None
-
 @bot.event
 async def on_message(message):
     # Ignore les messages envoyés par le bot
@@ -70,62 +60,21 @@ async def on_message(message):
 
     # Vérifie si le bot est mentionné
     if bot.user.mentioned_in(message):
-        # Création de l'embed de réponse à la mention
+        # Crée un embed avec des informations
         embed = discord.Embed(
-            title="👋 Salut !",
-            description=f"Merci de m'avoir mentionné, {message.author.mention} !\n\n"
-                        f"Mon préfixe sur ce serveur est: **+**. Utilise-le pour interagir avec moi !\n"
-                        f"Pour plus d'infos sur les commandes disponibles, tape **+aide**.",
-            color=discord.Color.blue()
+            title="Bonjour ! 👋",
+            description=f"Salut {message.author.mention} !\n\n"
+                        f"Mon préfixe sur ce serveur est: **+**. Utilise-le pour interagir avec moi !\n\n"
+                        f"Pour voir toutes mes commandes, fais **+aide**.\n\n"
+                        f"Si tu as d'autres questions ou besoin d'aide, n'hésite pas à me pinguer à nouveau !",
+            color=discord.Color.blue()  # Tu peux personnaliser la couleur ici
         )
-        embed.set_footer(text="Si tu as besoin d'aide supplémentaire, pingue-moi à nouveau !")
 
         # Envoie l'embed
         await message.channel.send(embed=embed)
 
-    # Comptage des messages pour l'activité "God of Glory"
-    message_count[message.author.id] += 1
-
-    # Passer à l'étape suivante (traitement des commandes)
+    # Si le message n'est pas une mention, passe à l'étape suivante
     await bot.process_commands(message)
-
-# Fonction de vérification quotidienne pour récompenser l'utilisateur actif
-async def daily_check():
-    if not message_count:
-        return  # Évite une erreur si aucun message n'a été envoyé
-
-    guild = get_main_guild()
-    if not guild:
-        return
-
-    top_user_id = max(message_count, key=message_count.get)  # Trouve l'utilisateur avec le plus de messages
-    top_user = guild.get_member(top_user_id)
-
-    if top_user:
-        role = guild.get_role(ROLE_ID)
-        if role:
-            await top_user.add_roles(role)
-
-            # Envoyer l'embed
-            channel = bot.get_channel(ANNOUNCEMENT_CHANNEL_ID)
-            if channel:
-                embed = discord.Embed(
-                    description=f"> **Le <@&{ROLE_ID}> du jour est: {top_user.mention} <a:pandaplaudie:1172809946254028802>**",
-                    color=discord.Color.gold()
-                )
-                await channel.send(embed=embed)
-
-            # Supprimer le rôle après 24h
-            await asyncio.sleep(86400)  # 24 heures en secondes
-            await top_user.remove_roles(role)
-
-    # Réinitialiser le compteur
-    message_count.clear()
-
-# Planificateur
-scheduler = AsyncIOScheduler()
-scheduler.add_job(daily_check, "cron", hour=23, minute=59)
-scheduler.start()
 
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue

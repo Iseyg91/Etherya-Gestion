@@ -990,12 +990,10 @@ async def note(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 
-AUTHORIZED_ROLES = ["1244339296706760726"]
-
 @bot.command()
 async def say(ctx, *, text: str = None):
-    # Vérifie si l'utilisateur a le rôle avec l'ID spécifié
-    if str(ctx.author.id) not in AUTHORIZED_ROLES:
+    # Vérifie si l'utilisateur a les permissions d'admin
+    if not ctx.author.guild_permissions.administrator:
         await ctx.send("Tu n'as pas les permissions nécessaires pour utiliser cette commande.")
         return
     
@@ -1005,18 +1003,10 @@ async def say(ctx, *, text: str = None):
 
     # Supprime le message originel
     await ctx.message.delete()
+
     # Envoie le texte spécifié
     await ctx.send(text)
 
-
-    # Envoie le texte demandé
-    await ctx.send(text)
-
-    # Supprime le message originel
-    await ctx.message.delete()
-
-    # Envoie le texte demandé
-    await ctx.send(text)
 
 
 @bot.command()

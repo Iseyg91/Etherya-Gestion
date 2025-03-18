@@ -53,8 +53,7 @@ async def on_ready():
         print(f"❌ Erreur de synchronisation des commandes slash : {e}")
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 # Liste des mots sensibles
-sensitive_words = [
-    "connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon",
+sensitive_words = ["connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon",
     "clown", "baltringue", "fils de pute", "gros con", "sale type", "ordure", "merdeux", "guignol", "vaurien",
     "tocard", "branleur", "crasseux", "charognard", "raté", "raciste", "sexiste", "homophobe", "antisémite",
     "xénophobe", "transphobe", "islamophobe", "misogyne", "misandre", "discriminatoire", "nazi", "néonazi",
@@ -70,45 +69,56 @@ sensitive_words = [
     "corruption", "pot-de-vin", "abus de pouvoir", "dictature", "oppression", "propagande", "fake news",
     "manipulation", "endoctrinement", "secte", "lavage de cerveau", "violence policière", "brutalité",
     "crime organisé", "mafia", "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute",
-    "rébellion", "coup d'état"
-]
-
+    "rébellion", "coup d'état"]  # Exemple réduit
 ADMIN_ID = 792755123587645461
-ROLE_ID = 1343293515685302373
-ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378
+
+# Dictionnaire pour stocker le nombre de messages
 message_count = defaultdict(int)
+ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
+ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378  # ID du salon d'annonces
 
 def get_main_guild():
     return bot.guilds[0] if bot.guilds else None
 
 @bot.event
 async def on_message(message):
-    if message.author == bot.user or message.author.bot:
+    if message.author.bot:
         return
-
-    # Détection de mots sensibles
-    for word in sensitive_words:
-        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
-            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
-            asyncio.create_task(send_alert_to_admin(message, word))
-            break
     
-    # Message contenant une mention du bot
+    # Compteur de messages
+    message_count[message.author.id] += 1
+    
+    # Réponse automatique aux mentions du bot
     if bot.user.mentioned_in(message) and len(message.mentions) == 1:
         embed = discord.Embed(
             title="👋 Besoin d’aide ?",
             description=(f"Salut {message.author.mention} ! Moi, c’est **{bot.user.name}**, ton assistant sur ce serveur. 🤖\n\n"
-                         "🔹 **Pour voir toutes mes commandes :** Tape `+aide`\n"
+                         "🔹 **Pour voir toutes mes commandes :** Appuie sur le bouton ci-dessous ou tape `+aide`\n"
                          "🔹 **Une question ? Un souci ?** Contacte le staff !\n\n"
                          "✨ **Profite bien du serveur et amuse-toi !**"),
             color=discord.Color.blue()
         )
         embed.set_thumbnail(url=bot.user.avatar.url)
         embed.set_footer(text="Réponse automatique • Disponible 24/7", icon_url=bot.user.avatar.url)
-        await message.channel.send(embed=embed)
+        view = discord.ui.View()
+        button = discord.ui.Button(label="📜 Voir les commandes", style=discord.ButtonStyle.primary, custom_id="help_button")
+        
+        async def button_callback(interaction: discord.Interaction):
+            ctx = await bot.get_context(interaction.message)
+            await ctx.invoke(bot.get_command("aide"))
+            await interaction.response.send_message("Voici la liste des commandes !", ephemeral=True)
+        
+        button.callback = button_callback
+        view.add_item(button)
+        await message.channel.send(embed=embed, view=view)
     
-    # Compteur de messages
-    message_count[message.author.id] += 1
+    # Détection des mots sensibles
+    for word in sensitive_words:
+        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
+            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
+            asyncio.create_task(send_alert_to_admin(message, word))
+            break
+    
     await bot.process_commands(message)
 
 async def send_alert_to_admin(message, detected_word):
@@ -116,20 +126,20 @@ async def send_alert_to_admin(message, detected_word):
         admin = await bot.fetch_user(ADMIN_ID)
         embed = discord.Embed(
             title="🚨 Alerte : Mot sensible détecté !",
-            description=f"Un message contenant un mot interdit a été détecté.",
+            description=f"Un message contenant un mot interdit a été détecté sur le serveur **{message.guild.name}**.",
             color=discord.Color.red(),
             timestamp=datetime.utcnow()
         )
         embed.add_field(name="📍 Salon", value=f"{message.channel.mention}", inline=True)
-        embed.add_field(name="👤 Auteur", value=f"{message.author.mention} ({message.author.id})", inline=True)
+        embed.add_field(name="👤 Auteur", value=f"{message.author.mention} (`{message.author.id}`)", inline=True)
         embed.add_field(name="💬 Message", value=f"```{message.content}```", inline=False)
         embed.add_field(name="⚠️ Mot détecté", value=f"`{detected_word}`", inline=True)
         if message.guild:
             embed.add_field(name="🔗 Lien vers le message", value=f"[Clique ici]({message.jump_url})", inline=False)
         embed.set_footer(text="Système de détection automatique", icon_url=bot.user.avatar.url)
         await admin.send(embed=embed)
-    except discord.Forbidden:
-        print(f"❌ Impossible d'envoyer un MP à l'admin {ADMIN_ID}.")
+    except Exception as e:
+        print(f"⚠️ Erreur lors de l'envoi de l'alerte : {e}")
 
 async def daily_check():
     if not message_count:
@@ -137,8 +147,10 @@ async def daily_check():
     guild = get_main_guild()
     if not guild:
         return
+    
     top_user_id = max(message_count, key=message_count.get)
     top_user = guild.get_member(top_user_id)
+    
     if top_user:
         role = guild.get_role(ROLE_ID)
         if role:
@@ -146,18 +158,17 @@ async def daily_check():
             channel = bot.get_channel(ANNOUNCEMENT_CHANNEL_ID)
             if channel:
                 embed = discord.Embed(
-                    description=f"> **Le <@&{ROLE_ID}> du jour est: {top_user.mention} 🎉**",
+                    description=f"> **Le <@&{ROLE_ID}> du jour est: {top_user.mention} <a:pandaplaudie:1172809946254028802>**",
                     color=discord.Color.gold()
                 )
                 await channel.send(embed=embed)
-            await asyncio.sleep(86400)
+            await asyncio.sleep(86400)  # 24 heures
             await top_user.remove_roles(role)
     message_count.clear()
 
 scheduler = AsyncIOScheduler()
 scheduler.add_job(daily_check, "cron", hour=23, minute=59)
 scheduler.start()
-
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108

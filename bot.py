@@ -1571,8 +1571,8 @@ async def ping(ctx):
 
     await ctx.send(embed=embed)
 
-@bot.tree.command(name="infoserveur", description="Obtenez des informations détaillées sur le serveur")
-async def infoserveur(interaction: discord.Interaction):
+@bot.tree.command(name="info-rôle", description="Obtenez des informations détaillées sur un rôle")
+async def roleinfo(interaction: discord.Interaction, role: discord.Role):
     # Vérifier si le rôle existe
     if role is None:
         embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())

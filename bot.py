@@ -87,14 +87,18 @@ async def on_message(message):
 
     if bot.user.mentioned_in(message) and len(message.mentions) == 1:
         embed = discord.Embed(
-            title="🤖 Salut ! Besoin d'aide ?",
-            description="Je suis un bot développé pour gérer l'économie, la modération et d'autres fonctionnalités sur ce serveur !\n\n"
-                        "🔹 **Besoin d'aide ?** Utilise `+aide` pour voir mes commandes.\n"
-                        "🔹 **Un bug ou une suggestion ?** Contacte un administrateur.\n"
-                        "🔹 **Envie d'en savoir plus ?** Découvre mes fonctionnalités en explorant les commandes !",
+            title="👋 Hey ! Tu m’as appelé ?",
+            description=(
+                f"Salut {message.author.mention} ! Je suis **{bot.user.name}**, ton assistant sur ce serveur.\n\n"
+                "🔹 **Besoin d’aide ?** Tape `/help` pour voir toutes mes commandes.\n"
+                "🔹 **Une question ?** N’hésite pas à demander à un membre du staff.\n"
+                "🔹 **Un bug ou une suggestion ?** Contacte un administrateur.\n\n"
+                "✨ **Amuse-toi bien sur le serveur !**"
+            ),
             color=discord.Color.blue()
         )
-        embed.set_footer(text="Système automatique de réponse au ping")
+        embed.set_thumbnail(url=bot.user.avatar.url)
+        embed.set_footer(text="Réponse automatique • Disponible 24/7", icon_url=bot.user.avatar.url)
         await message.channel.send(embed=embed)
 
     await bot.process_commands(message)
@@ -105,9 +109,6 @@ async def on_message(message):
             print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
             asyncio.create_task(send_alert_to_admin(message, word))  # Exécuter l'alerte en arrière-plan
             break  # Arrêter après la première détection
-
-    # Autoriser l'exécution des commandes
-    await bot.process_commands(message)
 
 async def send_alert_to_admin(message, detected_word):
     try:

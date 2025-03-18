@@ -32,12 +32,27 @@ bot = commands.Bot(command_prefix="+", intents=intents)
 
 STAFF_ROLE_ID = 1244339296706760726
 
+import discord
+import asyncio
+
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
 
-    game = discord.Game("Etherya")
-    await bot.change_presence(status=discord.Status.online, activity=game)
+    # Liste des différents statuts à alterner
+    statuses = [
+        discord.Game("Etherya"),
+        discord.Game("En train de coder..."),
+        discord.Game("À la recherche de bugs...")
+    ]
+    
+    # Liste des statuts possibles
+    status_types = [
+        discord.Status.online,
+        discord.Status.idle,
+        discord.Status.dnd
+    ]
+    
     print(f'{bot.user} est connecté !')
 
     # Afficher les commandes chargées
@@ -51,6 +66,14 @@ async def on_ready():
         print(f"✅ Commandes slash synchronisées : {[cmd.name for cmd in synced]}")
     except Exception as e:
         print(f"❌ Erreur de synchronisation des commandes slash : {e}")
+
+    # Jongler avec les statuts
+    while True:
+        for i in range(len(statuses)):
+            game = statuses[i]
+            status = status_types[i]
+            await bot.change_presence(status=status, activity=game)
+            await asyncio.sleep(10)  # Attente de 10 secondes avant de changer le statut
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 # Liste des mots sensibles
 sensitive_words = ["connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon",

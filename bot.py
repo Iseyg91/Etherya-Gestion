@@ -1559,24 +1559,35 @@ async def ping(ctx):
 
     await ctx.send(embed=embed)
 
-@bot.command()
-async def roleinfo(ctx, *, role_name: str):
+@bot.tree.command(name="roleinfo", description="Obtenez des informations détaillées sur un rôle")
+async def roleinfo(interaction: discord.Interaction, role_name: str):
     # Cherche le rôle par son nom
-    role = discord.utils.get(ctx.guild.roles, name=role_name)
+    role = discord.utils.get(interaction.guild.roles, name=role_name)
 
     if role is None:
         embed = discord.Embed(title="Erreur", description="Rôle introuvable.", color=discord.Color.red())
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
         return
     else:
-        embed = discord.Embed(title=f"Informations sur le rôle: {role.name}", color=role.color)
-        embed.add_field(name="ID", value=role.id)
-        embed.add_field(name="Couleur", value=str(role.color))
-        embed.add_field(name="Nombre de membres", value=len(role.members))
-        embed.add_field(name="Position", value=role.position)
-        embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
+        embed = discord.Embed(
+            title=f"Informations sur le rôle: {role.name}",
+            color=role.color,
+            timestamp=interaction.created_at
+        )
+        
+        embed.set_thumbnail(url=interaction.guild.icon.url)
+        embed.add_field(name="ID", value=role.id, inline=False)
+        embed.add_field(name="Couleur", value=str(role.color), inline=False)
+        embed.add_field(name="Nombre de membres", value=len(role.members), inline=False)
+        embed.add_field(name="Position dans la hiérarchie", value=role.position, inline=False)
+        embed.add_field(name="Mentionnable", value=role.mentionable, inline=False)
+        embed.add_field(name="Gérer les permissions", value=role.managed, inline=False)
+        embed.add_field(name="Créé le", value=role.created_at.strftime("%d/%m/%Y à %H:%M:%S"), inline=False)
+        embed.add_field(name="Mention", value=role.mention, inline=False)
 
-        await ctx.send(embed=embed)
+        embed.set_footer(text=f"Commande demandée par {interaction.user.name}", icon_url=interaction.user.avatar.url)
+
+        await interaction.response.send_message(embed=embed)
 
 @bot.command()
 async def uptime(ctx):

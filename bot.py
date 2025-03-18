@@ -1599,45 +1599,63 @@ async def roleinfo(interaction: discord.Interaction, role: discord.Role):
 
         await interaction.response.send_message(embed=embed)
 
+import discord
+from discord import app_commands
+
 @bot.tree.command(name="info_serveur", description="Obtenez des informations détaillées sur le Serveur")
 async def infoserveur(ctx):
-    guild = ctx.guild  # Récupère l'instance du serveur
+    try:
+        print("[LOG] Commande 'info_serveur' exécutée")
 
-    # Récupération des infos du serveur
-    server_name = guild.name
-    server_id = guild.id
-    owner = guild.owner
-    member_count = guild.member_count
-    boost_level = guild.premium_tier
-    boost_count = guild.premium_subscription_count
-    creation_date = guild.created_at
-    roles_count = len(guild.roles)
-    emoji_count = len(guild.emojis)
-    shard = 'Shard #681 (cluster 43)'  # Si tu utilises plusieurs shards
-    content_analysis = "Analyse tous les messages envoyés"  # Exemple, à adapter
-    verification_level = str(guild.verification_level)
-    age_restriction = "Normale"  # Exemple, à adapter
-    created_at = creation_date.strftime('%A %d %B %Y %H:%M')
+        guild = ctx.guild  # Récupère l'instance du serveur
+        if not guild:
+            print("[ERREUR] Impossible de récupérer le serveur")
+            return await ctx.send("Erreur : Impossible de récupérer les informations du serveur.")
 
-    # Récupération des rôles (optionnel si trop de rôles)
-    roles = [role.name for role in guild.roles[:10]]  # Limite à 10 premiers rôles
-    roles_display = ', '.join(roles) if roles else "Aucun rôle"
+        print("[LOG] Informations du serveur récupérées")
 
-    # Envoi du message
-    embed = discord.Embed(title=f"Informations et statistiques de {server_name}",
-                          description=f"Serveur ID: {server_id}",
-                          color=discord.Color.blue())
-    embed.add_field(name="Propriétaire", value=f"{owner} (@{owner.name})", inline=False)
-    embed.add_field(name="Membres", value=f"{member_count} membres", inline=False)
-    embed.add_field(name="Boosts", value=f"Palier {boost_level} ({boost_count} boosts)", inline=False)
-    embed.add_field(name="Analyse du contenu", value=content_analysis, inline=False)
-    embed.add_field(name="Niveau de vérification", value=verification_level, inline=False)
-    embed.add_field(name="Restriction d'âge", value=age_restriction, inline=False)
-    embed.add_field(name="Rôles", value=roles_display, inline=False)
-    embed.add_field(name="Émojis", value=f"{emoji_count} émojis", inline=False)
-    embed.add_field(name="Création du serveur", value=created_at, inline=False)
-    
-    await ctx.send(embed=embed)
+        # Récupération des infos du serveur
+        server_name = guild.name
+        server_id = guild.id
+        owner = guild.owner
+        member_count = guild.member_count
+        boost_level = guild.premium_tier
+        boost_count = guild.premium_subscription_count
+        creation_date = guild.created_at
+        roles_count = len(guild.roles)
+        emoji_count = len(guild.emojis)
+        verification_level = str(guild.verification_level)
+
+        print("[LOG] Variables du serveur récupérées")
+
+        created_at = creation_date.strftime('%A %d %B %Y %H:%M')
+
+        # Récupération des rôles
+        roles = [role.name for role in guild.roles[:10]]  # Limite à 10 premiers rôles
+        roles_display = ', '.join(roles) if roles else "Aucun rôle"
+
+        print("[LOG] Liste des rôles récupérée")
+
+        # Création de l'embed
+        embed = discord.Embed(title=f"Informations et statistiques de {server_name}",
+                              description=f"Serveur ID: {server_id}",
+                              color=discord.Color.blue())
+        embed.add_field(name="Propriétaire", value=f"{owner} (@{owner.name})" if owner else "Inconnu", inline=False)
+        embed.add_field(name="Membres", value=f"{member_count} membres", inline=False)
+        embed.add_field(name="Boosts", value=f"Palier {boost_level} ({boost_count} boosts)", inline=False)
+        embed.add_field(name="Niveau de vérification", value=verification_level, inline=False)
+        embed.add_field(name="Rôles", value=roles_display, inline=False)
+        embed.add_field(name="Émojis", value=f"{emoji_count} émojis", inline=False)
+        embed.add_field(name="Création du serveur", value=created_at, inline=False)
+
+        print("[LOG] Embed créé, envoi du message...")
+
+        await ctx.send(embed=embed)
+        print("[LOG] Message envoyé avec succès")
+
+    except Exception as e:
+        print(f"[ERREUR] Une erreur est survenue : {e}")
+        await ctx.send("Une erreur est survenue lors de l'exécution de la commande.")
 
 @bot.command()
 async def uptime(ctx):

@@ -1599,9 +1599,6 @@ async def roleinfo(interaction: discord.Interaction, role: discord.Role):
 
         await interaction.response.send_message(embed=embed)
 
-import discord
-from discord import app_commands
-
 @bot.tree.command(name="info_serveur", description="Obtenez des informations détaillées sur le Serveur")
 async def infoserveur(ctx):
     try:
@@ -1609,10 +1606,10 @@ async def infoserveur(ctx):
 
         guild = ctx.guild  # Récupère l'instance du serveur
         if not guild:
-            print("[ERREUR] Impossible de récupérer le serveur")
+            print("[ERREUR] Impossible de récupérer l'instance du serveur")
             return await ctx.send("Erreur : Impossible de récupérer les informations du serveur.")
 
-        print("[LOG] Informations du serveur récupérées")
+        print(f"[LOG] Serveur récupéré : {guild.name} (ID: {guild.id})")
 
         # Récupération des infos du serveur
         server_name = guild.name
@@ -1626,15 +1623,25 @@ async def infoserveur(ctx):
         emoji_count = len(guild.emojis)
         verification_level = str(guild.verification_level)
 
-        print("[LOG] Variables du serveur récupérées")
+        print("[LOG] Variables récupérées :")
+        print(f"  - Nom du serveur : {server_name}")
+        print(f"  - ID du serveur : {server_id}")
+        print(f"  - Propriétaire : {owner} ({owner.name if owner else 'Inconnu'})")
+        print(f"  - Nombre de membres : {member_count}")
+        print(f"  - Niveau de boost : {boost_level}")
+        print(f"  - Nombre de boosts : {boost_count}")
+        print(f"  - Date de création : {creation_date}")
+        print(f"  - Nombre de rôles : {roles_count}")
+        print(f"  - Nombre d'émojis : {emoji_count}")
+        print(f"  - Niveau de vérification : {verification_level}")
 
         created_at = creation_date.strftime('%A %d %B %Y %H:%M')
 
         # Récupération des rôles
-        roles = [role.name for role in guild.roles[:10]]  # Limite à 10 premiers rôles
+        roles = [role.name for role in guild.roles[:10]] if guild.roles else []
         roles_display = ', '.join(roles) if roles else "Aucun rôle"
 
-        print("[LOG] Liste des rôles récupérée")
+        print(f"[LOG] Liste des rôles récupérée : {roles_display}")
 
         # Création de l'embed
         embed = discord.Embed(title=f"Informations et statistiques de {server_name}",

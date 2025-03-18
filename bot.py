@@ -2780,11 +2780,6 @@ async def disconnect(interaction: discord.Interaction):
         )
         await interaction.response.send_message(embed=embed)
 #------------------------------------------------------------------------- Commande de Gw : Giveaways
-
-import discord
-import asyncio
-import random
-
 class GiveawayForm(discord.ui.Modal, title="Créer un Giveaway"):
     gains = discord.ui.TextInput(label="Gains", placeholder="Ex: Nitro, Role Spécial", required=True)
     emoji = discord.ui.TextInput(label="Emoji de réaction", placeholder="Ex: 🎉", required=True)
@@ -2795,11 +2790,20 @@ class GiveawayForm(discord.ui.Modal, title="Créer un Giveaway"):
 
     async def on_submit(self, interaction: discord.Interaction):
         try:
-            salon = interaction.client.get_channel(int(self.salon.value.replace("<#", "").replace(">", "")))
+            salon_id = self.salon.value.strip("<#>")
+            if not salon_id.isdigit():
+                raise ValueError("ID de salon invalide")
+            
+            salon = interaction.client.get_channel(int(salon_id))
+            if salon is None:
+                raise ValueError("Salon introuvable")
+            
             duree = int(self.duree.value)
             gagnants = int(self.gagnants.value)
-        except ValueError:
-            await interaction.response.send_message("Erreur dans les valeurs saisies.", ephemeral=True)
+            if duree <= 0 or gagnants <= 0:
+                raise ValueError("Durée ou gagnants invalides")
+        except ValueError as e:
+            await interaction.response.send_message(f"Erreur : {e}", ephemeral=True)
             return
         
         embed = discord.Embed(title="🎉 Giveaway !", description=f"**Gains :** {self.gains.value}\n**Réagis avec {self.emoji.value} pour participer !" , color=discord.Color.gold())
@@ -2828,6 +2832,16 @@ class GiveawayForm(discord.ui.Modal, title="Créer un Giveaway"):
             winners = random.sample(participants, gagnants)
             winners_mentions = ", ".join(winner.mention for winner in winners)
             await salon.send(f"🎉 Félicitations {winners_mentions} ! Vous avez gagné {self.gains.value} !")
+
+class MyBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix="!", intents=discord.Intents.all())
+    
+    async def setup_hook(self):
+        self.tree.add_command(giveaway)
+        await self.tree.sync()
+
+bot = MyBot()
 
 @bot.tree.command(name="giveaway", description="Créer un giveaway")
 async def giveaway(interaction: discord.Interaction):

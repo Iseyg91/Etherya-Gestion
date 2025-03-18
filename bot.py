@@ -54,37 +54,26 @@ async def on_ready():
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles
-sensitive_words = [
-    "connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon",
-    "clown", "baltringue", "fils de pute", "gros con", "sale type", "ordure", "merdeux", "guignol", "vaurien",
-    "tocard", "branleur", "crasseux", "charognard", "raté", "raciste", "sexiste", "homophobe", "antisémite",
-    "xénophobe", "transphobe", "islamophobe", "misogyne", "misandre", "discriminatoire", "nazi", "néonazi",
-    "suprémaciste", "extrémiste", "fasciste", "dictateur", "esclavagiste", "terroriste", "tuer", "assassin",
-    "attaquer", "viol", "torturer", "menacer", "frapper", "agression", "meurtre", "massacre", "guerre", "génocide",
-    "exécution", "kidnapping", "prise d'otage", "armes", "fusillade", "terrorisme", "attentat", "jihad",
-    "bombardement", "suicidaire", "décapitation", "immolation", "tireur", "pédocriminel", "cannibalisme",
-    "traite humaine", "trafficking", "trafic d'armes", "pervers", "abus", "sexe", "pornographie", "nu",
-    "masturbation", "adultère", "prostitution", "pédophilie", "inceste", "exhibition", "fétichisme",
-    "violence conjugale", "violence sexuelle", "harcèlement", "voyeurisme", "orgie", "zoophilie", "nécrophilie",
-    "sadomasochisme", "esclavage sexuel", "drogue", "cocaïne", "héroïne", "crack", "LSD", "ecstasy",
-    "méthamphétamine", "opium", "cannabis", "alcool", "ivresse", "overdose", "consommation abusive",
-    "trafic de drogue", "drogue dure", "toxicomanie", "shoot", "seringue", "hallucinogène", "hack", "pirater",
-    "voler des données", "phishing", "ddos", "raid", "flood", "spam", "crasher", "ddos attack", "botnet",
-    "infiltrer", "spammer", "griefing", "troll", "spam bot", "server crash", "exploiter", "ransomware", "trojan",
-    "virus informatique", "keylogger", "backdoor", "brute force", "scam", "usurpation d'identité", "darknet",
-    "marché noir", "fraude", "extorsion", "chantage", "blanchiment d'argent", "corruption", "pot-de-vin",
-    "abus de pouvoir", "dictature", "oppression", "propagande", "fake news", "censure", "manipulation",
-    "endoctrinement", "secte", "lavage de cerveau", "violence policière", "brutalité", "crime organisé", "mafia",
-    "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute", "rébellion", "coup d'état"
-]
-
+sensitive_words = ["connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon"]  # Exemple réduit
 ADMIN_ID = 792755123587645461
+
+# Dictionnaire pour stocker le nombre de messages
+message_count = defaultdict(int)
+ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
+ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378  # ID du salon d'annonces
+
+def get_main_guild():
+    return bot.guilds[0] if bot.guilds else None
 
 @bot.event
 async def on_message(message):
-    if message.author == bot.user:
+    if message.author.bot:
         return
-
+    
+    # Compteur de messages
+    message_count[message.author.id] += 1
+    
+    # Réponse automatique aux mentions du bot
     if bot.user.mentioned_in(message) and len(message.mentions) == 1:
         embed = discord.Embed(
             title="👋 Besoin d’aide ?",
@@ -96,42 +85,30 @@ async def on_message(message):
         )
         embed.set_thumbnail(url=bot.user.avatar.url)
         embed.set_footer(text="Réponse automatique • Disponible 24/7", icon_url=bot.user.avatar.url)
-
-        # Création du bouton
+        view = discord.ui.View()
         button = discord.ui.Button(label="📜 Voir les commandes", style=discord.ButtonStyle.primary, custom_id="help_button")
         
         async def button_callback(interaction: discord.Interaction):
-            # Récupérer le contexte du message de l'interaction pour exécuter la commande en interne
             ctx = await bot.get_context(interaction.message)
-            # Exécuter la commande +aide en interne
             await ctx.invoke(bot.get_command("aide"))
-
-            # Répondre à l'utilisateur pour indiquer que la commande a été exécutée
             await interaction.response.send_message("Voici la liste des commandes !", ephemeral=True)
-
+        
         button.callback = button_callback
-        view = discord.ui.View()
         view.add_item(button)
-
-        # Envoi du message avec le bouton
         await message.channel.send(embed=embed, view=view)
-
-    # Permettre au bot de traiter les autres commandes
-    await bot.process_commands(message)
-
-    # Vérification des mots sensibles
+    
+    # Détection des mots sensibles
     for word in sensitive_words:
         if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
             print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
-            asyncio.create_task(send_alert_to_admin(message, word))  # Exécuter l'alerte en arrière-plan
-            break  # Arrêter après la première détection
+            asyncio.create_task(send_alert_to_admin(message, word))
+            break
+    
+    await bot.process_commands(message)
 
 async def send_alert_to_admin(message, detected_word):
     try:
         admin = await bot.fetch_user(ADMIN_ID)
-        print(f"✅ Admin trouvé : {admin}")
-
-        # Création d'un embed stylisé
         embed = discord.Embed(
             title="🚨 Alerte : Mot sensible détecté !",
             description=f"Un message contenant un mot interdit a été détecté sur le serveur **{message.guild.name}**.",
@@ -142,21 +119,41 @@ async def send_alert_to_admin(message, detected_word):
         embed.add_field(name="👤 Auteur", value=f"{message.author.mention} (`{message.author.id}`)", inline=True)
         embed.add_field(name="💬 Message", value=f"```{message.content}```", inline=False)
         embed.add_field(name="⚠️ Mot détecté", value=f"`{detected_word}`", inline=True)
-
         if message.guild:
             embed.add_field(name="🔗 Lien vers le message", value=f"[Clique ici]({message.jump_url})", inline=False)
-
         embed.set_footer(text="Système de détection automatique", icon_url=bot.user.avatar.url)
-
         await admin.send(embed=embed)
-        print(f"✅ Alerte envoyée à l'admin {ADMIN_ID} en MP.")
-    except discord.Forbidden:
-        print(f"❌ Impossible d'envoyer un MP à l'admin {ADMIN_ID}. (MP bloqués)")
-    except discord.HTTPException as e:
-        print(f"⚠️ Erreur HTTP lors de l'envoi du MP : {e}")
     except Exception as e:
-        print(f"⚠️ Erreur inconnue : {e}")
+        print(f"⚠️ Erreur lors de l'envoi de l'alerte : {e}")
 
+async def daily_check():
+    if not message_count:
+        return
+    guild = get_main_guild()
+    if not guild:
+        return
+    
+    top_user_id = max(message_count, key=message_count.get)
+    top_user = guild.get_member(top_user_id)
+    
+    if top_user:
+        role = guild.get_role(ROLE_ID)
+        if role:
+            await top_user.add_roles(role)
+            channel = bot.get_channel(ANNOUNCEMENT_CHANNEL_ID)
+            if channel:
+                embed = discord.Embed(
+                    description=f"> **Le <@&{ROLE_ID}> du jour est: {top_user.mention} <a:pandaplaudie:1172809946254028802>**",
+                    color=discord.Color.gold()
+                )
+                await channel.send(embed=embed)
+            await asyncio.sleep(86400)  # 24 heures
+            await top_user.remove_roles(role)
+    message_count.clear()
+
+scheduler = AsyncIOScheduler()
+scheduler.add_job(daily_check, "cron", hour=23, minute=59)
+scheduler.start()
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108

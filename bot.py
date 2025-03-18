@@ -87,19 +87,29 @@ async def on_message(message):
 
     if bot.user.mentioned_in(message) and len(message.mentions) == 1:
         embed = discord.Embed(
-            title="👋 Hey ! Tu m’as appelé ?",
+            title="👋 Besoin d’aide ?",
             description=(
-                f"Salut {message.author.mention} ! Je suis **{bot.user.name}**, ton assistant sur ce serveur.\n\n"
-                "🔹 **Besoin d’aide ?** Tape `/help` pour voir toutes mes commandes.\n"
-                "🔹 **Une question ?** N’hésite pas à demander à un membre du staff.\n"
-                "🔹 **Un bug ou une suggestion ?** Contacte un administrateur.\n\n"
-                "✨ **Amuse-toi bien sur le serveur !**"
+                f"Salut {message.author.mention} ! Moi, c’est **{bot.user.name}**, ton assistant sur ce serveur. 🤖\n\n"
+                "🔹 **Pour voir toutes mes commandes :** Appuie sur le bouton ci-dessous ou tape `+aide`\n"
+                "🔹 **Une question ? Un souci ?** Contacte le staff !\n\n"
+                "✨ **Profite bien du serveur et amuse-toi !**"
             ),
             color=discord.Color.blue()
         )
         embed.set_thumbnail(url=bot.user.avatar.url)
         embed.set_footer(text="Réponse automatique • Disponible 24/7", icon_url=bot.user.avatar.url)
-        await message.channel.send(embed=embed)
+
+        # Création du bouton qui affiche +aide
+        button = Button(label="📜 Voir les commandes", style=discord.ButtonStyle.primary, custom_id="help_button")
+        
+        async def button_callback(interaction: discord.Interaction):
+            await interaction.response.send_message("Utilise `+aide` pour voir toutes mes commandes ! 📋", ephemeral=True)
+
+        button.callback = button_callback
+        view = View()
+        view.add_item(button)
+
+        await message.channel.send(embed=embed, view=view)
 
     await bot.process_commands(message)
 

@@ -232,9 +232,8 @@ EMOJIS = {
 @bot.command()
 async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Ajoute un rôle à un utilisateur."""
-    # Vérifier si l'utilisateur a le rôle [𝑺ץ] Co-Owner
-    if not any(role.id == 1244339296706760726 for role in ctx.author.roles):
-        await ctx.send("Erreur : vous devez avoir le rôle [𝑺ץ] Co-Owner pour utiliser cette commande.")
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.send("Tu n'as pas les permissions nécessaires pour utiliser cette commande.")
         return
 
     # Vérifier si les arguments sont bien fournis
@@ -254,9 +253,8 @@ async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
 @bot.command()
 async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Retire un rôle à un utilisateur."""
-    # Vérifier si l'utilisateur a le rôle [𝑺ץ] Co-Owner
-    if not any(role.id == 1244339296706760726 for role in ctx.author.roles):
-        await ctx.send("Erreur : vous devez avoir le rôle [𝑺ץ] Co-Owner pour utiliser cette commande.")
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.send("Tu n'as pas les permissions nécessaires pour utiliser cette commande.")
         return
 
     # Vérifier si les arguments sont bien fournis

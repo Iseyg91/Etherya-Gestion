@@ -51,14 +51,43 @@ async def on_ready():
         print(f"✅ Commandes slash synchronisées : {[cmd.name for cmd in synced]}")
     except Exception as e:
         print(f"❌ Erreur de synchronisation des commandes slash : {e}")
-#------------------------------------------------------------------------- Commande Mention : Mention Bot
+#------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
+
+# Liste des mots sensibles
+sensitive_words = [
+    "connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon",
+    "clown", "baltringue", "fils de pute", "gros con", "sale type", "ordure", "merdeux", "guignol", "vaurien",
+    "tocard", "branleur", "crasseux", "charognard", "raté", "raciste", "sexiste", "homophobe", "antisémite",
+    "xénophobe", "transphobe", "islamophobe", "misogyne", "misandre", "discriminatoire", "nazi", "néonazi",
+    "suprémaciste", "extrémiste", "fasciste", "dictateur", "esclavagiste", "terroriste", "tuer", "assassin",
+    "attaquer", "viol", "torturer", "menacer", "frapper", "agression", "meurtre", "massacre", "guerre", "génocide",
+    "exécution", "kidnapping", "prise d'otage", "armes", "fusillade", "terrorisme", "attentat", "jihad",
+    "bombardement", "suicidaire", "décapitation", "immolation", "tireur", "pédocriminel", "cannibalisme",
+    "traite humaine", "trafficking", "trafic d'armes", "pervers", "abus", "sexe", "pornographie", "nu",
+    "masturbation", "adultère", "prostitution", "pédophilie", "inceste", "exhibition", "fétichisme",
+    "violence conjugale", "violence sexuelle", "harcèlement", "voyeurisme", "orgie", "zoophilie", "nécrophilie",
+    "sadomasochisme", "esclavage sexuel", "drogue", "cocaïne", "héroïne", "crack", "LSD", "ecstasy",
+    "méthamphétamine", "opium", "cannabis", "alcool", "ivresse", "overdose", "consommation abusive",
+    "trafic de drogue", "drogue dure", "toxicomanie", "shoot", "seringue", "hallucinogène", "hack", "pirater",
+    "voler des données", "phishing", "ddos", "raid", "flood", "spam", "crasher", "ddos attack", "botnet",
+    "infiltrer", "spammer", "griefing", "troll", "spam bot", "server crash", "exploiter", "ransomware", "trojan",
+    "virus informatique", "keylogger", "backdoor", "brute force", "scam", "usurpation d'identité", "darknet",
+    "marché noir", "fraude", "extorsion", "chantage", "blanchiment d'argent", "corruption", "pot-de-vin",
+    "abus de pouvoir", "dictature", "oppression", "propagande", "fake news", "censure", "manipulation",
+    "endoctrinement", "secte", "lavage de cerveau", "violence policière", "brutalité", "crime organisé", "mafia",
+    "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute", "rébellion", "coup d'état"
+]
+
+ADMIN_ID = 792755123587645461
+
 @bot.event
 async def on_message(message):
-    # Ignorer les messages envoyés par d'autres bots
     if message.author.bot:
-        return
+        return  # Ignore les messages des bots
 
-    # Vérifie si le message mentionne uniquement le bot
+    print(f"📩 Message reçu de {message.author}: {message.content}")
+
+    # Vérification des mentions du bot
     if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
         embed = discord.Embed(
             title="Bonjour ! 👋",
@@ -66,14 +95,50 @@ async def on_message(message):
                         f"Mon préfixe sur ce serveur est: **+**. Utilise-le pour interagir avec moi !\n\n"
                         f"Pour voir toutes mes commandes, fais **+aide**.\n\n"
                         f"Si tu as d'autres questions ou besoin d'aide, n'hésite pas à me pinguer à nouveau !",
-            color=discord.Color.blue()  # Tu peux personnaliser la couleur ici
+            color=discord.Color.blue()
         )
-
-        # Envoie l'embed
         await message.channel.send(embed=embed)
 
-    # Si le message n'est pas une mention, passe à l'étape suivante
+    # Vérification des mots sensibles
+    for word in sensitive_words:
+        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
+            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
+            asyncio.create_task(send_alert_to_admin(message, word))  # Exécuter l'alerte en arrière-plan
+            break  # Arrêter après la première détection
+
+    # Autoriser l'exécution des commandes
     await bot.process_commands(message)
+
+async def send_alert_to_admin(message, detected_word):
+    try:
+        admin = await bot.fetch_user(ADMIN_ID)
+        print(f"✅ Admin trouvé : {admin}")
+
+        # Création d'un embed stylisé
+        embed = discord.Embed(
+            title="🚨 Alerte : Mot sensible détecté !",
+            description=f"Un message contenant un mot interdit a été détecté sur le serveur **{message.guild.name}**.",
+            color=discord.Color.red(),
+            timestamp=datetime.utcnow()
+        )
+        embed.add_field(name="📍 Salon", value=f"{message.channel.mention}", inline=True)
+        embed.add_field(name="👤 Auteur", value=f"{message.author.mention} (`{message.author.id}`)", inline=True)
+        embed.add_field(name="💬 Message", value=f"```{message.content}```", inline=False)
+        embed.add_field(name="⚠️ Mot détecté", value=f"`{detected_word}`", inline=True)
+
+        if message.guild:
+            embed.add_field(name="🔗 Lien vers le message", value=f"[Clique ici]({message.jump_url})", inline=False)
+
+        embed.set_footer(text="Système de détection automatique", icon_url=bot.user.avatar.url)
+
+        await admin.send(embed=embed)
+        print(f"✅ Alerte envoyée à l'admin {ADMIN_ID} en MP.")
+    except discord.Forbidden:
+        print(f"❌ Impossible d'envoyer un MP à l'admin {ADMIN_ID}. (MP bloqués)")
+    except discord.HTTPException as e:
+        print(f"⚠️ Erreur HTTP lors de l'envoi du MP : {e}")
+    except Exception as e:
+        print(f"⚠️ Erreur inconnue : {e}")
 
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 # ID du salon de bienvenue
@@ -121,66 +186,6 @@ async def on_member_join(member):
 
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
-#------------------------------------------------------------------------- Commandes d'Administration : Detections de Mots sensible:
-# Liste des mots sensibles
-sensitive_words = [
-"connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon", "clown", "baltringue", "fils de pute", "gros con", "sale type", "ordure", "merdeux", "guignol", "vaurien", "tocard", "branleur", "crasseux", "charognard", "raté", "raciste", "sexiste", "homophobe", "antisémite", "xénophobe", "transphobe", "islamophobe", "misogyne", "misandre", "discriminatoire", "nazi", "néonazi", "suprémaciste", "extrémiste", "fasciste", "dictateur", "esclavagiste", "terroriste", "tuer", "assassin", "attaquer", "viol", "torturer", "menacer", "frapper", "agression", "meurtre", "massacre", "guerre", "génocide", "exécution", "kidnapping", "prise d'otage", "armes", "fusillade", "terrorisme", "attentat", "jihad", "bombardement", "suicidaire", "décapitation", "immolation", "tireur", "pédocriminel", "cannibalisme", "traite humaine", "trafficking", "trafic d'armes", "pervers", "abus", "sexe", "pornographie", "nu", "masturbation", "adultère", "prostitution", "pédophilie", "inceste", "exhibition", "fétichisme", "violence conjugale", "violence sexuelle", "harcèlement", "voyeurisme", "orgie", "zoophilie", "nécrophilie", "sadomasochisme", "esclavage sexuel", "drogue", "cocaïne", "héroïne", "crack", "LSD", "ecstasy", "méthamphétamine", "opium", "cannabis", "alcool", "ivresse", "overdose", "consommation abusive", "trafic de drogue", "drogue dure", "toxicomanie", "shoot", "seringue", "hallucinogène", "hack", "pirater", "voler des données", "phishing", "ddos", "raid", "flood", "spam", "crasher", "ddos attack", "botnet", "infiltrer", "spammer", "griefing", "troll", "spam bot", "server crash", "exploiter", "ransomware", "trojan", "virus informatique", "keylogger", "backdoor", "brute force", "scam", "usurpation d'identité", "darknet", "marché noir", "fraude", "extorsion", "chantage", "blanchiment d'argent", "corruption", "pot-de-vin", "abus de pouvoir", "dictature", "oppression", "propagande", "fake news", "censure", "manipulation", "endoctrinement", "secte", "lavage de cerveau", "violence policière", "brutalité", "crime organisé", "mafia", "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute", "rébellion", "coup d'état"
-]
-
-ADMIN_ID = 792755123587645461
-
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return  # Ignore les messages du bot
-
-    print(f"📩 Message reçu de {message.author}: {message.content}")
-
-    # Vérification des mots sensibles avec regex
-    for word in sensitive_words:
-        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
-            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
-            
-            # Exécuter l'envoi du message en arrière-plan pour ne pas bloquer les autres commandes
-            asyncio.create_task(send_alert_to_admin(message, word))
-
-            break  # Arrêter après la première détection
-
-    # Permettre aux autres commandes de s'exécuter
-    await bot.process_commands(message)
-
-async def send_alert_to_admin(message, detected_word):
-    try:
-        admin = await bot.fetch_user(ADMIN_ID)
-        print(f"✅ Admin trouvé : {admin}")
-
-        # Création d'un embed stylisé
-        embed = discord.Embed(
-            title="🚨 Alerte : Mot sensible détecté !",
-            description=f"Un message contenant un mot interdit a été détecté sur le serveur **{message.guild.name}**.",
-            color=discord.Color.red(),
-            timestamp=datetime.utcnow()
-        )
-        embed.add_field(name="📍 Salon", value=f"{message.channel.mention}", inline=True)
-        embed.add_field(name="👤 Auteur", value=f"{message.author.mention} (`{message.author.id}`)", inline=True)
-        embed.add_field(name="💬 Message", value=f"```{message.content}```", inline=False)
-        embed.add_field(name="⚠️ Mot détecté", value=f"`{detected_word}`", inline=True)
-
-        # Ajouter un lien vers le message si possible
-        if message.guild:
-            embed.add_field(name="🔗 Lien vers le message", value=f"[Clique ici]({message.jump_url})", inline=False)
-
-        embed.set_footer(text="Système de détection automatique", icon_url=bot.user.avatar.url)
-
-        await admin.send(embed=embed)
-        print(f"✅ Alerte envoyée à l'admin {ADMIN_ID} en MP.")
-    except discord.Forbidden:
-        print(f"❌ Impossible d'envoyer un MP à l'admin {ADMIN_ID}. (MP bloqués)")
-    except discord.HTTPException as e:
-        print(f"⚠️ Erreur HTTP lors de l'envoi du MP : {e}")
-    except Exception as e:
-        print(f"⚠️ Erreur inconnue : {e}")
-        
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 
 @bot.command()

@@ -32,25 +32,23 @@ bot = commands.Bot(command_prefix="+", intents=intents)
 
 STAFF_ROLE_ID = 1244339296706760726
 
-import discord
-import asyncio
-
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
 
-    # Liste des différents statuts à alterner
-    statuses = [
-        discord.Game("Etherya"),
-        discord.Game("En train de coder..."),
-        discord.Game("À la recherche de bugs...")
+    # Liste des activités à alterner
+    activity_types = [
+        discord.Game("Etherya"),  # Playing
+        discord.Activity(type=discord.ActivityType.watching, name="Regarder le monde d'Etherya"),  # Watching
+        discord.Activity(type=discord.ActivityType.listening, name="Écouter les murmures du passé"),  # Listening
+        discord.Activity(type=discord.ActivityType.streaming, name="Diffuser les sombres secrets", url="https://twitch.tv/ton_stream")  # Streaming
     ]
-    
-    # Liste des statuts possibles
+
+    # Liste des statuts à alterner
     status_types = [
-        discord.Status.online,
-        discord.Status.idle,
-        discord.Status.dnd
+        discord.Status.online,  # En ligne
+        discord.Status.idle,    # Inactif
+        discord.Status.dnd      # Ne pas déranger
     ]
     
     print(f'{bot.user} est connecté !')
@@ -67,13 +65,13 @@ async def on_ready():
     except Exception as e:
         print(f"❌ Erreur de synchronisation des commandes slash : {e}")
 
-    # Jongler avec les statuts
+    # Jongler entre différentes activités et statuts
     while True:
-        for i in range(len(statuses)):
-            game = statuses[i]
-            status = status_types[i]
-            await bot.change_presence(status=status, activity=game)
-            await asyncio.sleep(10)  # Attente de 10 secondes avant de changer le statut
+        for activity in activity_types:
+            for status in status_types:
+                await bot.change_presence(status=status, activity=activity)
+                await asyncio.sleep(10)  # Attente de 10 secondes avant de changer l'activité et le statut
+
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 # Liste des mots sensibles
 sensitive_words = ["connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon",

@@ -30,13 +30,28 @@ start_time = time.time()
 client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix="+", intents=intents)
 
+# Connexion MongoDB
+mongo_uri = os.getenv("MONGO_URI")
+client = MongoClient(mongo_uri)
+db = client['Project 0']
+collection = db['setup']
+
+def load_guild_settings(guild_id):
+    setup_data = collection.find_one({"guild_id": guild_id}) or {}
+    return setup_data
+
+# Dictionnaire pour stocker les paramètres de chaque serveur
+GUILD_SETTINGS = {}
+
+
 STAFF_ROLE_ID = 1244339296706760726
 OWNER_ID = 792755123587645461
 
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
-
+     for guild in bot.guilds:
+        GUILD_SETTINGS[guild.id] = load_guild_settings(guild.id)
     # Liste des activités à alterner
     activity_types = [
         discord.Game("Etherya"),  # Playing
@@ -73,7 +88,29 @@ async def on_ready():
                 await bot.change_presence(status=status, activity=activity)
                 await asyncio.sleep(10)  # Attente de 10 secondes avant de changer l'activité et le statut
 
+#------------------------------------------------------------------------- Commande SETUP
 
+@bot.tree.command(name="setup", description="Configure les rôles et salons du bot.")
+@app_commands.checks.has_permissions(administrator=True)
+async def setup(interaction: discord.Interaction):
+    guild_id = interaction.guild.id
+    GUILD_SETTINGS[guild_id] = load_guild_settings(guild_id)
+    
+    settings = GUILD_SETTINGS[guild_id]
+    SROLE_ADMIN = settings.get("admin_role")
+    SROLE_STAFF = settings.get("staff_role")
+    SOWNER_ID = settings.get("owner")
+    SCHANNEL_SANCTIONS = settings.get("sanctions_channel")
+    SCHANNEL_REPORTS = settings.get("reports_channel")
+    
+    embed = discord.Embed(title="Configuration du bot", description="Sélectionnez les rôles et salons.", color=discord.Color.blue())
+    embed.add_field(name="Administrateur", value=f"<@&{SROLE_ADMIN}>" if SROLE_ADMIN else "Aucun défini", inline=False)
+    embed.add_field(name="Staff", value=f"<@&{SROLE_STAFF}>" if SROLE_STAFF else "Aucun défini", inline=False)
+    embed.add_field(name="Owner du serveur", value=f"<@{SOWNER_ID}>" if SOWNER_ID else "Aucun défini", inline=False)
+    embed.add_field(name="Salon Sanctions", value=f"<#{SCHANNEL_SANCTIONS}>" if SCHANNEL_SANCTIONS else "Aucun défini", inline=False)
+    embed.add_field(name="Salon Signalement", value=f"<#{SCHANNEL_REPORTS}>" if SCHANNEL_REPORTS else "Aucun défini", inline=False)
+    
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 # Liste des mots sensibles
 sensitive_words = [

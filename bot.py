@@ -369,6 +369,18 @@ async def on_member_join(member):
         )
         embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/main/images_etherya/etheryaBot_banniere.png")
         await channel.send(f"{member.mention}", embed=embed)
+
+    # Envoi du ghost ping une seule fois par salon
+    for salon_id in salon_ids:
+        salon = bot.get_channel(salon_id)
+        if salon:
+            try:
+                message = await salon.send(f"{member.mention}")
+                await message.delete()
+            except discord.Forbidden:
+                print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
+            except discord.HTTPException:
+                print("Une erreur est survenue lors de l'envoi du message.")
     
     # Création d'un fil privé pour le membre
     channel_id = 1342179655263977492  # Remplace par l'ID du salon souhaité
@@ -454,22 +466,6 @@ async def guide_command(interaction: discord.Interaction):
     await thread.send(embed=guide_embed, view=GuideView(thread))  # Envoie le guide avec les boutons
 
     await interaction.response.send_message("📩 Ton guide personnalisé a été ouvert.", ephemeral=True)
-
-# Fonction asynchrone pour envoyer les ghost pings
-async def envoyer_ghost_pings():
-    for salon_id in salon_ids:
-        salon = bot.get_channel(salon_id)
-        if salon:
-            try:
-                # Envoi du message de mention
-                message = await salon.send(f"{member.mention}")
-                
-                # Suppression immédiate du message pour réaliser le ghost ping
-                await message.delete()
-            except discord.Forbidden:
-                print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
-            except discord.HTTPException as e:
-                print(f"Une erreur est survenue lors de l'envoi du message: {e}")
 
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)

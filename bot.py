@@ -151,7 +151,7 @@ view = View()
 view.add_item(button)
 
 # Envoi de l'embed avec le bouton
-await message.channel.send(embed=embed, view=view)  # Assure-toi que cette ligne est alignée correctement
+        await message.channel.send(embed=embed, view=view)  # Assure-toi que cette ligne est alignée correctement
 
 
 

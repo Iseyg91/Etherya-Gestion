@@ -601,7 +601,7 @@ async def aide(ctx):
     embed.set_image(url=banner_url)  # Ajout de la bannière en bas de l'embed
 
     # Informations générales
-    embed.add_field(name="📚 **Informations**", value=f"• **Mon préfixe** : +\n• **Nombre de commandes** : 51", inline=False)
+    embed.add_field(name="📚 **Informations**", value=f"• **Mon préfixe** : +\n• **Nombre de commandes** : 70", inline=False)
 
     # Création du menu déroulant
     select = discord.ui.Select(
@@ -1834,6 +1834,13 @@ async def roleinfo(interaction: discord.Interaction, role: discord.Role):
         await interaction.response.send_message(embed=embed)
         return
     else:
+        # Obtenir tous les rôles triés du plus haut au plus bas
+        sorted_roles = sorted(interaction.guild.roles, key=lambda r: r.position, reverse=True)
+        total_roles = len(sorted_roles)
+        
+        # Trouver la position inversée du rôle
+        inverse_position = total_roles - sorted_roles.index(role)
+
         embed = discord.Embed(
             title=f"Informations sur le rôle: {role.name}",
             color=role.color,
@@ -1844,7 +1851,7 @@ async def roleinfo(interaction: discord.Interaction, role: discord.Role):
         embed.add_field(name="ID", value=role.id, inline=False)
         embed.add_field(name="Couleur", value=str(role.color), inline=False)
         embed.add_field(name="Nombre de membres", value=len(role.members), inline=False)
-        embed.add_field(name="Position dans la hiérarchie", value=role.position, inline=False)
+        embed.add_field(name="Position dans la hiérarchie", value=f"{inverse_position}/{total_roles}", inline=False)
         embed.add_field(name="Mentionnable", value=role.mentionable, inline=False)
         embed.add_field(name="Gérer les permissions", value=role.managed, inline=False)
         embed.add_field(name="Créé le", value=role.created_at.strftime("%d/%m/%Y à %H:%M:%S"), inline=False)
@@ -3010,27 +3017,6 @@ async def disconnect(interaction: discord.Interaction):
             color=discord.Color.orange()
         )
         await interaction.response.send_message(embed=embed)
-
-@bot.tree.command(name="info_serveur", description="Obtenez des informations sur le Serveur")
-async def infoserveur(ctx):
-    try:
-        guild = ctx.guild
-        if not guild:
-            return await ctx.send("Erreur : Impossible de récupérer le serveur.")
-
-        embed = discord.Embed(
-            title=f"Informations du serveur {guild.name}",
-            color=discord.Color.blue()
-        )
-        embed.add_field(name="ID", value=guild.id, inline=False)
-        embed.add_field(name="Membres", value=guild.member_count, inline=False)
-        embed.add_field(name="Création", value=guild.created_at.strftime('%d/%m/%Y'), inline=False)
-
-        await ctx.send(embed=embed)
-
-    except Exception as e:
-        print(f"[ERREUR] {e}")
-        await ctx.send("Une erreur est survenue.")
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

@@ -47,8 +47,6 @@ GUILD_SETTINGS = {}
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
-    for guild in bot.guilds:
-        GUILD_SETTINGS[guild.id] = load_guild_settings(guild.id)
     # Liste des activités à alterner
     activity_types = [
         discord.Game("Etherya"),  # Playing
@@ -84,6 +82,8 @@ async def on_ready():
             for status in status_types:
                 await bot.change_presence(status=status, activity=activity)
                 await asyncio.sleep(10)  # Attente de 10 secondes avant de changer l'activité et le statut
+    for guild in bot.guilds:
+    GUILD_SETTINGS[guild.id] = load_guild_settings(guild.id)
 
 #------------------------------------------------------------------------- Commande SETUP
 

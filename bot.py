@@ -113,7 +113,7 @@ async def on_message(message):
     member = guild.get_member(message.author.id)
 
     # Vérifier si le message mentionne l'Owner
-    if f"<@{ADMIN_ID}>" in message.content:
+if f"<@{ADMIN_ID}>" in message.content:
     title = "🔹 Hey, besoin d'aide ?"
     description = (f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
                    "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"

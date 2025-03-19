@@ -1796,43 +1796,57 @@ async def kick(interaction: discord.Interaction, member: discord.Member, reason:
     await send_dm(member, "Kick", reason)
 
 
-# Commande mute (hybride)
-@bot.tree.command(name="mute", description="Mute un membre pour une durée donnée", guild_only=True)
-@app_commands.describe(member="Membre à muter", duration="Durée du mute (ex: 10m, 2h, 1j)", reason="Raison du mute")
-async def mute(ctx, member: discord.Member, duration_with_unit: str, reason: str = "Aucune raison spécifiée"):
-    if await check_permissions(ctx, "manage_roles") and await check_hierarchy(ctx, member) and not await is_immune(member):
-        try:
-            duration = int(duration_with_unit[:-1])  # Tout sauf le dernier caractère
-            unit = duration_with_unit[-1]  # Dernier caractère (unité)
-        except ValueError:
-            await ctx.send("Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours). Exemple : 10m, 2h, 1j.")
-            return
+@bot.tree.command(name="mute", description="Mute un membre pour une durée donnée")
+async def mute(interaction: discord.Interaction, member: discord.Member, duration_with_unit: str, reason: str = "Aucune raison spécifiée"):
+    # Vérifier si l'utilisateur est dans un serveur (guild)
+    if interaction.guild is None:
+        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
+        return
 
-        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
+    # Vérification des permissions et de la hiérarchie
+    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
+        await interaction.response.send_message("Vous ne pouvez pas muter cette personne.", ephemeral=True)
+        return
+
+    # Extraction de la durée et de l'unité
+    try:
+        duration = int(duration_with_unit[:-1])  # Tout sauf le dernier caractère
+        unit = duration_with_unit[-1]  # Dernier caractère (unité)
+    except ValueError:
+        await interaction.response.send_message("Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours). Exemple : 10m, 2h, 1j.", ephemeral=True)
+        return
+
+    # Déterminer la durée en secondes en fonction de l'unité
+    if unit.lower() in ["m", "minute", "minutes"]:
+        seconds = duration * 60
+        duration_str = f"{duration} minute(s)"
+    elif unit.lower() in ["h", "heure", "heures"]:
+        seconds = duration * 3600
+        duration_str = f"{duration} heure(s)"
+    elif unit.lower() in ["j", "jour", "jours"]:
+        seconds = duration * 86400
+        duration_str = f"{duration} jour(s)"
+    else:
+        await interaction.response.send_message("Unité de temps invalide ! Utilisez m (minutes), h (heures) ou j (jours).", ephemeral=True)
+        return
+
+    # Appliquer le mute
+    muted_role = discord.utils.get(interaction.guild.roles, id=MUTED_ROLE_ID)
+    if muted_role:
         await member.add_roles(muted_role)
-        
-        if unit.lower() in ["m", "minute", "minutes"]:
-            seconds = duration * 60
-            duration_str = f"{duration} minute(s)"
-        elif unit.lower() in ["h", "heure", "heures"]:
-            seconds = duration * 3600
-            duration_str = f"{duration} heure(s)"
-        elif unit.lower() in ["j", "jour", "jours"]:
-            seconds = duration * 86400
-            duration_str = f"{duration} jour(s)"
-        else:
-            await ctx.send("Unité de temps invalide ! Utilisez m (minutes), h (heures) ou d (jours).")
-            return
-
-        await ctx.send(f"{member.mention} a été muté pour {duration_str}.")
-        await send_log(ctx, member, "Mute", reason, duration_str)
+        await interaction.response.send_message(f"{member.mention} a été muté pour {duration_str}.", ephemeral=True)
+        await send_log(interaction, member, "Mute", reason, duration_str)
         await send_dm(member, "Mute", reason, duration_str)
 
+        # Après la durée spécifiée, démuter le membre
         await asyncio.sleep(seconds)
         await member.remove_roles(muted_role)
-        await ctx.send(f"{member.mention} a été démuté après {duration_str}.")
-        await send_log(ctx, member, "Unmute automatique", "Fin de la durée de mute")
+        await interaction.response.send_message(f"{member.mention} a été démuté après {duration_str}.", ephemeral=True)
+        await send_log(interaction, member, "Unmute automatique", "Fin de la durée de mute")
         await send_dm(member, "Unmute", "Fin de la durée de mute")
+    else:
+        await interaction.response.send_message("Le rôle 'Muted' est introuvable. Vérifie la configuration.", ephemeral=True)
+
 
 # Commande unmute (hybride)
 @bot.tree.command(name="unmute", description="Dé-muter un membre", guild_only=True)

@@ -151,7 +151,7 @@ if f"<@{ADMIN_ID}>" in message.content:
     view.add_item(button)
     
     # Envoi de l'embed avec le bouton
-    await message.channel.send(embed=embed, view=view)
+        await message.channel.send(embed=embed, view=view)
 
 
 

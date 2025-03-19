@@ -33,10 +33,6 @@ bot = commands.Bot(command_prefix="+", intents=intents)
 STAFF_ROLE_ID = 1244339296706760726
 OWNER_ID = 792755123587645461
 
-import discord
-import asyncio
-from discord.ext import commands, tasks
-
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
@@ -44,9 +40,9 @@ async def on_ready():
     # Liste des activités à alterner
     activity_types = [
         discord.Game("Etherya"),  # Playing
-        discord.Activity(type=discord.ActivityType.streaming, name=" le Monde d'Etherya"),  # Watching
-        discord.Activity(type=discord.ActivityType.streaming, name=" les Murmures du Passé"),  # Listening
-        discord.Activity(type=discord.ActivityType.listening, name="Les Échos d'un Ancien Royaume"),
+        discord.Activity(type=discord.ActivityType.watching, name=" Le Monde d'Etherya"),  # Watching
+        discord.Activity(type=discord.ActivityType.listening, name=" Les Murmures du Passé"),  # Listening
+        discord.Activity(type=discord.ActivityType.streaming, name=" Les Sombres Secrets", url="https://twitch.tv/ton_stream")  # Streaming
     ]
 
     # Liste des statuts à alterner

@@ -46,7 +46,6 @@ async def on_ready():
         discord.Game("Etherya"),  # Playing
         discord.Activity(type=discord.ActivityType.streaming, name=" le Monde d'Etherya"),  # Watching
         discord.Activity(type=discord.ActivityType.streaming, name=" les Murmures du Passé"),  # Listening
-        discord.Activity(type=discord.ActivityType.watching, name=f"{member_count} Âmes Errantes"),
         discord.Activity(type=discord.ActivityType.listening, name="Les Échos d'un Ancien Royaume"),
     ]
 

@@ -111,11 +111,6 @@ async def on_message(message):
     guild = message.guild
     member = guild.get_member(message.author.id)
 
-    # Vérifier si la personne a le rôle à ignorer et si elle est admin
-    if any(role.permissions.administrator for role in member.roles):
-        # Vérification spécifique pour les commandes ping owner et mots sensibles
-        if "ping owner" in message.content or any(re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE) for word in sensitive_words):
-            return
 
     # Vérifier si l'utilisateur a des rôles d'admin
     if any(role.permissions.administrator for role in member.roles):

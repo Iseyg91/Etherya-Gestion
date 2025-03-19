@@ -33,25 +33,14 @@ bot = commands.Bot(command_prefix="+", intents=intents)
 STAFF_ROLE_ID = 1244339296706760726
 OWNER_ID = 792755123587645461
 
+import discord
+import asyncio
+from discord.ext import commands, tasks
+
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
 
-    # Liste des activités à alterner
-    activity_types = [
-        discord.Game("Etherya"),  # Playing
-        discord.Activity(type=discord.ActivityType.watching, name=" le monde d'Etherya"),  # Watching
-        discord.Activity(type=discord.ActivityType.listening, name=" les murmures du passé"),  # Listening
-        discord.Activity(type=discord.ActivityType.streaming, name=" les sombres secrets", url="https://twitch.tv/ton_stream")  # Streaming
-    ]
-
-    # Liste des statuts à alterner
-    status_types = [
-        discord.Status.online,  # En ligne
-        discord.Status.idle,    # Inactif
-        discord.Status.dnd      # Ne pas déranger
-    ]
-    
     print(f'{bot.user} est connecté !')
 
     # Afficher les commandes chargées
@@ -61,17 +50,42 @@ async def on_ready():
 
     try:
         # Synchroniser les commandes avec Discord
-        synced = await bot.tree.sync()  # Synchronisation des commandes slash
+        synced = await bot.tree.sync()
         print(f"✅ Commandes slash synchronisées : {[cmd.name for cmd in synced]}")
     except Exception as e:
         print(f"❌ Erreur de synchronisation des commandes slash : {e}")
 
-    # Jongler entre différentes activités et statuts
-    while True:
-        for activity in activity_types:
-            for status in status_types:
-                await bot.change_presence(status=status, activity=activity)
-                await asyncio.sleep(10)  # Attente de 10 secondes avant de changer l'activité et le statut
+    # Lancer la tâche de changement d'activité
+    update_presence.start()
+
+@tasks.loop(seconds=15)  # Change toutes les 15 secondes
+async def update_presence():
+    guild = bot.guilds[0] if bot.guilds else None  # Récupère le premier serveur du bot
+    member_count = guild.member_count if guild else "?"
+
+    activity_types = [
+        discord.Game("Etherya"),
+        discord.Activity(type=discord.ActivityType.watching, name="Le Monde d'Etherya"),
+        discord.Activity(type=discord.ActivityType.listening, name="Les Murmures du Passé"),
+        discord.Activity(type=discord.ActivityType.streaming, name="les sombres secrets"),
+        discord.Activity(type=discord.ActivityType.watching, name=f"{member_count} Âmes Errantes"),
+        discord.Activity(type=discord.ActivityType.listening, name="Les Échos d'un Ancien Royaume"),
+    ]
+
+    status_types = [
+        discord.Status.online,
+        discord.Status.idle,
+        discord.Status.dnd
+    ]
+
+    activity = activity_types.pop(0)  # Prend le premier élément et le remet à la fin
+    activity_types.append(activity)
+
+    status = status_types.pop(0)
+    status_types.append(status)
+
+    await bot.change_presence(status=status, activity=activity)
+
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 # Liste des mots sensibles

@@ -3010,9 +3010,6 @@ async def disconnect(interaction: discord.Interaction):
         )
         await interaction.response.send_message(embed=embed)
 
-# Configuration du logging
-logging.basicConfig(level=logging.INFO)
-
 THUMBNAIL_URL = "https://github.com/Iseyg91/Etherya-Gestion/blob/main/37baf0deff8e2a1a3cddda717a3d3e40.jpg?raw=true"
 
 # Fonction pour vérifier si une URL est valide

@@ -1848,16 +1848,28 @@ async def mute(interaction: discord.Interaction, member: discord.Member, duratio
         await interaction.response.send_message("Le rôle 'Muted' est introuvable. Vérifie la configuration.", ephemeral=True)
 
 
-# Commande unmute (hybride)
-@bot.tree.command(name="unmute", description="Dé-muter un membre", guild_only=True)
-@app_commands.describe(member="Membre à démuter")
-async def unmute(ctx, member: discord.Member):
-    if await check_permissions(ctx, "manage_roles") and await check_hierarchy(ctx, member) and not await is_immune(member):
-        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
+@bot.tree.command(name="unmute", description="Dé-muter un membre")
+async def unmute(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
+    # Vérifier si l'utilisateur est dans un serveur (guild)
+    if interaction.guild is None:
+        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
+        return
+
+    # Vérification des permissions et de la hiérarchie
+    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
+        await interaction.response.send_message("Vous ne pouvez pas démuter cette personne.", ephemeral=True)
+        return
+
+    # Démuter le membre
+    muted_role = discord.utils.get(interaction.guild.roles, id=MUTED_ROLE_ID)
+    if muted_role:
         await member.remove_roles(muted_role)
-        await ctx.send(f"{member.mention} a été démuté.")
-        await send_log(ctx, member, "Unmute", "Réhabilitation")
-        await send_dm(member, "Unmute", "Réhabilitation")
+        await interaction.response.send_message(f"{member.mention} a été démuté.", ephemeral=True)
+        await send_log(interaction, member, "Unmute", reason)
+        await send_dm(member, "Unmute", reason)
+    else:
+        await interaction.response.send_message("Le rôle 'Muted' est introuvable. Vérifie la configuration.", ephemeral=True)
+
 
 # Commande warn (hybride)
 @bot.tree.command(name="warn", description="Avertir un membre", guild_only=True)

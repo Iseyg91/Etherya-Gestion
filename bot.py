@@ -31,7 +31,7 @@ client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix="+", intents=intents)
 
 # Connexion MongoDB
-mongo_uri = os.getenv("MONGO_URI")
+mongo_uri = os.getenv("MONGO_DB")
 client = MongoClient(mongo_uri)
 db = client['Project 0']
 collection = db['setup']

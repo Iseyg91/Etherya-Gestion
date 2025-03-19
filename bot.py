@@ -25,7 +25,6 @@ intents.guilds = True
 intents.message_content = True  # Nécessaire pour lire les messages
 intents.members = True  # Nécessaire pour récupérer les membres
 
-
 token = os.environ['ETHERYA']
 intents = discord.Intents.all()
 start_time = time.time()
@@ -35,7 +34,7 @@ bot = commands.Bot(command_prefix="+", intents=intents)
 # Connexion MongoDB
 mongo_uri = os.getenv("MONGO_DB")
 client = MongoClient(mongo_uri)
-db = client['Project 0']
+db = client['SetupEtherya']
 collection = db['setup']
 
 def load_guild_settings(guild_id):
@@ -44,7 +43,6 @@ def load_guild_settings(guild_id):
 
 # Dictionnaire pour stocker les paramètres de chaque serveur
 GUILD_SETTINGS = {}
-
 
 STAFF_ROLE_ID = 1244339296706760726
 OWNER_ID = 792755123587645461

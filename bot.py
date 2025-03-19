@@ -16,6 +16,8 @@ from discord.ui import View, Select
 from discord.ext import tasks
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from collections import defaultdict
+import pymongo
+from pymongo import MongoClient
 
 intents = discord.Intents.default()
 intents.messages = True

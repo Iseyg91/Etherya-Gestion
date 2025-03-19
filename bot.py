@@ -91,7 +91,7 @@ sensitive_words = ["connard", "crétin", "idiot", "imbécile", "salopard", "enfo
     "corruption", "pot-de-vin", "abus de pouvoir", "dictature", "oppression", "propagande", "fake news",
     "manipulation", "endoctrinement", "secte", "lavage de cerveau", "violence policière", "brutalité",
     "crime organisé", "mafia", "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute",
-    "rébellion", "coup d'état"]  # Exemple réduit
+    "rébellion", "coup d'état"]
 
 ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
@@ -117,6 +117,10 @@ async def on_message(message):
         if "ping owner" in message.content or any(re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE) for word in sensitive_words):
             return
 
+    # Vérifier si l'utilisateur a des rôles d'admin
+    if any(role.permissions.administrator for role in member.roles):
+        return  # Ne pas répondre si la personne est admin
+
     # Vérifier si le message mentionne l'Owner
     if f"<@{ADMIN_ID}>" in message.content:
         embed = discord.Embed(
@@ -138,6 +142,7 @@ async def on_message(message):
         view = View()
         view.add_item(button)
         await message.channel.send(embed=embed, view=view)
+
 
     # Détection des mots sensibles
     for word in sensitive_words:
@@ -223,6 +228,7 @@ async def daily_check():
 scheduler = AsyncIOScheduler()
 scheduler.add_job(daily_check, "cron", hour=23, minute=59)
 scheduler.start()
+
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 import asyncio
 import discord

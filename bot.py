@@ -19,12 +19,6 @@ from collections import defaultdict
 import pymongo
 from pymongo import MongoClient
 
-intents = discord.Intents.default()
-intents.messages = True
-intents.guilds = True
-intents.message_content = True  # Nécessaire pour lire les messages
-intents.members = True  # Nécessaire pour récupérer les membres
-
 token = os.environ['ETHERYA']
 intents = discord.Intents.all()
 start_time = time.time()

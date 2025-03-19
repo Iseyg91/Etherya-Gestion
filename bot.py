@@ -1739,15 +1739,24 @@ async def check_hierarchy(ctx, member):
         return False
     return True
 
-# Commande ban (hybride)
-@bot.tree.command(name="ban", description="Bannir un membre", guild_only=True)
-@app_commands.describe(member="Membre à bannir", reason="Raison du ban")
-async def ban(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
-    if await check_permissions(ctx, "ban_members") and await check_hierarchy(ctx, member) and not await is_immune(member):
-        await member.ban(reason=reason)
-        await ctx.send(f"{member.mention} a été banni.")
-        await send_log(ctx, member, "Ban", reason)
-        await send_dm(member, "Ban", reason)
+@bot.tree.command(name="ban", description="Bannir un membre")
+async def ban(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
+    # Vérifie les permissions et la hiérarchie
+    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
+        await interaction.response.send_message("Vous ne pouvez pas sanctionner cette personne.", ephemeral=True)
+        return
+
+    # Assure-toi que la personne n'est pas immunisée
+    if await is_immune(member):
+        await interaction.response.send_message("Cette personne est immunisée contre les sanctions.", ephemeral=True)
+        return
+
+    # Bannir le membre
+    await member.ban(reason=reason)
+    await interaction.response.send_message(f"{member.mention} a été banni.", ephemeral=True)
+    await send_log(interaction, member, "Ban", reason)
+    await send_dm(member, "Ban", reason)
+
 
 # Commande unban (hybride)
 @bot.tree.command(name="unban", description="Débannir un membre", guild_only=True)

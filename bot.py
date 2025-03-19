@@ -1777,15 +1777,24 @@ async def unban(interaction: discord.Interaction, user_id: int):
     await send_dm(user, "Unban", "Réintégration")
 
 
-# Commande kick (hybride)
-@bot.tree.command(name="kick", description="Expulser un membre", guild_only=True)
-@app_commands.describe(member="Membre à expulser", reason="Raison de l'expulsion")
-async def kick(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
-    if await check_permissions(ctx, "kick_members") and await check_hierarchy(ctx, member) and not await is_immune(member):
-        await member.kick(reason=reason)
-        await ctx.send(f"{member.mention} a été expulsé.")
-        await send_log(ctx, member, "Kick", reason)
-        await send_dm(member, "Kick", reason)
+@bot.tree.command(name="kick", description="Expulser un membre")
+async def kick(interaction: discord.Interaction, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    # Vérifier si l'utilisateur est dans un serveur (guild)
+    if interaction.guild is None:
+        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
+        return
+
+    # Vérifier les permissions et la hiérarchie
+    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
+        await interaction.response.send_message("Vous ne pouvez pas expulser cette personne.", ephemeral=True)
+        return
+
+    # Exécuter l'expulsion
+    await member.kick(reason=reason)
+    await interaction.response.send_message(f"{member.mention} a été expulsé.", ephemeral=True)
+    await send_log(interaction, member, "Kick", reason)
+    await send_dm(member, "Kick", reason)
+
 
 # Commande mute (hybride)
 @bot.tree.command(name="mute", description="Mute un membre pour une durée donnée", guild_only=True)

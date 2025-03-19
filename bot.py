@@ -463,21 +463,19 @@ async def envoyer_ghost_pings():
             try:
                 # Envoi du message de mention
                 message = await salon.send(f"{member.mention}")
-            except Exception as e:
-                print(f"Erreur lors de l'envoi du message dans le salon {salon_id}: {e}")
-
-# Appel de la fonction asynchrone
-await envoyer_ghost_pings()
-            
-            # Suppression immédiate du message pour réaliser le ghost ping
-            await message.delete()
-        except discord.Forbidden:
-            print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
-        except discord.HTTPException as e:
-            print(f"Une erreur est survenue lors de l'envoi du message: {e}")
+                
+                # Suppression immédiate du message pour réaliser le ghost ping
+                await message.delete()
+            except discord.Forbidden:
+                print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
+            except discord.HTTPException as e:
+                print(f"Une erreur est survenue lors de l'envoi du message: {e}")
 
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
+
+# Appel de la fonction asynchrone
+await envoyer_ghost_pings()
 
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 

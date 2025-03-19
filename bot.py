@@ -1871,14 +1871,23 @@ async def unmute(interaction: discord.Interaction, member: discord.Member, reaso
         await interaction.response.send_message("Le rôle 'Muted' est introuvable. Vérifie la configuration.", ephemeral=True)
 
 
-# Commande warn (hybride)
-@bot.tree.command(name="warn", description="Avertir un membre", guild_only=True)
-@app_commands.describe(member="Membre à avertir", reason="Raison de l'avertissement")
-async def warn(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
-    if await check_permissions(ctx, "kick_members") and await check_hierarchy(ctx, member) and not await is_immune(member):
-        await ctx.send(f"{member.mention} a reçu un avertissement.")
-        await send_log(ctx, member, "Warn", reason)
-        await send_dm(member, "Warn", reason)
+@bot.tree.command(name="warn", description="Avertir un membre")
+async def warn(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
+    # Vérifier si l'utilisateur est dans un serveur (guild)
+    if interaction.guild is None:
+        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
+        return
+
+    # Vérification des permissions et de la hiérarchie
+    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
+        await interaction.response.send_message("Vous ne pouvez pas avertir cette personne.", ephemeral=True)
+        return
+
+    # Avertir le membre
+    await interaction.response.send_message(f"{member.mention} a été averti.", ephemeral=True)
+    await send_log(interaction, member, "Warn", reason)
+    await send_dm(member, "Warn", reason)
+
 
 #------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte, +uptime, +ping, +roleinfo
 

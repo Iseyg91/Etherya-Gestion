@@ -2926,24 +2926,24 @@ async def capture(ctx, target: discord.Member):
     await ctx.send(embed=embed, view=view)
 
 @bot.tree.command(name="calcul", description="Effectue une opération mathématique")
-@app_commands.describe(nombre1="Le premier nombre", operation="L'opération à effectuer (addition, soustraction, multiplication, division)", nombre2="Le deuxième nombre")
+@app_commands.describe(nombre1="Le premier nombre", operation="L'opération à effectuer (+, -, *, /)", nombre2="Le deuxième nombre")
 async def calcul(interaction: discord.Interaction, nombre1: float, operation: str, nombre2: float):
     await interaction.response.defer()  # ✅ Correctement placé à l'intérieur de la fonction
 
-    if operation == "addition":
+    if operation == "+":
         resultat = nombre1 + nombre2
-    elif operation == "soustraction":
+    elif operation == "-":
         resultat = nombre1 - nombre2
-    elif operation == "multiplication":
+    elif operation == "*":
         resultat = nombre1 * nombre2
-    elif operation == "division":
+    elif operation == "/":
         if nombre2 != 0:
             resultat = nombre1 / nombre2
         else:
             await interaction.followup.send("❌ Erreur : Division par zéro impossible.")
             return
     else:
-        await interaction.followup.send("❌ Opération invalide. Utilisez 'addition', 'soustraction', 'multiplication', ou 'division'.")
+        await interaction.followup.send("❌ Opération invalide. Utilisez '+', '-', '*', ou '/'.")
         return
 
     embed = discord.Embed(
@@ -2953,6 +2953,7 @@ async def calcul(interaction: discord.Interaction, nombre1: float, operation: st
     )
 
     await interaction.followup.send(embed=embed)
+
 
 # Installer PyNaCl 
 try:
@@ -3010,133 +3011,73 @@ async def disconnect(interaction: discord.Interaction):
         )
         await interaction.response.send_message(embed=embed)
 
-THUMBNAIL_URL = "https://github.com/Iseyg91/Etherya-Gestion/blob/main/37baf0deff8e2a1a3cddda717a3d3e40.jpg?raw=true"
+import discord
+from discord import app_commands
 
-# Fonction pour vérifier si une URL est valide
-def is_valid_url(url):
-    regex = re.compile(
-        r'^(https?://)?'  # http:// ou https:// (optionnel)
-        r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'  # domaine
-        r'(/.*)?$'  # chemin (optionnel)
-    )
-    return bool(re.match(regex, url))
+@bot.tree.command(name="info_serveur", description="Obtenez des informations détaillées sur le Serveur")
+async def infoserveur(ctx):
+    try:
+        print("[LOG] Commande 'info_serveur' exécutée")
 
-class EmbedBuilderView(discord.ui.View):
-    def __init__(self, author: discord.User, channel: discord.TextChannel):
-        super().__init__(timeout=180)
-        self.author = author
-        self.channel = channel
-        self.embed = discord.Embed(title="Titre", description="Description", color=discord.Color.blue())
-        self.embed.set_thumbnail(url=THUMBNAIL_URL)
-        self.second_image_url = None
-        self.message = None  # Stocke le message contenant l'embed
+        guild = ctx.guild  # Récupère l'instance du serveur
+        if not guild:
+            print("[ERREUR] Impossible de récupérer l'instance du serveur")
+            return await ctx.send("Erreur : Impossible de récupérer les informations du serveur.")
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.author:
-            await interaction.response.send_message("❌ Vous ne pouvez pas modifier cet embed.", ephemeral=True)
-            return False
-        return True
+        print(f"[LOG] Serveur récupéré : {guild.name} (ID: {guild.id})")
 
-    @discord.ui.button(label="Modifier le titre", style=discord.ButtonStyle.primary)
-    async def edit_title(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(EmbedTitleModal(self))
+        # Récupération des infos du serveur
+        server_name = guild.name
+        server_id = guild.id
+        owner = guild.owner
+        member_count = guild.member_count
+        boost_level = guild.premium_tier
+        boost_count = guild.premium_subscription_count
+        creation_date = guild.created_at
+        roles_count = len(guild.roles)
+        emoji_count = len(guild.emojis)
+        verification_level = str(guild.verification_level)
 
-    @discord.ui.button(label="Modifier la description", style=discord.ButtonStyle.primary)
-    async def edit_description(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(EmbedDescriptionModal(self))
+        print("[LOG] Variables récupérées :")
+        print(f"  - Nom du serveur : {server_name}")
+        print(f"  - ID du serveur : {server_id}")
+        print(f"  - Propriétaire : {owner} ({owner.name if owner else 'Inconnu'})")
+        print(f"  - Nombre de membres : {member_count}")
+        print(f"  - Niveau de boost : {boost_level}")
+        print(f"  - Nombre de boosts : {boost_count}")
+        print(f"  - Date de création : {creation_date}")
+        print(f"  - Nombre de rôles : {roles_count}")
+        print(f"  - Nombre d'émojis : {emoji_count}")
+        print(f"  - Niveau de vérification : {verification_level}")
 
-    @discord.ui.button(label="Changer la couleur", style=discord.ButtonStyle.primary)
-    async def edit_color(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.embed.color = discord.Color.random()
-        if self.message:
-            await self.message.edit(embed=self.embed, view=self)
-        else:
-            await interaction.response.send_message("Erreur : impossible de modifier le message.", ephemeral=True)
+        created_at = creation_date.strftime('%A %d %B %Y %H:%M')
 
-    @discord.ui.button(label="Ajouter une image", style=discord.ButtonStyle.secondary)
-    async def add_image(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(EmbedImageModal(self))
+        # Récupération des rôles
+        roles = [role.name for role in guild.roles[:10]] if guild.roles else []
+        roles_display = ', '.join(roles) if roles else "Aucun rôle"
 
-    @discord.ui.button(label="Ajouter 2ème image", style=discord.ButtonStyle.secondary)
-    async def add_second_image(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(EmbedSecondImageModal(self))
+        print(f"[LOG] Liste des rôles récupérée : {roles_display}")
 
-    @discord.ui.button(label="Envoyer", style=discord.ButtonStyle.success)
-    async def send_embed(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embeds = [self.embed]
-        if self.second_image_url:
-            second_embed = discord.Embed(color=self.embed.color)
-            second_embed.set_image(url=self.second_image_url)
-            embeds.append(second_embed)
+        # Création de l'embed
+        embed = discord.Embed(title=f"Informations et statistiques de {server_name}",
+                              description=f"Serveur ID: {server_id}",
+                              color=discord.Color.blue())
+        embed.add_field(name="Propriétaire", value=f"{owner} (@{owner.name})" if owner else "Inconnu", inline=False)
+        embed.add_field(name="Membres", value=f"{member_count} membres", inline=False)
+        embed.add_field(name="Boosts", value=f"Palier {boost_level} ({boost_count} boosts)", inline=False)
+        embed.add_field(name="Niveau de vérification", value=verification_level, inline=False)
+        embed.add_field(name="Rôles", value=roles_display, inline=False)
+        embed.add_field(name="Émojis", value=f"{emoji_count} émojis", inline=False)
+        embed.add_field(name="Création du serveur", value=created_at, inline=False)
 
-        await self.channel.send(embeds=embeds)
-        await interaction.response.send_message("✅ Embed envoyé !", ephemeral=True)
+        print("[LOG] Embed créé, envoi du message...")
 
-class EmbedTitleModal(discord.ui.Modal):
-    def __init__(self, view: EmbedBuilderView):
-        super().__init__(title="Modifier le Titre")
-        self.view = view
-        self.title_input = discord.ui.TextInput(label="Nouveau Titre", required=True)
-        self.add_item(self.title_input)
+        await ctx.send(embed=embed)
+        print("[LOG] Message envoyé avec succès")
 
-    async def on_submit(self, interaction: discord.Interaction):
-        self.view.embed.title = self.title_input.value
-        if self.view.message:
-            await self.view.message.edit(embed=self.view.embed, view=self.view)
-        else:
-            await interaction.response.send_message("Erreur : impossible de modifier le message.", ephemeral=True)
-
-class EmbedDescriptionModal(discord.ui.Modal):
-    def __init__(self, view: EmbedBuilderView):
-        super().__init__(title="Modifier la description")
-        self.view = view
-        self.description = discord.ui.TextInput(label="Nouvelle description", style=discord.TextStyle.paragraph, max_length=4000)
-        self.add_item(self.description)
-
-    async def on_submit(self, interaction: discord.Interaction):
-        self.view.embed.description = self.description.value
-        if self.view.message:
-            await self.view.message.edit(embed=self.view.embed, view=self.view)
-        else:
-            await interaction.response.send_message("Erreur : impossible de modifier le message.", ephemeral=True)
-
-class EmbedImageModal(discord.ui.Modal):
-    def __init__(self, view: EmbedBuilderView):
-        super().__init__(title="Ajouter une image")
-        self.view = view
-        self.image_input = discord.ui.TextInput(label="URL de l'image", required=True)
-        self.add_item(self.image_input)
-
-    async def on_submit(self, interaction: discord.Interaction):
-        if is_valid_url(self.image_input.value):
-            self.view.embed.set_image(url=self.image_input.value)
-            await self.view.message.edit(embed=self.view.embed, view=self.view)
-        else:
-            await interaction.response.send_message("❌ URL invalide.", ephemeral=True)
-
-class EmbedSecondImageModal(discord.ui.Modal):
-    def __init__(self, view: EmbedBuilderView):
-        super().__init__(title="Ajouter une 2ème image")
-        self.view = view
-        self.second_image_input = discord.ui.TextInput(label="URL de la 2ème image", required=True)
-        self.add_item(self.second_image_input)
-
-    async def on_submit(self, interaction: discord.Interaction):
-        if is_valid_url(self.second_image_input.value):
-            self.view.second_image_url = self.second_image_input.value
-        else:
-            await interaction.response.send_message("❌ URL invalide.", ephemeral=True)
-
-@bot.tree.command(name="embed", description="Créer un embed personnalisé")
-async def embed_builder(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
-    role_id = 1170326040485318686  # ID du rôle requis
-    if not any(role.id == role_id for role in interaction.user.roles):
-        return await interaction.response.send_message("❌ Vous n'avez pas la permission d'utiliser cette commande.", ephemeral=True)
-
-    view = EmbedBuilderView(interaction.user, interaction.channel)
-    response = await interaction.followup.send(embed=view.embed, view=view, ephemeral=True)
-    view.message = response
+    except Exception as e:
+        print(f"[ERREUR] Une erreur est survenue : {e}")
+        await ctx.send("Une erreur est survenue lors de l'exécution de la commande.")
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

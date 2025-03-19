@@ -44,9 +44,6 @@ def load_guild_settings(guild_id):
 # Dictionnaire pour stocker les paramètres de chaque serveur
 GUILD_SETTINGS = {}
 
-STAFF_ROLE_ID = 1244339296706760726
-OWNER_ID = 792755123587645461
-
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")

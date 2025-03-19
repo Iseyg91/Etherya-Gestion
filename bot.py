@@ -112,11 +112,6 @@ async def on_message(message):
     guild = message.guild
     member = guild.get_member(message.author.id)
 
-
-    # Vérifier si l'utilisateur a des rôles d'admin
-    if any(role.permissions.administrator for role in member.roles):
-        return  # Ne pas répondre si la personne est admin
-
     # Vérifier si le message mentionne l'Owner
     if f"<@{ADMIN_ID}>" in message.content:
         embed = discord.Embed(

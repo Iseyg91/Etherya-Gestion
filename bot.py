@@ -474,9 +474,6 @@ async def envoyer_ghost_pings():
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
 
-# Appel de la fonction asynchrone
-await envoyer_ghost_pings()
-
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 
 @bot.command()

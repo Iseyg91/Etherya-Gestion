@@ -469,8 +469,8 @@ async def guide_command(interaction: discord.Interaction):
 
 @bot.command()
 async def clear(ctx, amount: int = None):
-    # Vérifie si l'utilisateur a les permissions nécessaires (admin ou le rôle spécifique)
-    if ctx.author.guild_permissions.administrator or 1171489794698784859 in [role.id for role in ctx.author.roles]:
+    # Vérifie si l'utilisateur a la permission de gérer les messages
+    if ctx.author.guild_permissions.manage_messages:
         if amount is None:
             await ctx.send("Merci de préciser un chiffre entre 2 et 100.")
             return
@@ -494,7 +494,8 @@ EMOJIS = {
 @bot.command()
 async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Ajoute un rôle à un utilisateur."""
-    if not ctx.author.guild_permissions.administrator:
+    # Vérifie si l'utilisateur a la permission de gérer les rôles
+    if not ctx.author.guild_permissions.manage_roles:
         await ctx.send("Tu n'as pas les permissions nécessaires pour utiliser cette commande.")
         return
 
@@ -515,7 +516,8 @@ async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
 @bot.command()
 async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Retire un rôle à un utilisateur."""
-    if not ctx.author.guild_permissions.administrator:
+    # Vérifie si l'utilisateur a la permission de gérer les rôles
+    if not ctx.author.guild_permissions.manage_roles:
         await ctx.send("Tu n'as pas les permissions nécessaires pour utiliser cette commande.")
         return
 
@@ -535,49 +537,47 @@ async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
 
 @bot.command()
 async def nuke(ctx):
-    # Vérifie si l'utilisateur a les permissions nécessaires (admin ou le rôle spécifique)
-    if ctx.author.guild_permissions.administrator or 1171489794698784859 in [role.id for role in ctx.author.roles]:
-        # Vérifie que la commande a été lancée dans un salon texte
-        if isinstance(ctx.channel, discord.TextChannel):
-            # Récupère le salon actuel
-            channel = ctx.channel
-
-            # Sauvegarde les informations du salon
-            overwrites = channel.overwrites
-            channel_name = channel.name
-            category = channel.category
-            position = channel.position
-
-            # Récupère l'ID du salon pour le recréer
-            guild = channel.guild
-
-            try:
-                # Crée un nouveau salon avec les mêmes permissions et la même position
-                await channel.delete()  # Supprime le salon actuel
-
-                # Crée un nouveau salon avec les mêmes permissions, catégorie et position
-                new_channel = await guild.create_text_channel(
-                    name=channel_name,
-                    overwrites=overwrites,
-                    category=category
-                )  # Crée le nouveau salon
-
-                # Réajuste la position du salon
-                await new_channel.edit(position=position)
-
-                # Envoie un message dans le salon d'origine pour prévenir de la suppression avant de le recréer
-                await ctx.send(f"{ctx.author.mention} a nuke le salon {channel_name}. Le salon a été recréé avec succès.")
-
-                # Envoie un message dans le nouveau salon pour confirmer la recréation
-                await new_channel.send(
-                    f"Le salon {channel_name} a été supprimé et recréé, {ctx.author.mention}."
-                )
-            except Exception as e:
-                await ctx.send(f"Une erreur est survenue lors de la recréation du salon : {e}")
-        else:
-            await ctx.send("Cette commande doit être utilisée dans un salon texte.")
-    else:
+    # Vérifie si l'utilisateur a la permission Administrateur
+    if not ctx.author.guild_permissions.administrator:
         await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
+        return
+
+    # Vérifie que la commande a été lancée dans un salon texte
+    if isinstance(ctx.channel, discord.TextChannel):
+        # Récupère le salon actuel
+        channel = ctx.channel
+
+        # Sauvegarde les informations du salon
+        overwrites = channel.overwrites
+        channel_name = channel.name
+        category = channel.category
+        position = channel.position
+
+        # Récupère l'ID du salon pour le recréer
+        guild = channel.guild
+
+        try:
+            # Supprime le salon actuel
+            await channel.delete()
+
+            # Crée un nouveau salon avec les mêmes permissions, catégorie et position
+            new_channel = await guild.create_text_channel(
+                name=channel_name,
+                overwrites=overwrites,
+                category=category
+            )
+
+            # Réajuste la position du salon
+            await new_channel.edit(position=position)
+
+            # Envoie un message dans le nouveau salon pour confirmer la recréation
+            await new_channel.send(
+                f"💥 {ctx.author.mention} a **nuké** ce salon. Il a été recréé avec succès."
+            )
+        except Exception as e:
+            await ctx.send(f"Une erreur est survenue lors de la recréation du salon : {e}")
+    else:
+        await ctx.send("Cette commande doit être utilisée dans un salon texte.")
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
     

@@ -1778,7 +1778,7 @@ async def unban(interaction: discord.Interaction, user_id: int):
 
 
 @bot.tree.command(name="kick", description="Expulser un membre")
-async def kick(interaction: discord.Interaction, member: discord.Member, *, reason="Aucune raison spécifiée"):
+async def kick(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
     # Vérifier si l'utilisateur est dans un serveur (guild)
     if interaction.guild is None:
         await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)

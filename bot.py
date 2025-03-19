@@ -470,7 +470,7 @@ async def envoyer_ghost_pings():
 await envoyer_ghost_pings()
             
             # Suppression immédiate du message pour réaliser le ghost ping
-        await message.delete()
+                await message.delete()
         except discord.Forbidden:
             print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
         except discord.HTTPException as e:

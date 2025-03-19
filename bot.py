@@ -91,8 +91,9 @@ sensitive_words = ["connard", "crétin", "idiot", "imbécile", "salopard", "enfo
     "manipulation", "endoctrinement", "secte", "lavage de cerveau", "violence policière", "brutalité",
     "crime organisé", "mafia", "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute",
     "rébellion", "coup d'état"]  # Exemple réduit
+
 ADMIN_ID = 792755123587645461
-OWNER_ID = 1234567890  # Remplace avec l'ID de ton Owner
+OWNER_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 ignored_role_id = 1170326040485318686  # ID du rôle à ignorer
 ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
 ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378  # ID du salon d'annonces

@@ -112,46 +112,27 @@ async def on_message(message):
     guild = message.guild
     member = guild.get_member(message.author.id)
 
- # Vérifier si le message mentionne l'Owner
-if f"<@{ADMIN_ID}>" in message.content:
-    # Variables pour l'embed
-    title = "🔹 Hey, besoin d'aide ?"
-    description = (f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
-                   "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
-                   "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**")
-    color = 0x00aaff  # Bleu cyan chill
-    footer_text = "Merci de ta compréhension • L'équipe d'administration"
-    
-    # Création de l'embed
-    embed = discord.Embed(title=title, description=description, color=color)
-    embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png")
-    
-    # Vérifier si l'avatar du bot existe
-    if bot.user.avatar:
-        embed.set_thumbnail(url=bot.user.avatar.url)
-    
-    # Ajout d'un champ à l'embed
-    embed.add_field(name="❓ Pourquoi éviter de mentionner le Owner ?", 
-                    value="Le Owner est souvent occupé avec la gestion du serveur. "
-                          "Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀", 
-                    inline=False)
-    
-# Séparation visuelle avec une ligne de couleur
-embed.add_field(name="🔸 **Important**", value="Nous faisons de notre mieux pour gérer toutes les demandes efficacement. Merci de ta coopération ! 🙏", inline=False)
+    # Vérifier si le message mentionne l'Owner
+    if f"<@{ADMIN_ID}>" in message.content:
+        embed = discord.Embed(
+            title="🔹 Hey, besoin d'aide ?",  
+            description=(f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
+                         "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
+                         "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**"),
+            color=0x00aaff  # Bleu cyan chill
+        )
+        embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png") 
+        if bot.user.avatar:
+            embed.set_thumbnail(url=bot.user.avatar.url) 
+        embed.add_field(name="❓ Pourquoi éviter de mentionner le Owner ?", 
+                        value="Le Owner est souvent occupé avec la gestion du serveur. Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀", 
+                        inline=False)
+        embed.set_footer(text="Merci de ta compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
 
-# Footer de l'embed
-embed.set_footer(text=footer_text, icon_url=bot.user.avatar.url)
-
-# Création du bouton
-    button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, 
-                url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
-
-# Création de la vue et ajout du bouton
-    view = View()
-    view.add_item(button)
-
-# Envoi de l'embed avec le bouton
-    await message.channel.send(embed=embed, view=view)
+        button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
+        view = View()
+        view.add_item(button)
+        await message.channel.send(embed=embed, view=view)
 
     # Détection des mots sensibles
     for word in sensitive_words:

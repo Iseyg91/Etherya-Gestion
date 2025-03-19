@@ -1673,21 +1673,15 @@ async def ticket_euro_million(ctx, user: discord.Member):
     else:
         await ctx.send("Erreur : Le salon d'annonce est introuvable.")
 #------------------------------------------------------------------------- Commandes de Moderation : +ban, +unban, +mute, +unmute, +kick, +warn
-# Gestion des erreurs pour les commandes
-
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingRole):
-        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("Il manque un argument à la commande.")
-    else:
-        await ctx.send(f"Une erreur est survenue : {error}")
+import discord
+from discord.ext import commands
+from discord import app_commands
 
 MOD_ROLE_ID = 1168109892851204166
 MUTED_ROLE_ID = 1170488926834798602
 IMMUNE_ROLE_ID = 1170326040485318686
 
+# Fonction pour envoyer un log
 async def send_log(ctx, member, action, reason, duration=None):
     guild_id = ctx.guild.id
     settings = GUILD_SETTINGS.get(guild_id, {})
@@ -1709,6 +1703,7 @@ async def send_log(ctx, member, action, reason, duration=None):
     else:
         await ctx.send("⚠️ Aucun salon de sanctions configuré ! Utilisez /setup.", ephemeral=True)
 
+# Fonction pour envoyer un message privé
 async def send_dm(member, action, reason, duration=None):
     try:
         embed = discord.Embed(title="Sanction reçue", color=discord.Color.red())
@@ -1720,63 +1715,73 @@ async def send_dm(member, action, reason, duration=None):
     except discord.Forbidden:
         print(f"Impossible d'envoyer un DM à {member.display_name}.")
 
-async def check_permissions(ctx):
+# Fonction pour vérifier les permissions
+async def check_permissions(ctx, perm):
     if ctx.guild is None:  # Empêche l'utilisation en DM
         await ctx.send("Cette commande ne peut être utilisée que sur un serveur.")
         return False
-
-    mod_role = discord.utils.get(ctx.guild.roles, id=MOD_ROLE_ID)
-    if mod_role and mod_role in ctx.author.roles:
-        return True
-    else:
+    
+    if perm not in ctx.author.permissions_in(ctx.channel):
         await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
         return False
 
+    return True
+
+# Fonction pour vérifier si un membre est immunisé
 async def is_immune(member):
     immune_role = discord.utils.get(member.guild.roles, id=IMMUNE_ROLE_ID)
     return immune_role and immune_role in member.roles
 
-@bot.command()
-async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
-    if await check_permissions(ctx) and not await is_immune(member):
+# Fonction pour vérifier la hiérarchie
+async def check_hierarchy(ctx, member):
+    if ctx.author.top_role <= member.top_role:
+        await ctx.send("Vous ne pouvez pas sanctionner quelqu'un ayant un rôle plus élevé ou égal au vôtre.")
+        return False
+    return True
+
+# Commande ban (hybride)
+@bot.tree.command(name="ban", description="Bannir un membre", guild_only=True)
+@app_commands.describe(member="Membre à bannir", reason="Raison du ban")
+async def ban(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
+    if await check_permissions(ctx, "ban_members") and await check_hierarchy(ctx, member) and not await is_immune(member):
         await member.ban(reason=reason)
         await ctx.send(f"{member.mention} a été banni.")
         await send_log(ctx, member, "Ban", reason)
         await send_dm(member, "Ban", reason)
 
-@bot.command()
+# Commande unban (hybride)
+@bot.tree.command(name="unban", description="Débannir un membre", guild_only=True)
+@app_commands.describe(user_id="ID de l'utilisateur à débannir")
 async def unban(ctx, user_id: int):
-    if await check_permissions(ctx):
+    if await check_permissions(ctx, "ban_members"):
         user = await bot.fetch_user(user_id)
         await ctx.guild.unban(user)
         await ctx.send(f"{user.mention} a été débanni.")
         await send_log(ctx, user, "Unban", "Réintégration")
         await send_dm(user, "Unban", "Réintégration")
 
-@bot.command()
-async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
-    if await check_permissions(ctx) and not await is_immune(member):
+# Commande kick (hybride)
+@bot.tree.command(name="kick", description="Expulser un membre", guild_only=True)
+@app_commands.describe(member="Membre à expulser", reason="Raison de l'expulsion")
+async def kick(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
+    if await check_permissions(ctx, "kick_members") and await check_hierarchy(ctx, member) and not await is_immune(member):
         await member.kick(reason=reason)
         await ctx.send(f"{member.mention} a été expulsé.")
         await send_log(ctx, member, "Kick", reason)
         await send_dm(member, "Kick", reason)
 
-@bot.command()
-async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="Aucune raison spécifiée"):
-    # Vérification si l'utilisateur a le rôle autorisé
-    if not any(role.id == 1168109892851204166 for role in ctx.author.roles):
-        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
-        return
-    
-    # Extraction de la durée et de l'unité
-    try:
-        duration = int(duration_with_unit[:-1])  # Tout sauf le dernier caractère
-        unit = duration_with_unit[-1]  # Dernier caractère (unité)
-    except ValueError:
-        await ctx.send("Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours). Exemple : 10m, 2h, 1j.")
-        return
+# Commande mute (hybride)
+@bot.tree.command(name="mute", description="Mute un membre pour une durée donnée", guild_only=True)
+@app_commands.describe(member="Membre à muter", duration="Durée du mute (ex: 10m, 2h, 1j)", reason="Raison du mute")
+async def mute(ctx, member: discord.Member, duration_with_unit: str, reason: str = "Aucune raison spécifiée"):
+    if await check_permissions(ctx, "manage_roles") and await check_hierarchy(ctx, member) and not await is_immune(member):
+        try:
+            duration = int(duration_with_unit[:-1])  # Tout sauf le dernier caractère
+            unit = duration_with_unit[-1]  # Dernier caractère (unité)
+        except ValueError:
+            await ctx.send("Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours). Exemple : 10m, 2h, 1j.")
+            return
 
-    if await check_permissions(ctx) and not await is_immune(member):
         muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
         await member.add_roles(muted_role)
         
@@ -1803,21 +1808,26 @@ async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="
         await send_log(ctx, member, "Unmute automatique", "Fin de la durée de mute")
         await send_dm(member, "Unmute", "Fin de la durée de mute")
 
-@bot.command()
+# Commande unmute (hybride)
+@bot.tree.command(name="unmute", description="Dé-muter un membre", guild_only=True)
+@app_commands.describe(member="Membre à démuter")
 async def unmute(ctx, member: discord.Member):
-    if await check_permissions(ctx) and not await is_immune(member):
+    if await check_permissions(ctx, "manage_roles") and await check_hierarchy(ctx, member) and not await is_immune(member):
         muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
         await member.remove_roles(muted_role)
         await ctx.send(f"{member.mention} a été démuté.")
         await send_log(ctx, member, "Unmute", "Réhabilitation")
         await send_dm(member, "Unmute", "Réhabilitation")
 
-@bot.command()
-async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
-    if await check_permissions(ctx) and not await is_immune(member):
+# Commande warn (hybride)
+@bot.tree.command(name="warn", description="Avertir un membre", guild_only=True)
+@app_commands.describe(member="Membre à avertir", reason="Raison de l'avertissement")
+async def warn(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
+    if await check_permissions(ctx, "kick_members") and await check_hierarchy(ctx, member) and not await is_immune(member):
         await ctx.send(f"{member.mention} a reçu un avertissement.")
         await send_log(ctx, member, "Warn", reason)
         await send_dm(member, "Warn", reason)
+
 #------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte, +uptime, +ping, +roleinfo
 
 # Nouvelle fonction pour récupérer le ping role et le channel id dynamiquement depuis la base de données

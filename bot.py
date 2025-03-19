@@ -1888,6 +1888,152 @@ async def warn(interaction: discord.Interaction, member: discord.Member, reason:
     await send_log(interaction, member, "Warn", reason)
     await send_dm(member, "Warn", reason)
 
+#-----------------------------------------------------------------------------
+# Gestion des erreurs pour les commandes
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingRole):
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("Il manque un argument à la commande.")
+    else:
+        await ctx.send(f"Une erreur est survenue : {error}")
+
+MOD_ROLE_ID = 1168109892851204166
+MUTED_ROLE_ID = 1170488926834798602
+IMMUNE_ROLE_ID = 1170326040485318686
+
+async def send_log(ctx, member, action, reason, duration=None):
+    guild_id = ctx.guild.id
+    settings = GUILD_SETTINGS.get(guild_id, {})
+    log_channel_id = settings.get("sanctions_channel")  # Récupération dynamique du salon de logs
+    
+    if log_channel_id:
+        log_channel = bot.get_channel(log_channel_id)
+        if log_channel:
+            embed = discord.Embed(title="Formulaire des sanctions", color=discord.Color.red())
+            embed.add_field(name="Pseudo de la personne sanctionnée:", value=member.mention, inline=False)
+            embed.add_field(name="Pseudo du modérateur:", value=ctx.author.mention, inline=False)
+            embed.add_field(name="Sanction:", value=action, inline=False)
+            embed.add_field(name="Raison:", value=reason, inline=False)
+            if duration:
+                embed.add_field(name="Durée:", value=duration, inline=False)
+            await log_channel.send(embed=embed)
+        else:
+            await ctx.send("⚠️ Le salon de sanctions configuré est introuvable.", ephemeral=True)
+    else:
+        await ctx.send("⚠️ Aucun salon de sanctions configuré ! Utilisez /setup.", ephemeral=True)
+
+async def send_dm(member, action, reason, duration=None):
+    try:
+        embed = discord.Embed(title="Sanction reçue", color=discord.Color.red())
+        embed.add_field(name="Sanction:", value=action, inline=False)
+        embed.add_field(name="Raison:", value=reason, inline=False)
+        if duration:
+            embed.add_field(name="Durée:", value=duration, inline=False)
+        await member.send(embed=embed)
+    except discord.Forbidden:
+        print(f"Impossible d'envoyer un DM à {member.display_name}.")
+
+async def check_permissions(ctx):
+    if ctx.guild is None:  # Empêche l'utilisation en DM
+        await ctx.send("Cette commande ne peut être utilisée que sur un serveur.")
+        return False
+
+    mod_role = discord.utils.get(ctx.guild.roles, id=MOD_ROLE_ID)
+    if mod_role and mod_role in ctx.author.roles:
+        return True
+    else:
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
+        return False
+
+async def is_immune(member):
+    immune_role = discord.utils.get(member.guild.roles, id=IMMUNE_ROLE_ID)
+    return immune_role and immune_role in member.roles
+
+@bot.command()
+async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx) and not await is_immune(member):
+        await member.ban(reason=reason)
+        await ctx.send(f"{member.mention} a été banni.")
+        await send_log(ctx, member, "Ban", reason)
+        await send_dm(member, "Ban", reason)
+
+@bot.command()
+async def unban(ctx, user_id: int):
+    if await check_permissions(ctx):
+        user = await bot.fetch_user(user_id)
+        await ctx.guild.unban(user)
+        await ctx.send(f"{user.mention} a été débanni.")
+        await send_log(ctx, user, "Unban", "Réintégration")
+        await send_dm(user, "Unban", "Réintégration")
+
+@bot.command()
+async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx) and not await is_immune(member):
+        await member.kick(reason=reason)
+        await ctx.send(f"{member.mention} a été expulsé.")
+        await send_log(ctx, member, "Kick", reason)
+        await send_dm(member, "Kick", reason)
+
+@bot.command()
+async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="Aucune raison spécifiée"):
+    # Vérification si l'utilisateur a le rôle autorisé
+    if not any(role.id == 1168109892851204166 for role in ctx.author.roles):
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
+        return
+    
+    # Extraction de la durée et de l'unité
+    try:
+        duration = int(duration_with_unit[:-1])  # Tout sauf le dernier caractère
+        unit = duration_with_unit[-1]  # Dernier caractère (unité)
+    except ValueError:
+        await ctx.send("Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours). Exemple : 10m, 2h, 1j.")
+        return
+
+    if await check_permissions(ctx) and not await is_immune(member):
+        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
+        await member.add_roles(muted_role)
+        
+        if unit.lower() in ["m", "minute", "minutes"]:
+            seconds = duration * 60
+            duration_str = f"{duration} minute(s)"
+        elif unit.lower() in ["h", "heure", "heures"]:
+            seconds = duration * 3600
+            duration_str = f"{duration} heure(s)"
+        elif unit.lower() in ["j", "jour", "jours"]:
+            seconds = duration * 86400
+            duration_str = f"{duration} jour(s)"
+        else:
+            await ctx.send("Unité de temps invalide ! Utilisez m (minutes), h (heures) ou d (jours).")
+            return
+
+        await ctx.send(f"{member.mention} a été muté pour {duration_str}.")
+        await send_log(ctx, member, "Mute", reason, duration_str)
+        await send_dm(member, "Mute", reason, duration_str)
+
+        await asyncio.sleep(seconds)
+        await member.remove_roles(muted_role)
+        await ctx.send(f"{member.mention} a été démuté après {duration_str}.")
+        await send_log(ctx, member, "Unmute automatique", "Fin de la durée de mute")
+        await send_dm(member, "Unmute", "Fin de la durée de mute")
+
+@bot.command()
+async def unmute(ctx, member: discord.Member):
+    if await check_permissions(ctx) and not await is_immune(member):
+        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
+        await member.remove_roles(muted_role)
+        await ctx.send(f"{member.mention} a été démuté.")
+        await send_log(ctx, member, "Unmute", "Réhabilitation")
+        await send_dm(member, "Unmute", "Réhabilitation")
+
+@bot.command()
+async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx) and not await is_immune(member):
+        await ctx.send(f"{member.mention} a reçu un avertissement.")
+        await send_log(ctx, member, "Warn", reason)
+        await send_dm(member, "Warn", reason)
 
 #------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte, +uptime, +ping, +roleinfo
 

@@ -76,23 +76,46 @@ async def on_ready():
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 # Liste des mots sensibles
-sensitive_words = ["connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon",
+sensitive_words = [
+    # Insultes et injures
+    "connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon",
     "clown", "baltringue", "fils de pute", "gros con", "sale type", "ordure", "merdeux", "guignol", "vaurien",
-    "tocard", "branleur", "crasseux", "charognard", "raté", "raciste", "sexiste", "homophobe", "antisémite",
-    "xénophobe", "transphobe", "islamophobe", "misogyne", "misandre", "discriminatoire", "nazi", "néonazi",
-    "suprémaciste", "extrémiste", "fasciste", "dictateur", "viol", "tuer", "assassin", "attaque", "agression",
-    "meurtre", "génocide", "exécution", "kidnapping", "prise d'otage", "armes", "fusillade", "terrorisme",
-    "attentat", "jihad", "bombardement", "suicidaire", "décapitation", "immolation", "pédocriminel", "abus",
-    "sexe", "pornographie", "nu", "masturbation", "prostitution", "pédophilie", "inceste", "exhibition",
-    "fétichisme", "harcèlement", "drogue", "cocaïne", "héroïne", "crack", "LSD", "ecstasy", "méthamphétamine",
-    "opium", "cannabis", "alcool", "ivresse", "overdose", "trafic de drogue", "toxicomanie", "hack",
-    "pirater", "voler des données", "phishing", "ddos", "raid", "flood", "spam", "crasher", "exploiter",
-    "ransomware", "trojan", "virus informatique", "keylogger", "backdoor", "brute force", "scam",
-    "usurpation d'identité", "darknet", "marché noir", "fraude", "extorsion", "chantage", "blanchiment d'argent",
-    "corruption", "pot-de-vin", "abus de pouvoir", "dictature", "oppression", "propagande", "fake news",
-    "manipulation", "endoctrinement", "secte", "lavage de cerveau", "violence policière", "brutalité",
-    "crime organisé", "mafia", "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute",
-    "rébellion", "coup d'état"]
+    "tocard", "branleur", "crasseux", "charognard", "raté", "bâtard", "déchet", "parasite",
+    
+    # Discrimination et discours haineux
+    "raciste", "sexiste", "homophobe", "antisémite", "xénophobe", "transphobe", "islamophobe", "misogyne", 
+    "misandre", "discriminatoire", "suprémaciste", "extrémiste", "fasciste", "nazi", "néonazi", "dictateur",
+
+    # Violence et criminalité
+    "viol", "tuer", "assassin", "attaque", "agression", "meurtre", "génocide", "exécution", "kidnapping",
+    "prise d'otage", "armes", "fusillade", "terrorisme", "attentat", "jihad", "bombardement", "suicidaire",
+    "décapitation", "immolation", "torture", "lynchage", "massacre", "pillage", "extermination",
+    
+    # Crimes sexuels et exploitation
+    "pédocriminel", "abus", "sexe", "pornographie", "nu", "masturbation", "prostitution", "pédophilie", 
+    "inceste", "exhibition", "fétichisme", "harcèlement", "traite humaine", "esclavage sexuel", "viol collectif",
+
+    # Drogues et substances illicites
+    "drogue", "cocaïne", "héroïne", "crack", "LSD", "ecstasy", "méthamphétamine", "opium", "cannabis", "alcool", 
+    "ivresse", "overdose", "trafic de drogue", "toxicomanie", "drogue de synthèse", "GHB", "fentanyl",
+
+    # Cybercriminalité et piratage
+    "hack", "pirater", "voler des données", "phishing", "ddos", "raid", "flood", "spam", "crasher", "exploiter",
+    "ransomware", "trojan", "virus informatique", "keylogger", "backdoor", "brute force", "scam", 
+    "usurpation d'identité", "darknet", "marché noir", "cheval de Troie", "spyware", "hameçonnage",
+
+    # Fraude et corruption
+    "fraude", "extorsion", "chantage", "blanchiment d'argent", "corruption", "pot-de-vin", "abus de pouvoir", 
+    "détournement de fonds", "évasion fiscale", "fraude fiscale", "marché noir", "contrefaçon",
+
+    # Manipulation et désinformation
+    "dictature", "oppression", "propagande", "fake news", "manipulation", "endoctrinement", "secte", 
+    "lavage de cerveau", "désinformation",
+
+    # Groupes criminels et troubles sociaux
+    "violence policière", "brutalité", "crime organisé", "mafia", "cartel", "milice", "mercenaire", "guérilla",
+    "insurrection", "émeute", "rébellion", "coup d'état", "anarchie", "terroriste", "séparatiste"
+]
 
 ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 ROLE_ID = 1343293515685302373  # ID du rôle à attribuer

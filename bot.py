@@ -50,7 +50,7 @@ OWNER_ID = 792755123587645461
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
-     for guild in bot.guilds:
+    for guild in bot.guilds:
         GUILD_SETTINGS[guild.id] = load_guild_settings(guild.id)
     # Liste des activités à alterner
     activity_types = [

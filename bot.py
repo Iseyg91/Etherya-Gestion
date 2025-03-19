@@ -1696,19 +1696,27 @@ async def on_command_error(ctx, error):
 MOD_ROLE_ID = 1168109892851204166
 MUTED_ROLE_ID = 1170488926834798602
 IMMUNE_ROLE_ID = 1170326040485318686
-LOG_CHANNEL_ID = 1345349357532090399
 
 async def send_log(ctx, member, action, reason, duration=None):
-    log_channel = bot.get_channel(LOG_CHANNEL_ID)
-    if log_channel:
-        embed = discord.Embed(title="Formulaire des sanctions", color=discord.Color.red())
-        embed.add_field(name="Pseudo de la personne sanctionnée:", value=member.mention, inline=False)
-        embed.add_field(name="Pseudo du modérateur:", value=ctx.author.mention, inline=False)
-        embed.add_field(name="Sanction:", value=action, inline=False)
-        embed.add_field(name="Raison:", value=reason, inline=False)
-        if duration:
-            embed.add_field(name="Durée:", value=duration, inline=False)
-        await log_channel.send(embed=embed)
+    guild_id = ctx.guild.id
+    settings = GUILD_SETTINGS.get(guild_id, {})
+    log_channel_id = settings.get("sanctions_channel")  # Récupération dynamique du salon de logs
+    
+    if log_channel_id:
+        log_channel = bot.get_channel(log_channel_id)
+        if log_channel:
+            embed = discord.Embed(title="Formulaire des sanctions", color=discord.Color.red())
+            embed.add_field(name="Pseudo de la personne sanctionnée:", value=member.mention, inline=False)
+            embed.add_field(name="Pseudo du modérateur:", value=ctx.author.mention, inline=False)
+            embed.add_field(name="Sanction:", value=action, inline=False)
+            embed.add_field(name="Raison:", value=reason, inline=False)
+            if duration:
+                embed.add_field(name="Durée:", value=duration, inline=False)
+            await log_channel.send(embed=embed)
+        else:
+            await ctx.send("⚠️ Le salon de sanctions configuré est introuvable.", ephemeral=True)
+    else:
+        await ctx.send("⚠️ Aucun salon de sanctions configuré ! Utilisez /setup.", ephemeral=True)
 
 async def send_dm(member, action, reason, duration=None):
     try:
@@ -1819,19 +1827,24 @@ async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await ctx.send(f"{member.mention} a reçu un avertissement.")
         await send_log(ctx, member, "Warn", reason)
         await send_dm(member, "Warn", reason)
-
-# ID des rôles et du salon
-access_role_id = 1166113718602575892  # Rôle qui peut utiliser la commande
-ping_role_id = 1168109892851204166  # Rôle à mentionner avant l'embed
-channel_id = 1345369756148170805  # Salon où l'alerte doit être envoyée
-
 #------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte, +uptime, +ping, +roleinfo
+
+# Nouvelle fonction pour récupérer le ping role et le channel id dynamiquement depuis la base de données
+def get_guild_setup_data(guild_id):
+    setup_data = load_guild_settings(guild_id)
+    ping_role_id = setup_data.get('staff_role_id')  # Assure-toi que le champ existe dans ta base de données
+    channel_id = setup_data.get('sanctions_channel_id')  # Pareil pour le channel ID
+    return ping_role_id, channel_id
+
 @bot.command()
 async def alerte(ctx, member: discord.Member, *, reason: str):
     # Vérification si l'utilisateur a le rôle nécessaire pour exécuter la commande
     if access_role_id not in [role.id for role in ctx.author.roles]:
         await ctx.send("Vous n'avez pas les permissions nécessaires pour utiliser cette commande.")
         return
+
+    # Récupération des valeurs dynamiques
+    ping_role_id, channel_id = get_guild_setup_data(ctx.guild.id)
 
     # Obtention du salon où envoyer le message
     channel = bot.get_channel(channel_id)
@@ -1873,7 +1886,7 @@ async def vc(ctx):
     await ctx.send(embed=embed)
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
-    
+
 @bot.command()
 async def ping(ctx):
     latency = round(bot.latency * 1000)  # Latence en ms

@@ -455,13 +455,19 @@ async def guide_command(interaction: discord.Interaction):
 
     await interaction.response.send_message("📩 Ton guide personnalisé a été ouvert.", ephemeral=True)
 
-# Envoi du ghost ping une seule fois par salon
-for salon_id in salon_ids:
-    salon = bot.get_channel(salon_id)
-    if salon:
-        try:
-            # Envoi du message de mention
-            message = await salon.send(f"{member.mention}")
+# Fonction asynchrone pour envoyer les ghost pings
+async def envoyer_ghost_pings():
+    for salon_id in salon_ids:
+        salon = bot.get_channel(salon_id)
+        if salon:
+            try:
+                # Envoi du message de mention
+                message = await salon.send(f"{member.mention}")
+            except Exception as e:
+                print(f"Erreur lors de l'envoi du message dans le salon {salon_id}: {e}")
+
+# Appel de la fonction asynchrone
+await envoyer_ghost_pings()
             
             # Suppression immédiate du message pour réaliser le ghost ping
             await message.delete()

@@ -31,6 +31,7 @@ client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix="+", intents=intents)
 
 STAFF_ROLE_ID = 1244339296706760726
+OWNER_ID = 792755123587645461
 
 @bot.event
 async def on_ready():
@@ -92,9 +93,7 @@ sensitive_words = ["connard", "crétin", "idiot", "imbécile", "salopard", "enfo
     "crime organisé", "mafia", "cartel", "milice", "mercenaire", "guérilla", "insurrection", "émeute",
     "rébellion", "coup d'état"]  # Exemple réduit
 
-ADMIN_ID = 792755123587645461
-OWNER_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
-ignored_role_id = 1170326040485318686  # ID du rôle à ignorer
+ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
 ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378  # ID du salon d'annonces
 
@@ -112,12 +111,14 @@ async def on_message(message):
     guild = message.guild
     member = guild.get_member(message.author.id)
 
-    # Vérifier si la personne a le rôle à ignorer
-    if any(role.id == ignored_role_id for role in member.roles):
-        return
+    # Vérifier si la personne a le rôle à ignorer et si elle est admin
+    if any(role.permissions.administrator for role in member.roles):
+        # Vérification spécifique pour les commandes ping owner et mots sensibles
+        if "ping owner" in message.content or any(re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE) for word in sensitive_words):
+            return
 
     # Vérifier si le message mentionne l'Owner
-    if f"<@{OWNER_ID}>" in message.content:
+    if f"<@{ADMIN_ID}>" in message.content:
         embed = discord.Embed(
             title="🔹 Hey, besoin d'aide ?",  
             description=(f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"

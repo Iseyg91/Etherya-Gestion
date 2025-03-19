@@ -225,9 +225,6 @@ scheduler.add_job(daily_check, "cron", hour=23, minute=59)
 scheduler.start()
 
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
-import asyncio
-import discord
-from discord.ui import View
 
 private_threads = {}  # Stocke les fils privés des nouveaux membres
 
@@ -405,6 +402,58 @@ async def on_member_join(member):
         )
         guide_embed.set_footer(text="Tu peux toujours y accéder plus tard via la commande /guide ! 🚀")
         await thread.send(embed=guide_embed, view=GuideView(thread))  # Envoie le guide immédiatement
+
+@bot.tree.command(name="guide", description="Ouvre un guide personnalisé pour comprendre l'économie du serveur.")
+async def guide_command(interaction: discord.Interaction):
+    user = interaction.user
+
+    # Crée un nouveau thread privé à chaque commande
+    channel_id = 1342179655263977492
+    channel = bot.get_channel(channel_id)
+
+    if not channel:
+        await interaction.response.send_message("❌ Le canal est introuvable ou le bot n'a pas accès à ce salon.", ephemeral=True)
+        return
+
+    # Vérifie si le bot peut créer des threads dans ce canal
+    if not channel.permissions_for(channel.guild.me).send_messages or not channel.permissions_for(channel.guild.me).manage_threads:
+        await interaction.response.send_message("❌ Le bot n'a pas les permissions nécessaires pour créer des threads dans ce canal.", ephemeral=True)
+        return
+
+    try:
+        # Crée un nouveau thread à chaque fois que la commande est exécutée
+        thread = await channel.create_thread(
+            name=f"🎉 Bienvenue {user.name} !", 
+            type=discord.ChannelType.private_thread,
+            invitable=True
+        )
+        await thread.add_user(user)  # Ajoute l'utilisateur au thread
+
+        # Embed de bienvenue et guide pour un nouveau thread
+        welcome_embed = discord.Embed(
+            title="🌌 Bienvenue à Etherya !",
+            description="Une aventure unique t'attend, entre **économie dynamique**, **stratégies** et **opportunités**. "
+                        "Prêt à découvrir tout ce que le serveur a à offrir ?",
+            color=discord.Color.blue()
+        )
+        welcome_embed.set_thumbnail(url=user.avatar.url if user.avatar else bot.user.avatar.url)
+        await thread.send(embed=welcome_embed)
+
+    except discord.errors.Forbidden:
+        await interaction.response.send_message("❌ Le bot n'a pas les permissions nécessaires pour créer un thread privé dans ce canal.", ephemeral=True)
+        return
+
+    # Embed du guide
+    guide_embed = discord.Embed(
+        title="📖 Besoin d'un Guide ?",
+        description="Nous avons préparé un **Guide de l'Économie** pour t'aider à comprendre notre système monétaire et "
+                    "les différentes façons d'évoluer. Veux-tu le suivre ?",
+        color=discord.Color.gold()
+    )
+    guide_embed.set_footer(text="Tu peux toujours y accéder plus tard via cette commande ! 🚀")
+    await thread.send(embed=guide_embed, view=GuideView(thread))  # Envoie le guide avec les boutons
+
+    await interaction.response.send_message("📩 Ton guide personnalisé a été ouvert.", ephemeral=True)
 
     # Envoi du ghost ping une seule fois par salon
     for salon_id in salon_ids:

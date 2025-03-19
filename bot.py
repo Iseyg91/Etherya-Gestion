@@ -1757,17 +1757,25 @@ async def ban(interaction: discord.Interaction, member: discord.Member, reason: 
     await send_log(interaction, member, "Ban", reason)
     await send_dm(member, "Ban", reason)
 
+@bot.tree.command(name="unban", description="Débannir un membre")
+async def unban(interaction: discord.Interaction, user_id: int):
+    # Vérifier si l'utilisateur est dans un serveur (guild)
+    if interaction.guild is None:
+        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
+        return
 
-# Commande unban (hybride)
-@bot.tree.command(name="unban", description="Débannir un membre", guild_only=True)
-@app_commands.describe(user_id="ID de l'utilisateur à débannir")
-async def unban(ctx, user_id: int):
-    if await check_permissions(ctx, "ban_members"):
-        user = await bot.fetch_user(user_id)
-        await ctx.guild.unban(user)
-        await ctx.send(f"{user.mention} a été débanni.")
-        await send_log(ctx, user, "Unban", "Réintégration")
-        await send_dm(user, "Unban", "Réintégration")
+    # Vérifier les permissions et la hiérarchie
+    user = await bot.fetch_user(user_id)
+    if not await check_permissions(interaction) or not await check_hierarchy(interaction, user):
+        await interaction.response.send_message("Vous ne pouvez pas débannir cette personne.", ephemeral=True)
+        return
+
+    # Débannir l'utilisateur
+    await interaction.guild.unban(user)
+    await interaction.response.send_message(f"{user.mention} a été débanni.", ephemeral=True)
+    await send_log(interaction, user, "Unban", "Réintégration")
+    await send_dm(user, "Unban", "Réintégration")
+
 
 # Commande kick (hybride)
 @bot.tree.command(name="kick", description="Expulser un membre", guild_only=True)

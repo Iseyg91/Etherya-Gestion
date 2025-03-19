@@ -136,22 +136,23 @@ if f"<@{ADMIN_ID}>" in message.content:
                           "Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀", 
                     inline=False)
     
-    # Séparation visuelle avec une ligne de couleur
-    embed.add_field(name="🔸 **Important**", value="Nous faisons de notre mieux pour gérer toutes les demandes efficacement. Merci de ta coopération ! 🙏", inline=False)
-    
-    # Footer de l'embed
-    embed.set_footer(text=footer_text, icon_url=bot.user.avatar.url)
+# Séparation visuelle avec une ligne de couleur
+embed.add_field(name="🔸 **Important**", value="Nous faisons de notre mieux pour gérer toutes les demandes efficacement. Merci de ta coopération ! 🙏", inline=False)
 
-    # Création du bouton
-    button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, 
-                    url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
-    
-    # Création de la vue et ajout du bouton
-    view = View()
-    view.add_item(button)
-    
-    # Envoi de l'embed avec le bouton
-        await message.channel.send(embed=embed, view=view)
+# Footer de l'embed
+embed.set_footer(text=footer_text, icon_url=bot.user.avatar.url)
+
+# Création du bouton
+button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, 
+                url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
+
+# Création de la vue et ajout du bouton
+view = View()
+view.add_item(button)
+
+# Envoi de l'embed avec le bouton
+await message.channel.send(embed=embed, view=view)  # Assure-toi que cette ligne est alignée correctement
+
 
 
 

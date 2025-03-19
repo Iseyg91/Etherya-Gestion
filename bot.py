@@ -77,7 +77,7 @@ async def on_ready():
                 await bot.change_presence(status=status, activity=activity)
                 await asyncio.sleep(10)  # Attente de 10 secondes avant de changer l'activité et le statut
     for guild in bot.guilds:
-    GUILD_SETTINGS[guild.id] = load_guild_settings(guild.id)
+        GUILD_SETTINGS[guild.id] = load_guild_settings(guild.id)
 
 #------------------------------------------------------------------------- Commande SETUP
 

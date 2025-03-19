@@ -455,17 +455,20 @@ async def guide_command(interaction: discord.Interaction):
 
     await interaction.response.send_message("📩 Ton guide personnalisé a été ouvert.", ephemeral=True)
 
-    # Envoi du ghost ping une seule fois par salon
-    for salon_id in salon_ids:
-        salon = bot.get_channel(salon_id)
-        if salon:
-            try:
-                message = await salon.send(f"{member.mention}")
-                await message.delete()
-            except discord.Forbidden:
-                print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
-            except discord.HTTPException:
-                print("Une erreur est survenue lors de l'envoi du message.")
+# Envoi du ghost ping une seule fois par salon
+for salon_id in salon_ids:
+    salon = bot.get_channel(salon_id)
+    if salon:
+        try:
+            # Envoi du message de mention
+            message = await salon.send(f"{member.mention}")
+            
+            # Suppression immédiate du message pour réaliser le ghost ping
+            await message.delete()
+        except discord.Forbidden:
+            print(f"Le bot n'a pas la permission d'envoyer un message dans {salon.name}.")
+        except discord.HTTPException as e:
+            print(f"Une erreur est survenue lors de l'envoi du message: {e}")
 
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)

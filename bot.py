@@ -3090,104 +3090,140 @@ async def liste_idees(ctx):
 
 SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
 OWNER_ID = 792755123587645461  # Ton ID Discord
+SUGGESTION_ARCHIVE_CHANNEL_ID = 1352388649098150029  # Salon où envoyer le récap des suggestions
 
-class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
+# Stockage temporaire des suggestions en mémoire
+suggestions_list = []
+cooldowns = {}
+
+class SuggestionDropdown(discord.ui.Select):
     def __init__(self):
+        options = [
+            discord.SelectOption(label="Amélioration du Bot", description="Suggestions liées au bot.", emoji="🤖"),
+            discord.SelectOption(label="Etherya", description="Suggestions pour le serveur Etherya.", emoji="🌍"),
+            discord.SelectOption(label="Correction de Bug", description="Signaler un bug.", emoji="🐛"),
+            discord.SelectOption(label="Autre", description="Autre type de suggestion.", emoji="📝"),
+        ]
+        super().__init__(placeholder="Choisis une catégorie...", options=options, min_values=1, max_values=1)
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        self.view.selected_category = self.values[0]
+        self.view.stop()
+
+class SuggestionView(discord.ui.View):
+    def __init__(self, user):
         super().__init__()
+        self.user = user
+        self.selected_category = None
+        self.add_item(SuggestionDropdown())
 
-        self.add_item(discord.ui.TextInput(
-            label="💬 Votre suggestion",
-            style=discord.TextStyle.long,
-            placeholder="Décrivez votre suggestion ici...",
-            required=True,
-            max_length=500
-        ))
+    async def on_timeout(self):
+        await self.user.send("❌ **Ta suggestion a été annulée car tu n'as pas choisi de catégorie.**")
 
-        self.add_item(discord.ui.TextInput(
-            label="🎯 Cela concerne Etherya ou le Bot ?",
-            style=discord.TextStyle.short,
-            placeholder="Tapez 'Etherya' ou 'Bot'",
-            required=True
-        ))
+class SuggestionAdminView(discord.ui.View):
+    def __init__(self, message, user):
+        super().__init__(timeout=None)
+        self.message = message
+        self.user = user
 
-        self.add_item(discord.ui.TextInput(
-            label="❔ Pourquoi cette suggestion ?",
-            style=discord.TextStyle.paragraph,
-            placeholder="Expliquez pourquoi cette idée est utile...",
-            required=False
-        ))
+    @discord.ui.button(label="✅ Accepter", style=discord.ButtonStyle.success)
+    async def accept_suggestion(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if ADMIN_ROLE_ID not in [role.id for role in interaction.user.roles]:
+            await interaction.response.send_message("🚫 Tu n'as pas la permission de faire ça.", ephemeral=True)
+            return
 
-    async def on_submit(self, interaction: discord.Interaction):
-        suggestion = self.children[0].value.strip()  # Texte de la suggestion
-        choice = self.children[1].value.strip().lower()  # Sujet (etherya ou bot)
-        reason = self.children[2].value.strip() if self.children[2].value else "Non précisé"
+        await self.message.edit(content="✅ **Suggestion Acceptée !**", view=None)
+        await self.user.send(f"🎉 **Ta suggestion a été acceptée !** Merci pour ta contribution. 🚀")
+        self.stop()
 
-        # Vérification du choix
-        if choice in ["etherya", "eth", "e"]:
-            choice = "Etherya"
-            color = discord.Color.gold()
-        elif choice in ["bot", "b"]:
-            choice = "Le Bot"
-            color = discord.Color.blue()
-        else:
-            return await interaction.response.send_message(
-                "❌ Merci d'écrire 'Etherya' ou 'Bot'.", ephemeral=True
-            )
+    @discord.ui.button(label="❌ Refuser", style=discord.ButtonStyle.danger)
+    async def reject_suggestion(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if ADMIN_ROLE_ID not in [role.id for role in interaction.user.roles]:
+            await interaction.response.send_message("🚫 Tu n'as pas la permission de faire ça.", ephemeral=True)
+            return
 
-        channel = interaction.client.get_channel(SUGGESTION_CHANNEL_ID)
-        if not channel:
-            return await interaction.response.send_message("❌ Je ne trouve pas le salon des suggestions.", ephemeral=True)
+        await self.message.edit(content="❌ **Suggestion Refusée !**", view=None)
+        await self.user.send(f"😕 **Ta suggestion a été refusée.** Merci quand même pour ton idée !")
+        self.stop()
 
-        owner_mention = f"<@{OWNER_ID}>"
+# Commande pour envoyer une suggestion
+@bot.tree.command(name="suggestion", description="Envoie une suggestion sur le Bot ou Etherya.")
+async def suggest(interaction: discord.Interaction, suggestion: str):
+    user_id = interaction.user.id
 
-        # Envoie un message de notification à l'owner
-        await channel.send(f"{owner_mention} 🔔 **Nouvelle suggestion concernant {choice} !**")
+    # Vérification du cooldown (1 min entre chaque suggestion)
+    if user_id in cooldowns:
+        remaining_time = cooldowns[user_id] - datetime.utcnow()
+        if remaining_time.total_seconds() > 0:
+            await interaction.response.send_message(f"🕒 Attends encore {int(remaining_time.total_seconds())} secondes avant d'envoyer une nouvelle suggestion.", ephemeral=True)
+            return
 
-        # Création de l'embed
-        embed = discord.Embed(
-            title="💡 Nouvelle Suggestion !",
-            description=f"📝 **Proposée par** {interaction.user.mention}\n\n>>> {suggestion}",
-            color=color,
-            timestamp=discord.utils.utcnow()
+    # Demande de catégorie avec un dropdown
+    view = SuggestionView(interaction.user)
+    await interaction.response.send_message("📌 **Avant d'envoyer ta suggestion, choisis une catégorie :**", view=view, ephemeral=True)
+    await view.wait()
+
+    if not view.selected_category:
+        return
+
+    # Stocker le cooldown de l'utilisateur
+    cooldowns[user_id] = datetime.utcnow() + timedelta(minutes=1)
+
+    channel = bot.get_channel(SUGGESTION_CHANNEL_ID)
+    if not channel:
+        await interaction.followup.send("❌ **Erreur : Salon des suggestions introuvable.**", ephemeral=True)
+        return
+
+    # Création de l'embed
+    embed = discord.Embed(
+        title="💡 Nouvelle suggestion !",
+        description=f"> **{suggestion}**",
+        color=discord.Color.blue(),
+        timestamp=datetime.utcnow()
+    )
+    embed.add_field(name="📌 Catégorie", value=f"**{view.selected_category}**", inline=True)
+    embed.set_footer(text=f"Suggestion de {interaction.user}", icon_url=interaction.user.avatar.url if interaction.user.avatar else None)
+
+    # Envoi de l'embed et ajout des réactions
+    message = await channel.send(embed=embed, view=SuggestionAdminView(message, interaction.user))
+    await message.add_reaction("✅")
+    await message.add_reaction("❌")
+    await message.add_reaction("❤️")
+    await message.add_reaction("🔄")
+
+    # Stocker la suggestion en mémoire
+    suggestions_list.append({
+        "message_id": message.id,
+        "user_id": interaction.user.id,
+        "suggestion": suggestion,
+        "category": view.selected_category,
+        "timestamp": datetime.utcnow()
+    })
+
+    await interaction.followup.send("✅ **Ta suggestion a été envoyée avec succès !**", ephemeral=True)
+
+# Commande pour afficher les suggestions récentes
+@bot.tree.command(name="suggestions", description="Affiche les dernières suggestions.")
+async def recent_suggestions(interaction: discord.Interaction):
+    if not suggestions_list:
+        await interaction.response.send_message("❌ **Aucune suggestion récente.**", ephemeral=True)
+        return
+
+    embed = discord.Embed(
+        title="📋 Dernières Suggestions",
+        color=discord.Color.green(),
+        timestamp=datetime.utcnow()
+    )
+
+    for suggestion in suggestions_list[-5:]:
+        embed.add_field(
+            name=f"💡 {suggestion['category']}",
+            value=f"> {suggestion['suggestion']}\n🕒 **{suggestion['timestamp'].strftime('%d/%m/%Y %H:%M')}**",
+            inline=False
         )
 
-        embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/3039/3039569.png")  # Icône idée
-        embed.add_field(name="📌 Sujet", value=f"**{choice}**", inline=True)
-        embed.add_field(name="❔ Pourquoi ?", value=reason, inline=False)
-        embed.set_footer(
-            text=f"Envoyée par {interaction.user.display_name}",
-            icon_url=interaction.user.avatar.url if interaction.user.avatar else None
-        )
-
-        # Envoi de l'embed
-        message = await channel.send(embed=embed)
-
-        await message.add_reaction("✅")  # Vote pour
-        await message.add_reaction("❌")  # Vote contre
-
-        # Confirme l'envoi avec une animation cool
-        await interaction.response.send_message(
-            f"✅ **Ta suggestion a été envoyée avec succès !**\n🕒 En attente des votes...",
-            ephemeral=True
-        )
-
-        # Envoi d'un message privé à l'auteur
-        try:
-            dm_embed = discord.Embed(
-                title="📩 Suggestion envoyée !",
-                description=f"Merci d'avoir proposé une idée !\n\n**🔹 Sujet** : {choice}\n**💡 Suggestion** : {suggestion}",
-                color=discord.Color.green(),
-                timestamp=discord.utils.utcnow()
-            )
-            dm_embed.set_footer(text="Nous te remercions pour ton aide ! 🙌")
-            await interaction.user.send(embed=dm_embed)
-        except discord.Forbidden:
-            print(f"[ERREUR] Impossible d'envoyer un MP à {interaction.user.display_name}.")
-
-@bot.tree.command(name="suggestion", description="💡 Envoie une suggestion pour Etherya ou le Bot")
-async def suggest(interaction: discord.Interaction):
-    """Commande pour envoyer une suggestion"""
-    await interaction.response.send_modal(SuggestionModal())
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

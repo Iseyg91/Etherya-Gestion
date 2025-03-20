@@ -1673,10 +1673,6 @@ async def ticket_euro_million(ctx, user: discord.Member):
     else:
         await ctx.send("Erreur : Le salon d'annonce est introuvable.")
 #------------------------------------------------------------------------- Commandes de Moderation : +ban, +unban, +mute, +unmute, +kick, +warn
-import discord
-from discord.ext import commands
-from discord import app_commands
-
 MOD_ROLE_ID = 1168109892851204166
 MUTED_ROLE_ID = 1170488926834798602
 IMMUNE_ROLE_ID = 1170326040485318686
@@ -1870,7 +1866,6 @@ async def unmute(interaction: discord.Interaction, member: discord.Member, reaso
     else:
         await interaction.response.send_message("Le rôle 'Muted' est introuvable. Vérifie la configuration.", ephemeral=True)
 
-
 @bot.tree.command(name="warn", description="Avertir un membre")
 async def warn(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
     # Vérifier si l'utilisateur est dans un serveur (guild)
@@ -1884,7 +1879,7 @@ async def warn(interaction: discord.Interaction, member: discord.Member, reason:
         return
 
     # Avertir le membre
-    await interaction.response.send_message(f"{member.mention} a été averti.", ephemeral=True)
+    await interaction.response.send_message(f"{member.mention} a été averti par {interaction.user.mention}.", ephemeral=True)
     await send_log(interaction, member, "Warn", reason)
     await send_dm(member, "Warn", reason)
 

@@ -14,7 +14,6 @@ from discord.ui import Button, View
 from datetime import datetime
 from discord.ui import View, Select
 from discord.ext import tasks
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from collections import defaultdict
 import pymongo
 from pymongo import MongoClient
@@ -146,11 +145,6 @@ sensitive_words = [
 ]
 
 ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
-ROLE_ID = 1343293515685302373  # ID du rôle à attribuer
-ANNOUNCEMENT_CHANNEL_ID = 1283886430321377378  # ID du salon d'annonces
-
-# Dictionnaire pour stocker le nombre de messages
-message_count = defaultdict(int)
 
 def get_main_guild():
     return bot.guilds[0] if bot.guilds else None
@@ -240,35 +234,6 @@ async def send_alert_to_admin(message, detected_word):
         await admin.send(embed=embed)
     except Exception as e:
         print(f"⚠️ Erreur lors de l'envoi de l'alerte : {e}")
-
-async def daily_check():
-    if not message_count:
-        return
-    guild = get_main_guild()
-    if not guild:
-        return
-    
-    top_user_id = max(message_count, key=message_count.get)
-    top_user = guild.get_member(top_user_id)
-    
-    if top_user:
-        role = guild.get_role(ROLE_ID)
-        if role:
-            await top_user.add_roles(role)
-            channel = bot.get_channel(ANNOUNCEMENT_CHANNEL_ID)
-            if channel:
-                embed = discord.Embed(
-                    description=f"> **Le <@&{ROLE_ID}> du jour est: {top_user.mention} <a:pandaplaudie:1172809946254028802>**",
-                    color=discord.Color.gold()
-                )
-                await channel.send(embed=embed)
-            await asyncio.sleep(86400)  # 24 heures
-            await top_user.remove_roles(role)
-    message_count.clear()
-
-scheduler = AsyncIOScheduler()
-scheduler.add_job(daily_check, "cron", hour=23, minute=59)
-scheduler.start()
 
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 

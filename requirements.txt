@@ -69,5 +69,4 @@ yarl==1.18.3
 gunicorn==21.2.0
 pymongo==4.6.1
 aiocron
-apscheduler==3.10.1
 PyNaCl

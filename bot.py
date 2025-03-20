@@ -1757,13 +1757,14 @@ async def unban(interaction: discord.Interaction, user_id: int):
 
 
 @bot.tree.command(name="kick")  # Tout en minuscules
-@app_commands.describe(member="Expluse un membre")
-async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+@app_commands.describe(member="Expulse un membre", reason="Raison du kick")
+async def kick(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
     if await check_permissions(ctx) and not await is_immune(member):
         await member.kick(reason=reason)
         await ctx.send(f"{member.mention} a été expulsé.")
         await send_log(ctx, member, "Kick", reason)
         await send_dm(member, "Kick", reason)
+
 
 @bot.tree.command(name="mute")  # Tout en minuscules
 @app_commands.describe(member="Mute un membre")

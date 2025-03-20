@@ -3085,6 +3085,32 @@ async def liste_idees(ctx):
             embed.add_field(name=f"Idée {idx}", value=idee, inline=False)
     
     await ctx.send(embed=embed)
+
+#--------------------------------------------------------------------------------------------
+
+SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon où envoyer les suggestions
+
+@bot.tree.command(name="suggestion", description="Envoie une Suggestion sur le Bot ou encore sur Etherya")
+async def suggest(ctx, *, suggestion: str):
+    """Commande pour envoyer une suggestion"""
+    channel = bot.get_channel(SUGGESTION_CHANNEL_ID)
+    if not channel:
+        return await ctx.send("Je ne trouve pas le salon des suggestions.")
+
+    embed = discord.Embed(
+        title="💡 Nouvelle suggestion !",
+        description=f"> **{suggestion}**",
+        color=discord.Color.blue()
+    )
+    embed.set_footer(text=f"Suggestion de {ctx.author}", icon_url=ctx.author.avatar.url if ctx.author.avatar else None)
+
+    message = await channel.send(embed=embed)
+    
+    await message.add_reaction("✅")  # Vote pour
+    await message.add_reaction("❌")  # Vote contre
+    await ctx.send("✅ Ta suggestion a été envoyée avec succès !")
+
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

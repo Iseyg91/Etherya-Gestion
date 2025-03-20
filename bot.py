@@ -3054,7 +3054,36 @@ async def disconnect(interaction: discord.Interaction):
             color=discord.Color.orange()
         )
         await interaction.response.send_message(embed=embed)
+#------------------------------------------------------------------------------------------
+# Dictionnaire pour stocker les idées temporairement
+idees_dict = {}
 
+# Commande pour ajouter une idée
+@bot.tree.command(name="idees", description="Rajoute une idée dans la liste")
+@commands.has_permissions(administrator=True)
+async def ajouter_idee(ctx, idee: str):
+    user_id = ctx.author.id
+    if user_id not in idees_dict:
+        idees_dict[user_id] = []
+    idees_dict[user_id].append(idee)
+    
+    embed = discord.Embed(title="Idée ajoutée !", description=f"**{idee}** a été enregistrée.", color=discord.Color.green())
+    await ctx.respond(embed=embed)
+
+# Commande pour lister les idées
+@bot.command(name="listi")
+async def liste_idees(ctx):
+    user_id = ctx.author.id
+    idees = idees_dict.get(user_id, [])
+    
+    if not idees:
+        embed = discord.Embed(title="Aucune idée enregistrée", description="Ajoute-en une avec /idées !", color=discord.Color.red())
+    else:
+        embed = discord.Embed(title="Tes idées", color=discord.Color.blue())
+        for idx, idee in enumerate(idees, start=1):
+            embed.add_field(name=f"Idée {idx}", value=idee, inline=False)
+    
+    await ctx.send(embed=embed)
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

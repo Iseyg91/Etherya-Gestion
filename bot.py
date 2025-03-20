@@ -1745,15 +1745,16 @@ async def ban(ctx, member: discord.Member, reason: str = "Aucune raison spécifi
         await send_log(ctx, member, "Ban", reason)
         await send_dm(member, "Ban", reason)
 
-@bot.tree.command(name="unban")  # Tout en minuscules
-@app_commands.describe(member="Unban un membre")
-async def unban(ctx, user_id: int):
-    if await check_permissions(ctx):
+@bot.tree.command(name="unban")
+@app_commands.describe(user_id="ID du membre à débannir")
+async def unban(interaction: discord.Interaction, user_id: int):
+    if await check_permissions(interaction):
         user = await bot.fetch_user(user_id)
-        await ctx.guild.unban(user)
-        await ctx.send(f"{user.mention} a été débanni.")
-        await send_log(ctx, user, "Unban", "Réintégration")
+        await interaction.guild.unban(user)
+        await interaction.response.send_message(f"{user.mention} a été débanni.")
+        await send_log(interaction, user, "Unban", "Réintégration")
         await send_dm(user, "Unban", "Réintégration")
+
 
 @bot.tree.command(name="kick")  # Tout en minuscules
 @app_commands.describe(member="Expluse un membre")

@@ -3087,17 +3087,10 @@ async def liste_idees(ctx):
     await ctx.send(embed=embed)
 
 #--------------------------------------------------------------------------------------------
-import discord
-from discord import app_commands
-from discord.ext import commands
-import asyncio
-from datetime import datetime, timedelta
-
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 # Configs
-SUGGESTION_CHANNEL_ID = 123456789012345678  # ID du salon où envoyer les suggestions
-ADMIN_ROLE_ID = 987654321012345678  # ID du rôle admin qui peut valider/rejeter les suggestions
+SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon où envoyer les suggestions
+ADMIN_ROLE_ID = 1329933342774399027  # ID du rôle admin qui peut valider/rejeter les suggestions
 cooldowns = {}  # Pour limiter le spam
 
 # Catégories disponibles

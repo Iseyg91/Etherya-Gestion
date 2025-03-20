@@ -3087,15 +3087,11 @@ async def liste_idees(ctx):
     await ctx.send(embed=embed)
 
 #--------------------------------------------------------------------------------------------
-
 SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
 OWNER_ID = 792755123587645461  # Ton ID Discord
 
 # Stockage des suggestions
 suggestions = []
-
-# Délai en secondes pour verrouiller les votes (72h = 259200s)
-VOTE_DELAY = 259200
 
 # Dictionnaire pour gérer le cooldown des utilisateurs
 user_cooldown = {}
@@ -3237,20 +3233,6 @@ async def suggestions_command(interaction: discord.Interaction):
     # Envoi des embeds
     await interaction.response.send_message(embeds=embeds)
 
-# Fonction pour verrouiller les votes après 72h
-async def lock_votes_after_delay():
-    await asyncio.sleep(VOTE_DELAY)
-
-    for suggestion_data in suggestions:
-        channel = bot.get_channel(SUGGESTION_CHANNEL_ID)
-        message = await channel.fetch_message(suggestion_data['message_id'])
-
-        # Supprimer les réactions pour fermer les votes
-        await message.clear_reactions()
-        await message.channel.send(f"⏳ Les votes sont maintenant clôturés pour cette suggestion : {message.jump_url}\nMerci à tous d'avoir participé !")
-
-# Lancer la tâche de verrouillage des votes
-bot.loop.create_task(lock_votes_after_delay())
 
 
 # Token pour démarrer le bot (à partir des secrets)

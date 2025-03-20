@@ -3127,12 +3127,19 @@ class SuggestionModal(discord.ui.Modal, title="Nouvelle Suggestion"):
 
         channel = interaction.client.get_channel(SUGGESTION_CHANNEL_ID)
         if not channel:
+            print("[ERREUR] Salon de suggestions introuvable !")
             return await interaction.response.send_message("❌ Je ne trouve pas le salon des suggestions.", ephemeral=True)
 
-        owner_mention = f"<@{OWNER_ID}>"  # Mention de l’owner
+        owner_mention = f"<@{OWNER_ID}>"
 
-        # Envoie un message de notification
-        await channel.send(f"{owner_mention} 🔔 Nouvelle suggestion reçue concernant **{choice}** !")
+        # 🛠 DEBUG : Vérifier si le bot a bien accès au salon
+        try:
+            await channel.send(f"{owner_mention} 🔔 **Nouvelle suggestion concernant {choice} !**")
+            print(f"[INFO] Mention envoyée à {OWNER_ID} dans {channel.name}")
+        except discord.Forbidden:
+            print("[ERREUR] Le bot n'a pas les permissions pour mentionner l'owner !")
+        except Exception as e:
+            print(f"[ERREUR] Problème d'envoi de mention : {e}")
 
         # Création de l'embed
         embed = discord.Embed(
@@ -3150,10 +3157,15 @@ class SuggestionModal(discord.ui.Modal, title="Nouvelle Suggestion"):
         )
 
         # Envoi de l'embed
-        message = await channel.send(embed=embed)
-
-        await message.add_reaction("✅")  # Vote pour
-        await message.add_reaction("❌")  # Vote contre
+        try:
+            message = await channel.send(embed=embed)
+            await message.add_reaction("✅")  # Vote pour
+            await message.add_reaction("❌")  # Vote contre
+            print("[INFO] Embed envoyé avec succès !")
+        except discord.Forbidden:
+            print("[ERREUR] Le bot n'a pas la permission d'envoyer l'embed !")
+        except Exception as e:
+            print(f"[ERREUR] Impossible d'envoyer l'embed : {e}")
 
         await interaction.response.send_message("✅ Ta suggestion a été envoyée avec succès !", ephemeral=True)
 

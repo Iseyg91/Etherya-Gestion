@@ -3087,143 +3087,92 @@ async def liste_idees(ctx):
     await ctx.send(embed=embed)
 
 #--------------------------------------------------------------------------------------------
+import discord
+from discord import app_commands
+from discord.ext import commands
+import asyncio
+from datetime import datetime, timedelta
 
-SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
-OWNER_ID = 792755123587645461  # Ton ID Discord
-SUGGESTION_ARCHIVE_CHANNEL_ID = 1352388649098150029  # Salon où envoyer le récap des suggestions
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
-# Stockage temporaire des suggestions en mémoire
-suggestions_list = []
-cooldowns = {}
+# Configs
+SUGGESTION_CHANNEL_ID = 123456789012345678  # ID du salon où envoyer les suggestions
+ADMIN_ROLE_ID = 987654321012345678  # ID du rôle admin qui peut valider/rejeter les suggestions
+cooldowns = {}  # Pour limiter le spam
 
-class SuggestionDropdown(discord.ui.Select):
-    def __init__(self):
-        options = [
-            discord.SelectOption(label="Amélioration du Bot", description="Suggestions liées au bot.", emoji="🤖"),
-            discord.SelectOption(label="Etherya", description="Suggestions pour le serveur Etherya.", emoji="🌍"),
-            discord.SelectOption(label="Correction de Bug", description="Signaler un bug.", emoji="🐛"),
-            discord.SelectOption(label="Autre", description="Autre type de suggestion.", emoji="📝"),
-        ]
-        super().__init__(placeholder="Choisis une catégorie...", options=options, min_values=1, max_values=1)
+# Catégories disponibles
+CATEGORY_OPTIONS = [
+    discord.SelectOption(label="Amélioration du Bot", emoji="🤖"),
+    discord.SelectOption(label="Etherya", emoji="🌍"),
+    discord.SelectOption(label="Correction de Bug", emoji="🐛"),
+    discord.SelectOption(label="Autre", emoji="📝"),
+]
 
-    async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        self.view.selected_category = self.values[0]
-        self.view.stop()
-
-class SuggestionView(discord.ui.View):
-    def __init__(self, user):
-        super().__init__()
-        self.user = user
+class SuggestionDropdown(discord.ui.View):
+    def __init__(self, author):
+        super().__init__(timeout=30)  # Timeout pour éviter le blocage
+        self.author = author
         self.selected_category = None
-        self.add_item(SuggestionDropdown())
+        self.select = discord.ui.Select(placeholder="Choisis une catégorie...", options=CATEGORY_OPTIONS)
+        self.select.callback = self.select_callback
+        self.add_item(self.select)
 
-    async def on_timeout(self):
-        await self.user.send("❌ **Ta suggestion a été annulée car tu n'as pas choisi de catégorie.**")
-
-class SuggestionAdminView(discord.ui.View):
-    def __init__(self, message, user):
-        super().__init__(timeout=None)
-        self.message = message
-        self.user = user
-
-    @discord.ui.button(label="✅ Accepter", style=discord.ButtonStyle.success)
-    async def accept_suggestion(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if ADMIN_ROLE_ID not in [role.id for role in interaction.user.roles]:
-            await interaction.response.send_message("🚫 Tu n'as pas la permission de faire ça.", ephemeral=True)
-            return
-
-        await self.message.edit(content="✅ **Suggestion Acceptée !**", view=None)
-        await self.user.send(f"🎉 **Ta suggestion a été acceptée !** Merci pour ta contribution. 🚀")
+    async def select_callback(self, interaction: discord.Interaction):
+        if interaction.user != self.author:
+            return await interaction.response.send_message("🚫 Ce n'est pas ta suggestion.", ephemeral=True)
+        self.selected_category = self.select.values[0]
+        await interaction.response.defer()
         self.stop()
 
-    @discord.ui.button(label="❌ Refuser", style=discord.ButtonStyle.danger)
-    async def reject_suggestion(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if ADMIN_ROLE_ID not in [role.id for role in interaction.user.roles]:
-            await interaction.response.send_message("🚫 Tu n'as pas la permission de faire ça.", ephemeral=True)
-            return
-
-        await self.message.edit(content="❌ **Suggestion Refusée !**", view=None)
-        await self.user.send(f"😕 **Ta suggestion a été refusée.** Merci quand même pour ton idée !")
-        self.stop()
-
-# Commande pour envoyer une suggestion
-@bot.tree.command(name="suggestion", description="Envoie une suggestion sur le Bot ou Etherya.")
-async def suggest(interaction: discord.Interaction, suggestion: str):
-    user_id = interaction.user.id
-
-    # Vérification du cooldown (1 min entre chaque suggestion)
-    if user_id in cooldowns:
-        remaining_time = cooldowns[user_id] - datetime.utcnow()
-        if remaining_time.total_seconds() > 0:
-            await interaction.response.send_message(f"🕒 Attends encore {int(remaining_time.total_seconds())} secondes avant d'envoyer une nouvelle suggestion.", ephemeral=True)
-            return
-
-    # Demande de catégorie avec un dropdown
-    view = SuggestionView(interaction.user)
-    await interaction.response.send_message("📌 **Avant d'envoyer ta suggestion, choisis une catégorie :**", view=view, ephemeral=True)
-    await view.wait()
-
-    if not view.selected_category:
-        return
-
-    # Stocker le cooldown de l'utilisateur
-    cooldowns[user_id] = datetime.utcnow() + timedelta(minutes=1)
-
+async def send_suggestion_embed(interaction, suggestion, category):
+    """Envoie l'embed de la suggestion"""
     channel = bot.get_channel(SUGGESTION_CHANNEL_ID)
     if not channel:
         await interaction.followup.send("❌ **Erreur : Salon des suggestions introuvable.**", ephemeral=True)
         return
 
-    # Création de l'embed
     embed = discord.Embed(
         title="💡 Nouvelle suggestion !",
         description=f"> **{suggestion}**",
         color=discord.Color.blue(),
         timestamp=datetime.utcnow()
     )
-    embed.add_field(name="📌 Catégorie", value=f"**{view.selected_category}**", inline=True)
+    embed.add_field(name="📌 Catégorie", value=f"**{category}**", inline=True)
     embed.set_footer(text=f"Suggestion de {interaction.user}", icon_url=interaction.user.avatar.url if interaction.user.avatar else None)
 
-    # Envoi de l'embed et ajout des réactions
-    message = await channel.send(embed=embed, view=SuggestionAdminView(message, interaction.user))
+    message = await channel.send(embed=embed)
     await message.add_reaction("✅")
     await message.add_reaction("❌")
     await message.add_reaction("❤️")
     await message.add_reaction("🔄")
 
-    # Stocker la suggestion en mémoire
-    suggestions_list.append({
-        "message_id": message.id,
-        "user_id": interaction.user.id,
-        "suggestion": suggestion,
-        "category": view.selected_category,
-        "timestamp": datetime.utcnow()
-    })
-
     await interaction.followup.send("✅ **Ta suggestion a été envoyée avec succès !**", ephemeral=True)
 
-# Commande pour afficher les suggestions récentes
-@bot.tree.command(name="suggestions", description="Affiche les dernières suggestions.")
-async def recent_suggestions(interaction: discord.Interaction):
-    if not suggestions_list:
-        await interaction.response.send_message("❌ **Aucune suggestion récente.**", ephemeral=True)
-        return
+@bot.tree.command(name="suggestion", description="Envoie une suggestion sur le Bot ou Etherya.")
+async def suggest(interaction: discord.Interaction, suggestion: str):
+    user_id = interaction.user.id
 
-    embed = discord.Embed(
-        title="📋 Dernières Suggestions",
-        color=discord.Color.green(),
-        timestamp=datetime.utcnow()
-    )
+    # Vérification cooldown (1 min entre suggestions)
+    if user_id in cooldowns:
+        remaining_time = cooldowns[user_id] - datetime.utcnow()
+        if remaining_time.total_seconds() > 0:
+            return await interaction.response.send_message(f"🕒 Attends encore {int(remaining_time.total_seconds())} secondes avant d'envoyer une nouvelle suggestion.", ephemeral=True)
 
-    for suggestion in suggestions_list[-5:]:
-        embed.add_field(
-            name=f"💡 {suggestion['category']}",
-            value=f"> {suggestion['suggestion']}\n🕒 **{suggestion['timestamp'].strftime('%d/%m/%Y %H:%M')}**",
-            inline=False
-        )
+    cooldowns[user_id] = datetime.utcnow() + timedelta(minutes=1)
 
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    # Demande de catégorie
+    view = SuggestionDropdown(interaction.user)
+    await interaction.response.send_message("📌 **Avant d'envoyer ta suggestion, choisis une catégorie :**", view=view, ephemeral=True)
+
+    await view.wait()  # Attend la réponse
+
+    # Si l'utilisateur n'a rien sélectionné, on annule proprement
+    if not view.selected_category:
+        return await interaction.followup.send("❌ **Suggestion annulée : aucune catégorie sélectionnée.**", ephemeral=True)
+
+    # Envoi de la suggestion
+    await send_suggestion_embed(interaction, suggestion, view.selected_category)
+
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

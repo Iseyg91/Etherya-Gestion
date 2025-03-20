@@ -3087,6 +3087,9 @@ async def liste_idees(ctx):
     await ctx.send(embed=embed)
 
 #--------------------------------------------------------------------------------------------
+import discord
+import time
+
 SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
 OWNER_ID = 792755123587645461  # Ton ID Discord
 
@@ -3208,7 +3211,9 @@ class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
             await interaction.user.send(embed=dm_embed)
         except discord.Forbidden:
             print(f"[ERREUR] Impossible d'envoyer un MP à {interaction.user.display_name}.")
-
+            # Avertir l'utilisateur dans le salon de suggestions si DM est bloqué
+            await channel.send(f"❗ **{interaction.user.display_name}**, il semble que je ne puisse pas t'envoyer un message privé. Vérifie tes paramètres de confidentialité pour autoriser les MPs.")
+            
 @bot.tree.command(name="suggestion", description="💡 Envoie une suggestion pour Etherya ou le Bot")
 async def suggest(interaction: discord.Interaction):
     """Commande pour envoyer une suggestion"""

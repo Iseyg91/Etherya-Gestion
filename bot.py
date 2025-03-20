@@ -1821,11 +1821,12 @@ async def unmute(ctx, member: discord.Member):
 
 @bot.tree.command(name="warn")  # Tout en minuscules
 @app_commands.describe(member="Avertir un membre", reason="Raison de l'avertissement")
-async def warn(ctx, member: discord.Member, *, reason: str = "Aucune raison spécifiée"):
-    if await check_permissions(ctx) and not await is_immune(member):
-        await ctx.send(f"{member.mention} a reçu un avertissement.")
-        await send_log(ctx, member, "Warn", reason)
+async def warn(interaction: discord.Interaction, member: discord.Member, *, reason: str = "Aucune raison spécifiée"):
+    if await check_permissions(interaction) and not await is_immune(member):
+        await interaction.response.send_message(f"{member.mention} a reçu un avertissement.", ephemeral=True)
+        await send_log(interaction, member, "Warn", reason)
         await send_dm(member, "Warn", reason)
+
 
 
 #-----------------------------------------------------------------------------

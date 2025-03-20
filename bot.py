@@ -1737,8 +1737,8 @@ async def is_immune(member):
     return immune_role and immune_role in member.roles
 
 @bot.tree.command(name="ban")  # Tout en minuscules
-@app_commands.describe(montant="Ban un membre")
-async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+@app_commands.describe(member="Le membre à bannir", reason="Raison du bannissement")
+async def ban(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
     if await check_permissions(ctx) and not await is_immune(member):
         await member.ban(reason=reason)
         await ctx.send(f"{member.mention} a été banni.")

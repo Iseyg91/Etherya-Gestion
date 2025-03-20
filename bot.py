@@ -3088,7 +3088,6 @@ async def liste_idees(ctx):
 
 #--------------------------------------------------------------------------------------------
 
-
 SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
 OWNER_ID = 792755123587645461  # Ton ID Discord
 
@@ -3103,18 +3102,28 @@ class SuggestionModal(discord.ui.Modal, title="Nouvelle Suggestion"):
             required=True
         ))
 
-        self.add_item(discord.ui.Select(
-            placeholder="Votre suggestion concerne...",
-            options=[
-                discord.SelectOption(label="Etherya", description="Une suggestion pour Etherya", emoji="🌍"),
-                discord.SelectOption(label="Le Bot", description="Une suggestion pour le bot", emoji="🤖"),
-            ],
-            custom_id="suggestion_type"
+        self.add_item(discord.ui.TextInput(
+            label="Cela concerne Etherya ou le Bot ?",
+            style=discord.TextStyle.short,
+            placeholder="Tapez 'Etherya' ou 'Bot'",
+            required=True
         ))
 
     async def on_submit(self, interaction: discord.Interaction):
-        suggestion = self.children[0].value  # Récupère le texte de la suggestion
-        choice = self.children[1].values[0]  # Récupère le choix sélectionné (Etherya ou Bot)
+        suggestion = self.children[0].value.strip()  # Texte de la suggestion
+        choice = self.children[1].value.strip().lower()  # Sujet (etherya ou bot)
+
+        # Vérification et correction du choix
+        if choice in ["etherya", "eth", "e"]:
+            choice = "Etherya"
+            color = discord.Color.gold()
+        elif choice in ["bot", "b"]:
+            choice = "Le Bot"
+            color = discord.Color.blue()
+        else:
+            return await interaction.response.send_message(
+                "❌ Merci d'écrire 'Etherya' ou 'Bot'.", ephemeral=True
+            )
 
         channel = interaction.client.get_channel(SUGGESTION_CHANNEL_ID)
         if not channel:
@@ -3129,7 +3138,7 @@ class SuggestionModal(discord.ui.Modal, title="Nouvelle Suggestion"):
         embed = discord.Embed(
             title="💡 Nouvelle Suggestion !",
             description=f"📝 **Proposée par** {interaction.user.mention}\n\n>>> {suggestion}",
-            color=discord.Color.gold() if choice == "Etherya" else discord.Color.blue(),
+            color=color,
             timestamp=discord.utils.utcnow()
         )
 

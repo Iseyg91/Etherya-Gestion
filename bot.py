@@ -3088,27 +3088,43 @@ async def liste_idees(ctx):
 
 #--------------------------------------------------------------------------------------------
 
-SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon où envoyer les suggestions
+SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
+OWNER_ID = 792755123587645461  # Ton ID Discord
 
-@bot.tree.command(name="suggestion", description="Envoie une Suggestion sur le Bot ou encore sur Etherya")
-async def suggest(ctx, *, suggestion: str):
+@bot.tree.command(name="suggestion", description="Envoie une suggestion pour le bot ou Etherya")
+async def suggest(interaction: discord.Interaction, *, suggestion: str):
     """Commande pour envoyer une suggestion"""
     channel = bot.get_channel(SUGGESTION_CHANNEL_ID)
     if not channel:
-        return await ctx.send("Je ne trouve pas le salon des suggestions.")
+        return await interaction.response.send_message("❌ Je ne trouve pas le salon des suggestions.", ephemeral=True)
 
+    owner_mention = f"<@{OWNER_ID}>"  # Génère une mention avec ton ID
+
+    # Envoie un message te mentionnant
+    await channel.send(f"{owner_mention} 🔔 Nouvelle suggestion reçue !")
+
+    # Création de l'embed
     embed = discord.Embed(
-        title="💡 Nouvelle suggestion !",
-        description=f"> **{suggestion}**",
-        color=discord.Color.blue()
+        title="💡 Nouvelle Suggestion !",
+        description=f"📝 **Suggestion proposée par** {interaction.user.mention}\n\n>>> {suggestion}",
+        color=discord.Color.gold(),
+        timestamp=discord.utils.utcnow()
     )
-    embed.set_footer(text=f"Suggestion de {ctx.author}", icon_url=ctx.author.avatar.url if ctx.author.avatar else None)
 
+    embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/3039/3039569.png")  # Icône idée
+    embed.set_footer(
+        text=f"Envoyée par {interaction.user.display_name}",
+        icon_url=interaction.user.avatar.url if interaction.user.avatar else None
+    )
+
+    # Envoi de l'embed dans le salon des suggestions
     message = await channel.send(embed=embed)
     
     await message.add_reaction("✅")  # Vote pour
     await message.add_reaction("❌")  # Vote contre
-    await ctx.send("✅ Ta suggestion a été envoyée avec succès !")
+
+    await interaction.response.send_message("✅ Ta suggestion a été envoyée avec succès !", ephemeral=True)
+
 
 
 # Token pour démarrer le bot (à partir des secrets)

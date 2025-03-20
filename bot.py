@@ -3091,29 +3091,38 @@ async def liste_idees(ctx):
 SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
 OWNER_ID = 792755123587645461  # Ton ID Discord
 
-class SuggestionModal(discord.ui.Modal, title="Nouvelle Suggestion"):
+class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
     def __init__(self):
         super().__init__()
 
         self.add_item(discord.ui.TextInput(
-            label="Votre suggestion",
+            label="💬 Votre suggestion",
             style=discord.TextStyle.long,
             placeholder="Décrivez votre suggestion ici...",
-            required=True
+            required=True,
+            max_length=500
         ))
 
         self.add_item(discord.ui.TextInput(
-            label="Cela concerne Etherya ou le Bot ?",
+            label="🎯 Cela concerne Etherya ou le Bot ?",
             style=discord.TextStyle.short,
             placeholder="Tapez 'Etherya' ou 'Bot'",
             required=True
         ))
 
+        self.add_item(discord.ui.TextInput(
+            label="❔ Pourquoi cette suggestion ?",
+            style=discord.TextStyle.paragraph,
+            placeholder="Expliquez pourquoi cette idée est utile...",
+            required=False
+        ))
+
     async def on_submit(self, interaction: discord.Interaction):
         suggestion = self.children[0].value.strip()  # Texte de la suggestion
         choice = self.children[1].value.strip().lower()  # Sujet (etherya ou bot)
+        reason = self.children[2].value.strip() if self.children[2].value else "Non précisé"
 
-        # Vérification et correction du choix
+        # Vérification du choix
         if choice in ["etherya", "eth", "e"]:
             choice = "Etherya"
             color = discord.Color.gold()
@@ -3127,19 +3136,12 @@ class SuggestionModal(discord.ui.Modal, title="Nouvelle Suggestion"):
 
         channel = interaction.client.get_channel(SUGGESTION_CHANNEL_ID)
         if not channel:
-            print("[ERREUR] Salon de suggestions introuvable !")
             return await interaction.response.send_message("❌ Je ne trouve pas le salon des suggestions.", ephemeral=True)
 
         owner_mention = f"<@{OWNER_ID}>"
 
-        # 🛠 DEBUG : Vérifier si le bot a bien accès au salon
-        try:
-            await channel.send(f"{owner_mention} 🔔 **Nouvelle suggestion concernant {choice} !**")
-            print(f"[INFO] Mention envoyée à {OWNER_ID} dans {channel.name}")
-        except discord.Forbidden:
-            print("[ERREUR] Le bot n'a pas les permissions pour mentionner l'owner !")
-        except Exception as e:
-            print(f"[ERREUR] Problème d'envoi de mention : {e}")
+        # Envoie un message de notification à l'owner
+        await channel.send(f"{owner_mention} 🔔 **Nouvelle suggestion concernant {choice} !**")
 
         # Création de l'embed
         embed = discord.Embed(
@@ -3151,25 +3153,38 @@ class SuggestionModal(discord.ui.Modal, title="Nouvelle Suggestion"):
 
         embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/3039/3039569.png")  # Icône idée
         embed.add_field(name="📌 Sujet", value=f"**{choice}**", inline=True)
+        embed.add_field(name="❔ Pourquoi ?", value=reason, inline=False)
         embed.set_footer(
             text=f"Envoyée par {interaction.user.display_name}",
             icon_url=interaction.user.avatar.url if interaction.user.avatar else None
         )
 
         # Envoi de l'embed
+        message = await channel.send(embed=embed)
+
+        await message.add_reaction("✅")  # Vote pour
+        await message.add_reaction("❌")  # Vote contre
+
+        # Confirme l'envoi avec une animation cool
+        await interaction.response.send_message(
+            f"✅ **Ta suggestion a été envoyée avec succès !**\n🕒 En attente des votes...",
+            ephemeral=True
+        )
+
+        # Envoi d'un message privé à l'auteur
         try:
-            message = await channel.send(embed=embed)
-            await message.add_reaction("✅")  # Vote pour
-            await message.add_reaction("❌")  # Vote contre
-            print("[INFO] Embed envoyé avec succès !")
+            dm_embed = discord.Embed(
+                title="📩 Suggestion envoyée !",
+                description=f"Merci d'avoir proposé une idée !\n\n**🔹 Sujet** : {choice}\n**💡 Suggestion** : {suggestion}",
+                color=discord.Color.green(),
+                timestamp=discord.utils.utcnow()
+            )
+            dm_embed.set_footer(text="Nous te remercions pour ton aide ! 🙌")
+            await interaction.user.send(embed=dm_embed)
         except discord.Forbidden:
-            print("[ERREUR] Le bot n'a pas la permission d'envoyer l'embed !")
-        except Exception as e:
-            print(f"[ERREUR] Impossible d'envoyer l'embed : {e}")
+            print(f"[ERREUR] Impossible d'envoyer un MP à {interaction.user.display_name}.")
 
-        await interaction.response.send_message("✅ Ta suggestion a été envoyée avec succès !", ephemeral=True)
-
-@bot.tree.command(name="suggestion", description="Envoie une suggestion pour Etherya ou le Bot")
+@bot.tree.command(name="suggestion", description="💡 Envoie une suggestion pour Etherya ou le Bot")
 async def suggest(interaction: discord.Interaction):
     """Commande pour envoyer une suggestion"""
     await interaction.response.send_modal(SuggestionModal())

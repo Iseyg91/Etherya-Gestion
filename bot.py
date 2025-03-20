@@ -186,9 +186,6 @@ async def on_message(message):
             asyncio.create_task(send_alert_to_admin(message, word))
             break
 
-    # Compteur de messages
-    message_count[message.author.id] += 1
-
     # Réponse automatique aux mentions du bot
     if bot.user.mentioned_in(message) and len(message.mentions) == 1:
         embed = discord.Embed(

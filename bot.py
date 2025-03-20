@@ -1768,7 +1768,7 @@ async def kick(ctx, member: discord.Member, reason: str = "Aucune raison spécif
 
 @bot.tree.command(name="mute")  # Tout en minuscules
 @app_commands.describe(member="Mute un membre")
-async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="Aucune raison spécifiée"):
+async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason: str = "Aucune raison spécifiée"):
     # Vérification si l'utilisateur a le rôle autorisé
     if not any(role.id == 1168109892851204166 for role in ctx.author.roles):
         await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")

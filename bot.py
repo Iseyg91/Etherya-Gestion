@@ -1728,9 +1728,6 @@ async def check_permissions(user: discord.Member) -> bool:
     if mod_role and mod_role in user.roles:
         return True
     return False
-    else:
-        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
-        return False
 
 async def is_immune(member):
     immune_role = discord.utils.get(member.guild.roles, id=IMMUNE_ROLE_ID)

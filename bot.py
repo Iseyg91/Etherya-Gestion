@@ -3087,11 +3087,9 @@ async def liste_idees(ctx):
     await ctx.send(embed=embed)
 
 #--------------------------------------------------------------------------------------------
-import discord
-import time
 
 SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
-OWNER_ID = 792755123587645461  # Ton ID Discord
+NEW_USER_ID = 1166334631784759307  # Nouvel ID à mentionner
 
 # Stockage des suggestions
 suggestions = []
@@ -3155,10 +3153,10 @@ class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
         if not channel:
             return await interaction.response.send_message("❌ Je n'ai pas pu trouver le salon des suggestions.", ephemeral=True)
 
-        owner_mention = f"<@{OWNER_ID}>"
+        new_user_mention = f"<@{NEW_USER_ID}>"
 
-        # Envoie un message de notification à l'owner
-        await channel.send(f"{owner_mention} 🔔 **Nouvelle suggestion concernant {choice} !**")
+        # Envoie un message de notification à l'utilisateur spécifique
+        await channel.send(f"{new_user_mention} 🔔 **Nouvelle suggestion concernant {choice} !**")
 
         # Création de l'embed
         embed = discord.Embed(

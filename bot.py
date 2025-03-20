@@ -3153,7 +3153,7 @@ class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
         if not channel:
             return await interaction.response.send_message("❌ Je n'ai pas pu trouver le salon des suggestions.", ephemeral=True)
 
-        new_user_mention = f"<@{NEW_USER_ID}>"
+        new_user_mention = f"<@&{NEW_USER_ID}>"
 
         # Envoie un message de notification à l'utilisateur spécifique
         await channel.send(f"{new_user_mention} 🔔 **Nouvelle suggestion concernant {choice} !**")

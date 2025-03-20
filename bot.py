@@ -1746,7 +1746,7 @@ async def ban(ctx, member: discord.Member, reason: str = "Aucune raison spécifi
         await send_dm(member, "Ban", reason)
 
 @bot.tree.command(name="unban")  # Tout en minuscules
-@app_commands.describe(montant="Unban un membre")
+@app_commands.describe(member="Unban un membre")
 async def unban(ctx, user_id: int):
     if await check_permissions(ctx):
         user = await bot.fetch_user(user_id)
@@ -1756,7 +1756,7 @@ async def unban(ctx, user_id: int):
         await send_dm(user, "Unban", "Réintégration")
 
 @bot.tree.command(name="kick")  # Tout en minuscules
-@app_commands.describe(montant="Expluse un membre")
+@app_commands.describe(member="Expluse un membre")
 async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
     if await check_permissions(ctx) and not await is_immune(member):
         await member.kick(reason=reason)
@@ -1765,7 +1765,7 @@ async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await send_dm(member, "Kick", reason)
 
 @bot.tree.command(name="mute")  # Tout en minuscules
-@app_commands.describe(montant="Mute un membre")
+@app_commands.describe(member="Mute un membre")
 async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="Aucune raison spécifiée"):
     # Vérification si l'utilisateur a le rôle autorisé
     if not any(role.id == 1168109892851204166 for role in ctx.author.roles):
@@ -1808,7 +1808,7 @@ async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="
         await send_dm(member, "Unmute", "Fin de la durée de mute")
 
 @bot.tree.command(name="unmute")  # Tout en minuscules
-@app_commands.describe(montant="Unmute un membre")
+@app_commands.describe(member="Unmute un membre")
 async def unmute(ctx, member: discord.Member):
     if await check_permissions(ctx) and not await is_immune(member):
         muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
@@ -1818,7 +1818,7 @@ async def unmute(ctx, member: discord.Member):
         await send_dm(member, "Unmute", "Réhabilitation")
 
 @bot.tree.command(name="warn")  # Tout en minuscules
-@app_commands.describe(montant="Avertir un membre")
+@app_commands.describe(member="Avertir un membre")
 async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
     if await check_permissions(ctx) and not await is_immune(member):
         await ctx.send(f"{member.mention} a reçu un avertissement.")

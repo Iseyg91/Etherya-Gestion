@@ -1720,14 +1720,14 @@ async def send_dm(member, action, reason, duration=None):
     except discord.Forbidden:
         print(f"Impossible d'envoyer un DM à {member.display_name}.")
 
-async def check_permissions(ctx):
-    if ctx.guild is None:  # Empêche l'utilisation en DM
-        await ctx.send("Cette commande ne peut être utilisée que sur un serveur.")
+async def check_permissions(user: discord.Member) -> bool:
+    if not isinstance(user, discord.Member):  # Vérifie que user est bien un membre
         return False
 
-    mod_role = discord.utils.get(ctx.guild.roles, id=MOD_ROLE_ID)
-    if mod_role and mod_role in ctx.author.roles:
+    mod_role = discord.utils.get(user.guild.roles, id=MOD_ROLE_ID)
+    if mod_role and mod_role in user.roles:
         return True
+    return False
     else:
         await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
         return False
@@ -1822,11 +1822,17 @@ async def unmute(ctx, member: discord.Member):
 @bot.tree.command(name="warn")  # Tout en minuscules
 @app_commands.describe(member="Avertir un membre", reason="Raison de l'avertissement")
 async def warn(interaction: discord.Interaction, member: discord.Member, *, reason: str = "Aucune raison spécifiée"):
-    # Vérification des permissions de l'utilisateur qui exécute la commande
-    if await check_permissions(interaction.user) and not await is_immune(member):
-        await interaction.response.send_message(f"{member.mention} a reçu un avertissement.", ephemeral=True)
-        await send_log(interaction, member, "Warn", reason)
-        await send_dm(member, "Warn", reason)
+    if not await check_permissions(interaction.user):
+        await interaction.response.send_message("🚫 Vous n'avez pas la permission d'utiliser cette commande.", ephemeral=True)
+        return
+
+    if await is_immune(member):
+        await interaction.response.send_message(f"⚠️ {member.mention} est immunisé contre les avertissements.", ephemeral=True)
+        return
+
+    await interaction.response.send_message(f"{member.mention} a reçu un avertissement.", ephemeral=True)
+    await send_log(interaction, member, "Warn", reason)
+    await send_dm(member, "Warn", reason)
 
 #-----------------------------------------------------------------------------
 # Gestion des erreurs pour les commandes

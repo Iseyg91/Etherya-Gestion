@@ -3091,6 +3091,15 @@ async def liste_idees(ctx):
 SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
 OWNER_ID = 792755123587645461  # Ton ID Discord
 
+# Stockage des suggestions
+suggestions = []
+
+# Délai en secondes pour verrouiller les votes (72h = 259200s)
+VOTE_DELAY = 259200
+
+# Dictionnaire pour gérer le cooldown des utilisateurs
+user_cooldown = {}
+
 class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
     def __init__(self):
         super().__init__()
@@ -3118,6 +3127,15 @@ class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
         ))
 
     async def on_submit(self, interaction: discord.Interaction):
+        user_id = interaction.user.id
+        # Anti-spam: vérifier cooldown
+        if user_id in user_cooldown and time.time() - user_cooldown[user_id] < 60:
+            return await interaction.response.send_message(
+                "❌ Tu dois attendre avant de soumettre une nouvelle suggestion. Patiente un peu !", ephemeral=True
+            )
+
+        user_cooldown[user_id] = time.time()  # Enregistrer le temps du dernier envoi
+
         suggestion = self.children[0].value.strip()  # Texte de la suggestion
         choice = self.children[1].value.strip().lower()  # Sujet (etherya ou bot)
         reason = self.children[2].value.strip() if self.children[2].value else "Non précisé"
@@ -3131,12 +3149,12 @@ class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
             color = discord.Color.blue()
         else:
             return await interaction.response.send_message(
-                "❌ Merci d'écrire 'Etherya' ou 'Bot'.", ephemeral=True
+                "❌ Merci de spécifier un sujet valide : 'Etherya' ou 'Bot'.", ephemeral=True
             )
 
         channel = interaction.client.get_channel(SUGGESTION_CHANNEL_ID)
         if not channel:
-            return await interaction.response.send_message("❌ Je ne trouve pas le salon des suggestions.", ephemeral=True)
+            return await interaction.response.send_message("❌ Je n'ai pas pu trouver le salon des suggestions.", ephemeral=True)
 
         owner_mention = f"<@{OWNER_ID}>"
 
@@ -3162,12 +3180,23 @@ class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
         # Envoi de l'embed
         message = await channel.send(embed=embed)
 
-        await message.add_reaction("✅")  # Vote pour
-        await message.add_reaction("❌")  # Vote contre
+        # Ajouter les réactions
+        await message.add_reaction("❤️")  # Aimer l'idée
+        await message.add_reaction("🔄")  # Idée à améliorer
+        await message.add_reaction("✅")  # Pour
+        await message.add_reaction("❌")  # Contre
 
-        # Confirme l'envoi avec une animation cool
+        # Sauvegarde de la suggestion pour afficher avec la commande /suggestions
+        suggestions.append({
+            "message_id": message.id,
+            "author": interaction.user,
+            "suggestion": suggestion,
+            "timestamp": time.time()
+        })
+
+        # Confirme l'envoi avec un message sympathique
         await interaction.response.send_message(
-            f"✅ **Ta suggestion a été envoyée avec succès !**\n🕒 En attente des votes...",
+            f"✅ **Ta suggestion a été envoyée avec succès !**\nNous attendons les votes des autres membres... 🕒",
             ephemeral=True
         )
 
@@ -3175,19 +3204,53 @@ class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
         try:
             dm_embed = discord.Embed(
                 title="📩 Suggestion envoyée !",
-                description=f"Merci d'avoir proposé une idée !\n\n**🔹 Sujet** : {choice}\n**💡 Suggestion** : {suggestion}",
+                description=f"Merci pour ta suggestion ! Voici les détails :\n\n**🔹 Sujet** : {choice}\n**💡 Suggestion** : {suggestion}",
                 color=discord.Color.green(),
                 timestamp=discord.utils.utcnow()
             )
-            dm_embed.set_footer(text="Nous te remercions pour ton aide ! 🙌")
+            dm_embed.set_footer(text="Nous te remercions pour ton aide et tes idées ! 🙌")
             await interaction.user.send(embed=dm_embed)
         except discord.Forbidden:
             print(f"[ERREUR] Impossible d'envoyer un MP à {interaction.user.display_name}.")
 
-@bot.tree.command(name="suggestion", description="💡 Envoie une suggestion pour Etherya ou le Bot")
-async def suggest(interaction: discord.Interaction):
-    """Commande pour envoyer une suggestion"""
-    await interaction.response.send_modal(SuggestionModal())
+# Commande pour afficher les dernières suggestions
+@bot.tree.command(name="suggestions", description="📢 Affiche les dernières suggestions")
+async def suggestions_command(interaction: discord.Interaction):
+    """Commande pour afficher les dernières suggestions"""
+    if not suggestions:
+        return await interaction.response.send_message("❌ Aucune suggestion en cours. Sois le premier à proposer une idée !", ephemeral=True)
+
+    # Récupérer les 5 dernières suggestions
+    recent_suggestions = suggestions[-5:]
+
+    embeds = []
+    for suggestion_data in recent_suggestions:
+        embed = discord.Embed(
+            title="💡 Suggestion",
+            description=f"📝 **Proposée par** {suggestion_data['author'].mention}\n\n>>> {suggestion_data['suggestion']}",
+            color=discord.Color.green(),
+            timestamp=discord.utils.utcnow()
+        )
+        embed.set_footer(text=f"Envoyée le {discord.utils.format_dt(discord.utils.snowflake_time(suggestion_data['message_id']), 'F')}")
+        embeds.append(embed)
+
+    # Envoi des embeds
+    await interaction.response.send_message(embeds=embeds)
+
+# Fonction pour verrouiller les votes après 72h
+async def lock_votes_after_delay():
+    await asyncio.sleep(VOTE_DELAY)
+
+    for suggestion_data in suggestions:
+        channel = bot.get_channel(SUGGESTION_CHANNEL_ID)
+        message = await channel.fetch_message(suggestion_data['message_id'])
+
+        # Supprimer les réactions pour fermer les votes
+        await message.clear_reactions()
+        await message.channel.send(f"⏳ Les votes sont maintenant clôturés pour cette suggestion : {message.jump_url}\nMerci à tous d'avoir participé !")
+
+# Lancer la tâche de verrouillage des votes
+bot.loop.create_task(lock_votes_after_delay())
 
 
 # Token pour démarrer le bot (à partir des secrets)

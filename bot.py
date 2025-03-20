@@ -3055,20 +3055,24 @@ async def disconnect(interaction: discord.Interaction):
         )
         await interaction.response.send_message(embed=embed)
 #------------------------------------------------------------------------------------------
+
 # Dictionnaire pour stocker les idées temporairement
 idees_dict = {}
 
 # Commande pour ajouter une idée
 @bot.tree.command(name="idees", description="Rajoute une idée dans la liste")
-@commands.has_permissions(administrator=True)
-async def ajouter_idee(ctx, idee: str):
-    user_id = ctx.author.id
+@app_commands.checks.has_permissions(administrator=True)
+async def ajouter_idee(interaction: discord.Interaction, idee: str):
+    user_id = interaction.user.id  # Remplace ctx.author.id par interaction.user.id
+
     if user_id not in idees_dict:
         idees_dict[user_id] = []
     idees_dict[user_id].append(idee)
     
     embed = discord.Embed(title="Idée ajoutée !", description=f"**{idee}** a été enregistrée.", color=discord.Color.green())
-    await ctx.respond(embed=embed)
+
+    await interaction.response.send_message(embed=embed)  # Utilise interaction.response.send_message
+
 
 # Commande pour lister les idées
 @bot.command(name="listi")

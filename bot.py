@@ -1673,11 +1673,21 @@ async def ticket_euro_million(ctx, user: discord.Member):
     else:
         await ctx.send("Erreur : Le salon d'annonce est introuvable.")
 #------------------------------------------------------------------------- Commandes de Moderation : +ban, +unban, +mute, +unmute, +kick, +warn
+# Gestion des erreurs pour les commandes
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingRole):
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("Il manque un argument à la commande.")
+    else:
+        await ctx.send(f"Une erreur est survenue : {error}")
+
 MOD_ROLE_ID = 1168109892851204166
 MUTED_ROLE_ID = 1170488926834798602
 IMMUNE_ROLE_ID = 1170326040485318686
 
-# Fonction pour envoyer un log
 async def send_log(ctx, member, action, reason, duration=None):
     guild_id = ctx.guild.id
     settings = GUILD_SETTINGS.get(guild_id, {})
@@ -1699,7 +1709,6 @@ async def send_log(ctx, member, action, reason, duration=None):
     else:
         await ctx.send("⚠️ Aucun salon de sanctions configuré ! Utilisez /setup.", ephemeral=True)
 
-# Fonction pour envoyer un message privé
 async def send_dm(member, action, reason, duration=None):
     try:
         embed = discord.Embed(title="Sanction reçue", color=discord.Color.red())
@@ -1711,177 +1720,110 @@ async def send_dm(member, action, reason, duration=None):
     except discord.Forbidden:
         print(f"Impossible d'envoyer un DM à {member.display_name}.")
 
-# Fonction pour vérifier les permissions
-async def check_permissions(ctx, perm):
+async def check_permissions(ctx):
     if ctx.guild is None:  # Empêche l'utilisation en DM
         await ctx.send("Cette commande ne peut être utilisée que sur un serveur.")
         return False
-    
-    if perm not in ctx.author.permissions_in(ctx.channel):
+
+    mod_role = discord.utils.get(ctx.guild.roles, id=MOD_ROLE_ID)
+    if mod_role and mod_role in ctx.author.roles:
+        return True
+    else:
         await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
         return False
 
-    return True
-
-# Fonction pour vérifier si un membre est immunisé
 async def is_immune(member):
     immune_role = discord.utils.get(member.guild.roles, id=IMMUNE_ROLE_ID)
     return immune_role and immune_role in member.roles
 
-# Fonction pour vérifier la hiérarchie
-async def check_hierarchy(ctx, member):
-    if ctx.author.top_role <= member.top_role:
-        await ctx.send("Vous ne pouvez pas sanctionner quelqu'un ayant un rôle plus élevé ou égal au vôtre.")
-        return False
-    return True
+@bot.tree.command(name="ban")  # Tout en minuscules
+@app_commands.describe(montant="Ban un membre")
+async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx) and not await is_immune(member):
+        await member.ban(reason=reason)
+        await ctx.send(f"{member.mention} a été banni.")
+        await send_log(ctx, member, "Ban", reason)
+        await send_dm(member, "Ban", reason)
 
-@bot.tree.command(name="ban", description="Bannir un membre")
-async def ban(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
-    # Vérifie les permissions et la hiérarchie
-    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
-        await interaction.response.send_message("Vous ne pouvez pas sanctionner cette personne.", ephemeral=True)
+@bot.tree.command(name="unban")  # Tout en minuscules
+@app_commands.describe(montant="Unban un membre")
+async def unban(ctx, user_id: int):
+    if await check_permissions(ctx):
+        user = await bot.fetch_user(user_id)
+        await ctx.guild.unban(user)
+        await ctx.send(f"{user.mention} a été débanni.")
+        await send_log(ctx, user, "Unban", "Réintégration")
+        await send_dm(user, "Unban", "Réintégration")
+
+@bot.tree.command(name="kick")  # Tout en minuscules
+@app_commands.describe(montant="Expluse un membre")
+async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx) and not await is_immune(member):
+        await member.kick(reason=reason)
+        await ctx.send(f"{member.mention} a été expulsé.")
+        await send_log(ctx, member, "Kick", reason)
+        await send_dm(member, "Kick", reason)
+
+@bot.tree.command(name="mute")  # Tout en minuscules
+@app_commands.describe(montant="Mute un membre")
+async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="Aucune raison spécifiée"):
+    # Vérification si l'utilisateur a le rôle autorisé
+    if not any(role.id == 1168109892851204166 for role in ctx.author.roles):
+        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
         return
-
-    # Assure-toi que la personne n'est pas immunisée
-    if await is_immune(member):
-        await interaction.response.send_message("Cette personne est immunisée contre les sanctions.", ephemeral=True)
-        return
-
-    # Bannir le membre
-    await member.ban(reason=reason)
-    await interaction.response.send_message(f"{member.mention} a été banni.", ephemeral=True)
-    await send_log(interaction, member, "Ban", reason)
-    await send_dm(member, "Ban", reason)
-
-@bot.tree.command(name="unban", description="Débannir un membre")
-async def unban(interaction: discord.Interaction, user_id: int):
-    # Vérifier si l'utilisateur est dans un serveur (guild)
-    if interaction.guild is None:
-        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
-        return
-
-    # Vérifier les permissions et la hiérarchie
-    user = await bot.fetch_user(user_id)
-    if not await check_permissions(interaction) or not await check_hierarchy(interaction, user):
-        await interaction.response.send_message("Vous ne pouvez pas débannir cette personne.", ephemeral=True)
-        return
-
-    # Débannir l'utilisateur
-    await interaction.guild.unban(user)
-    await interaction.response.send_message(f"{user.mention} a été débanni.", ephemeral=True)
-    await send_log(interaction, user, "Unban", "Réintégration")
-    await send_dm(user, "Unban", "Réintégration")
-
-
-@bot.tree.command(name="kick", description="Expulser un membre")
-async def kick(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
-    # Vérifier si l'utilisateur est dans un serveur (guild)
-    if interaction.guild is None:
-        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
-        return
-
-    # Vérifier les permissions et la hiérarchie
-    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
-        await interaction.response.send_message("Vous ne pouvez pas expulser cette personne.", ephemeral=True)
-        return
-
-    # Exécuter l'expulsion
-    await member.kick(reason=reason)
-    await interaction.response.send_message(f"{member.mention} a été expulsé.", ephemeral=True)
-    await send_log(interaction, member, "Kick", reason)
-    await send_dm(member, "Kick", reason)
-
-
-@bot.tree.command(name="mute", description="Mute un membre pour une durée donnée")
-async def mute(interaction: discord.Interaction, member: discord.Member, duration_with_unit: str, reason: str = "Aucune raison spécifiée"):
-    # Vérifier si l'utilisateur est dans un serveur (guild)
-    if interaction.guild is None:
-        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
-        return
-
-    # Vérification des permissions et de la hiérarchie
-    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
-        await interaction.response.send_message("Vous ne pouvez pas muter cette personne.", ephemeral=True)
-        return
-
+    
     # Extraction de la durée et de l'unité
     try:
         duration = int(duration_with_unit[:-1])  # Tout sauf le dernier caractère
         unit = duration_with_unit[-1]  # Dernier caractère (unité)
     except ValueError:
-        await interaction.response.send_message("Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours). Exemple : 10m, 2h, 1j.", ephemeral=True)
+        await ctx.send("Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours). Exemple : 10m, 2h, 1j.")
         return
 
-    # Déterminer la durée en secondes en fonction de l'unité
-    if unit.lower() in ["m", "minute", "minutes"]:
-        seconds = duration * 60
-        duration_str = f"{duration} minute(s)"
-    elif unit.lower() in ["h", "heure", "heures"]:
-        seconds = duration * 3600
-        duration_str = f"{duration} heure(s)"
-    elif unit.lower() in ["j", "jour", "jours"]:
-        seconds = duration * 86400
-        duration_str = f"{duration} jour(s)"
-    else:
-        await interaction.response.send_message("Unité de temps invalide ! Utilisez m (minutes), h (heures) ou j (jours).", ephemeral=True)
-        return
-
-    # Appliquer le mute
-    muted_role = discord.utils.get(interaction.guild.roles, id=MUTED_ROLE_ID)
-    if muted_role:
+    if await check_permissions(ctx) and not await is_immune(member):
+        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
         await member.add_roles(muted_role)
-        await interaction.response.send_message(f"{member.mention} a été muté pour {duration_str}.", ephemeral=True)
-        await send_log(interaction, member, "Mute", reason, duration_str)
+        
+        if unit.lower() in ["m", "minute", "minutes"]:
+            seconds = duration * 60
+            duration_str = f"{duration} minute(s)"
+        elif unit.lower() in ["h", "heure", "heures"]:
+            seconds = duration * 3600
+            duration_str = f"{duration} heure(s)"
+        elif unit.lower() in ["j", "jour", "jours"]:
+            seconds = duration * 86400
+            duration_str = f"{duration} jour(s)"
+        else:
+            await ctx.send("Unité de temps invalide ! Utilisez m (minutes), h (heures) ou d (jours).")
+            return
+
+        await ctx.send(f"{member.mention} a été muté pour {duration_str}.")
+        await send_log(ctx, member, "Mute", reason, duration_str)
         await send_dm(member, "Mute", reason, duration_str)
 
-        # Après la durée spécifiée, démuter le membre
         await asyncio.sleep(seconds)
         await member.remove_roles(muted_role)
-        await interaction.response.send_message(f"{member.mention} a été démuté après {duration_str}.", ephemeral=True)
-        await send_log(interaction, member, "Unmute automatique", "Fin de la durée de mute")
+        await ctx.send(f"{member.mention} a été démuté après {duration_str}.")
+        await send_log(ctx, member, "Unmute automatique", "Fin de la durée de mute")
         await send_dm(member, "Unmute", "Fin de la durée de mute")
-    else:
-        await interaction.response.send_message("Le rôle 'Muted' est introuvable. Vérifie la configuration.", ephemeral=True)
 
-
-@bot.tree.command(name="unmute", description="Dé-muter un membre")
-async def unmute(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
-    # Vérifier si l'utilisateur est dans un serveur (guild)
-    if interaction.guild is None:
-        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
-        return
-
-    # Vérification des permissions et de la hiérarchie
-    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
-        await interaction.response.send_message("Vous ne pouvez pas démuter cette personne.", ephemeral=True)
-        return
-
-    # Démuter le membre
-    muted_role = discord.utils.get(interaction.guild.roles, id=MUTED_ROLE_ID)
-    if muted_role:
+@bot.tree.command(name="unmute")  # Tout en minuscules
+@app_commands.describe(montant="Unmute un membre")
+async def unmute(ctx, member: discord.Member):
+    if await check_permissions(ctx) and not await is_immune(member):
+        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
         await member.remove_roles(muted_role)
-        await interaction.response.send_message(f"{member.mention} a été démuté.", ephemeral=True)
-        await send_log(interaction, member, "Unmute", reason)
-        await send_dm(member, "Unmute", reason)
-    else:
-        await interaction.response.send_message("Le rôle 'Muted' est introuvable. Vérifie la configuration.", ephemeral=True)
+        await ctx.send(f"{member.mention} a été démuté.")
+        await send_log(ctx, member, "Unmute", "Réhabilitation")
+        await send_dm(member, "Unmute", "Réhabilitation")
 
-@bot.tree.command(name="warn", description="Avertir un membre")
-async def warn(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
-    # Vérifier si l'utilisateur est dans un serveur (guild)
-    if interaction.guild is None:
-        await interaction.response.send_message("Cette commande ne peut être utilisée que sur un serveur.", ephemeral=True)
-        return
-
-    # Vérification des permissions et de la hiérarchie
-    if not await check_permissions(interaction) or not await check_hierarchy(interaction, member):
-        await interaction.response.send_message("Vous ne pouvez pas avertir cette personne.", ephemeral=True)
-        return
-
-    # Avertir le membre
-    await interaction.response.send_message(f"{member.mention} a été averti par {interaction.user.mention}.", ephemeral=True)
-    await send_log(interaction, member, "Warn", reason)
-    await send_dm(member, "Warn", reason)
+@bot.tree.command(name="warn")  # Tout en minuscules
+@app_commands.describe(montant="Avertir un membre")
+async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx) and not await is_immune(member):
+        await ctx.send(f"{member.mention} a reçu un avertissement.")
+        await send_log(ctx, member, "Warn", reason)
+        await send_dm(member, "Warn", reason)
 
 #-----------------------------------------------------------------------------
 # Gestion des erreurs pour les commandes

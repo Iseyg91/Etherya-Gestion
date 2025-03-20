@@ -3209,6 +3209,11 @@ class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
         except discord.Forbidden:
             print(f"[ERREUR] Impossible d'envoyer un MP à {interaction.user.display_name}.")
 
+@bot.tree.command(name="suggestion", description="💡 Envoie une suggestion pour Etherya ou le Bot")
+async def suggest(interaction: discord.Interaction):
+    """Commande pour envoyer une suggestion"""
+    await interaction.response.send_modal(SuggestionModal())
+
 # Commande pour afficher les dernières suggestions
 @bot.tree.command(name="suggestions", description="📢 Affiche les dernières suggestions")
 async def suggestions_command(interaction: discord.Interaction):
@@ -3232,8 +3237,6 @@ async def suggestions_command(interaction: discord.Interaction):
 
     # Envoi des embeds
     await interaction.response.send_message(embeds=embeds)
-
-
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

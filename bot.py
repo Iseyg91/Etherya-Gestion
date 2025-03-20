@@ -3088,44 +3088,70 @@ async def liste_idees(ctx):
 
 #--------------------------------------------------------------------------------------------
 
+
 SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
 OWNER_ID = 792755123587645461  # Ton ID Discord
 
-@bot.tree.command(name="suggestion", description="Envoie une suggestion pour le bot ou Etherya")
-async def suggest(interaction: discord.Interaction, *, suggestion: str):
+class SuggestionModal(discord.ui.Modal, title="Nouvelle Suggestion"):
+    def __init__(self):
+        super().__init__()
+
+        self.add_item(discord.ui.TextInput(
+            label="Votre suggestion",
+            style=discord.TextStyle.long,
+            placeholder="Décrivez votre suggestion ici...",
+            required=True
+        ))
+
+        self.add_item(discord.ui.Select(
+            placeholder="Votre suggestion concerne...",
+            options=[
+                discord.SelectOption(label="Etherya", description="Une suggestion pour Etherya", emoji="🌍"),
+                discord.SelectOption(label="Le Bot", description="Une suggestion pour le bot", emoji="🤖"),
+            ],
+            custom_id="suggestion_type"
+        ))
+
+    async def on_submit(self, interaction: discord.Interaction):
+        suggestion = self.children[0].value  # Récupère le texte de la suggestion
+        choice = self.children[1].values[0]  # Récupère le choix sélectionné (Etherya ou Bot)
+
+        channel = interaction.client.get_channel(SUGGESTION_CHANNEL_ID)
+        if not channel:
+            return await interaction.response.send_message("❌ Je ne trouve pas le salon des suggestions.", ephemeral=True)
+
+        owner_mention = f"<@{OWNER_ID}>"  # Mention de l’owner
+
+        # Envoie un message de notification
+        await channel.send(f"{owner_mention} 🔔 Nouvelle suggestion reçue concernant **{choice}** !")
+
+        # Création de l'embed
+        embed = discord.Embed(
+            title="💡 Nouvelle Suggestion !",
+            description=f"📝 **Proposée par** {interaction.user.mention}\n\n>>> {suggestion}",
+            color=discord.Color.gold() if choice == "Etherya" else discord.Color.blue(),
+            timestamp=discord.utils.utcnow()
+        )
+
+        embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/3039/3039569.png")  # Icône idée
+        embed.add_field(name="📌 Sujet", value=f"**{choice}**", inline=True)
+        embed.set_footer(
+            text=f"Envoyée par {interaction.user.display_name}",
+            icon_url=interaction.user.avatar.url if interaction.user.avatar else None
+        )
+
+        # Envoi de l'embed
+        message = await channel.send(embed=embed)
+
+        await message.add_reaction("✅")  # Vote pour
+        await message.add_reaction("❌")  # Vote contre
+
+        await interaction.response.send_message("✅ Ta suggestion a été envoyée avec succès !", ephemeral=True)
+
+@bot.tree.command(name="suggestion", description="Envoie une suggestion pour Etherya ou le Bot")
+async def suggest(interaction: discord.Interaction):
     """Commande pour envoyer une suggestion"""
-    channel = bot.get_channel(SUGGESTION_CHANNEL_ID)
-    if not channel:
-        return await interaction.response.send_message("❌ Je ne trouve pas le salon des suggestions.", ephemeral=True)
-
-    owner_mention = f"<@{OWNER_ID}>"  # Génère une mention avec ton ID
-
-    # Envoie un message te mentionnant
-    await channel.send(f"{owner_mention} 🔔 Nouvelle suggestion reçue !")
-
-    # Création de l'embed
-    embed = discord.Embed(
-        title="💡 Nouvelle Suggestion !",
-        description=f"📝 **Suggestion proposée par** {interaction.user.mention}\n\n>>> {suggestion}",
-        color=discord.Color.gold(),
-        timestamp=discord.utils.utcnow()
-    )
-
-    embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/3039/3039569.png")  # Icône idée
-    embed.set_footer(
-        text=f"Envoyée par {interaction.user.display_name}",
-        icon_url=interaction.user.avatar.url if interaction.user.avatar else None
-    )
-
-    # Envoi de l'embed dans le salon des suggestions
-    message = await channel.send(embed=embed)
-    
-    await message.add_reaction("✅")  # Vote pour
-    await message.add_reaction("❌")  # Vote contre
-
-    await interaction.response.send_message("✅ Ta suggestion a été envoyée avec succès !", ephemeral=True)
-
-
+    await interaction.response.send_modal(SuggestionModal())
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

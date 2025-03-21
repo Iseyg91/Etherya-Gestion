@@ -187,7 +187,8 @@ async def on_message(message):
             break
 
     # Réponse automatique aux mentions du bot
-    if bot.user.mentioned_in(message) and len(message.mentions) == 1:
+    # Vérifie si le message mentionne uniquement le bot
+    if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
         embed = discord.Embed(
             title="👋 Besoin d’aide ?",
             description=(f"Salut {message.author.mention} ! Moi, c’est **{bot.user.name}**, ton assistant sur ce serveur. 🤖\n\n"

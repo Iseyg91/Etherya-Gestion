@@ -3093,6 +3093,24 @@ async def rrewards(ctx, target: discord.Member, amount: int):
     embed.set_thumbnail(url=target.avatar.url)
     await ctx.send(embed=embed)
 
+@bot.command()
+async def ptop(ctx):
+    """Affiche le classement des primes en ordre décroissant"""
+    if not bounties:
+        await ctx.send("📉 Il n'y a actuellement aucune prime en cours.")
+        return
+
+    sorted_bounties = sorted(bounties.items(), key=lambda x: x[1], reverse=True)
+    embed = discord.Embed(title="🏆 Classement des Primes", color=discord.Color.gold())
+    
+    for index, (user_id, prize) in enumerate(sorted_bounties, start=1):
+        member = ctx.guild.get_member(user_id)
+        if member:
+            embed.add_field(name=f"#{index} - {member.display_name}", value=f"💰 **{prize} Ezryn Coins**", inline=False)
+
+    embed.set_thumbnail(url=PRIME_IMAGE_URL)
+    await ctx.send(embed=embed)
+
 
 @bot.tree.command(name="calcul", description="Effectue une opération mathématique")
 @app_commands.describe(nombre1="Le premier nombre", operation="L'opération à effectuer (+, -, *, /)", nombre2="Le deuxième nombre")

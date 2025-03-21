@@ -68,5 +68,6 @@ yarl==1.18.3
     # via aiohttp
 gunicorn==21.2.0
 pymongo==4.6.1
+dnspython
 aiocron
 PyNaCl

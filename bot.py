@@ -3006,25 +3006,32 @@ class DuelView(discord.ui.View):
         else:
             await self.update_message(interaction)
 
-    async def end_duel(self, interaction, winner, loser):
-        embed = discord.Embed(title="🏆 Victoire !", description=f"{winner.mention} remporte la prime de {self.prize} Ezryn Coins !", color=discord.Color.green())
-        embed.set_footer(text=f"Félicitations à {winner.display_name} !")
-        await interaction.response.edit_message(embed=embed, view=None)
-        channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
-        if channel:
-            await channel.send(embed=embed)
+async def end_duel(self, interaction, winner, loser):
+    embed = discord.Embed(title="🏆 Victoire !", description=f"{winner.mention} remporte le duel !", color=discord.Color.green())
+    embed.set_footer(text=f"Félicitations à {winner.display_name} !")
+    await interaction.response.edit_message(embed=embed, view=None)
 
-        # Ajouter la prime du joueur capturé au chasseur
-        if winner == self.player1:
-            bounties.pop(loser.id, None)  # Supprimer la prime du joueur capturé
+    channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
+    if channel:
+        await channel.send(embed=embed)
+
+    # Vérifier si le joueur perdant avait une prime et si le gagnant mérite une récompense
+    if loser.id in bounties:
+        loser_prize = bounties.pop(loser.id, 0)  # Supprimer la prime du joueur perdu
+
+        # Le gagnant reçoit la prime **seulement si l'attaquant avait une prime initiale**
+        if bounties.get(self.player1.id, 0) > 0 or bounties.get(self.player2.id, 0) > 0:
             if winner.id not in hunter_rewards:
                 hunter_rewards[winner.id] = 0
-            hunter_rewards[winner.id] += self.prize  # Ajouter la prime au chasseur
-        elif winner == self.player2:
-            bounties.pop(loser.id, None)  # Supprimer la prime du joueur capturé
-            if winner.id not in hunter_rewards:
-                hunter_rewards[winner.id] = 0
-            hunter_rewards[winner.id] += self.prize  # Ajouter la prime au chasseur
+            hunter_rewards[winner.id] += loser_prize
+
+            # Mise à jour de l'embed avec les gains
+            embed.add_field(name="💰 Récompense", value=f"{winner.mention} a gagné **{loser_prize}** Ezryn Coins !", inline=False)
+
+        else:
+            embed.add_field(name="🚫 Aucune récompense", value=f"{winner.mention} ne gagne **rien** car l'attaquant avait une prime de 0.", inline=False)
+
+    await channel.send(embed=embed)
 
 @bot.command()
 async def bounty(ctx, member: discord.Member, prize: int):

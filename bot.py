@@ -2944,6 +2944,7 @@ class DuelView(discord.ui.View):
         self.turn = player1  # Le joueur 1 commence
         self.prize = prize
         self.ctx = ctx
+        self.winner = None
 
     async def update_message(self, interaction):
         embed = discord.Embed(title="⚔️ Duel en cours !", color=discord.Color.red())
@@ -2958,13 +2959,19 @@ class DuelView(discord.ui.View):
             await interaction.response.send_message("Ce n'est pas ton tour !", ephemeral=True)
             return
 
-        damage = random.randint(10, 30)
-        if self.turn == self.player1:
-            self.hp2 -= damage
-            self.turn = self.player2
+        # Calcul du dégât d'attaque
+        success_chance = random.random()
+        if success_chance > 0.2:  # 80% chance de succès de l'attaque
+            damage = random.randint(10, 30)
+            if self.turn == self.player1:
+                self.hp2 -= damage
+                self.turn = self.player2
+            else:
+                self.hp1 -= damage
+                self.turn = self.player1
         else:
-            self.hp1 -= damage
-            self.turn = self.player1
+            await interaction.response.send_message(f"{interaction.user.mention} rate son attaque !", ephemeral=False)
+            self.turn = self.player2 if self.turn == self.player1 else self.player1
 
         await self.check_winner(interaction)
 
@@ -2974,7 +2981,8 @@ class DuelView(discord.ui.View):
             await interaction.response.send_message("Ce n'est pas ton tour !", ephemeral=True)
             return
 
-        success = random.random() < 0.5  # 50% de chance d'esquiver
+        # 50% de chance d'esquiver
+        success = random.random() < 0.5
         if success:
             await interaction.response.send_message(f"{interaction.user.mention} esquive l'attaque avec succès !", ephemeral=False)
         else:
@@ -2984,26 +2992,29 @@ class DuelView(discord.ui.View):
             else:
                 self.hp2 -= damage
                 
-            await self.check_winner(interaction)
-            return
-
+        await self.check_winner(interaction)
         await self.update_message(interaction)
 
     async def check_winner(self, interaction):
         if self.hp1 <= 0:
-            embed = discord.Embed(title="🏆 Victoire !", description=f"{self.player2.mention} remporte la prime de {self.prize} Ezryn Coins !", color=discord.Color.green())
-            await interaction.response.edit_message(embed=embed, view=None)
-            channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
-            if channel:
-                await channel.send(embed=embed)
+            self.winner = self.player2
+            await self.end_duel(interaction, self.player2, self.player1)
         elif self.hp2 <= 0:
-            embed = discord.Embed(title="🏆 Victoire !", description=f"{self.player1.mention} remporte la prime de {self.prize} Ezryn Coins !", color=discord.Color.green())
-            await interaction.response.edit_message(embed=embed, view=None)
-            channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
-            if channel:
-                await channel.send(embed=embed)
+            self.winner = self.player1
+            await self.end_duel(interaction, self.player1, self.player2)
         else:
             await self.update_message(interaction)
+
+    async def end_duel(self, interaction, winner, loser):
+        embed = discord.Embed(title="🏆 Victoire !", description=f"{winner.mention} remporte la prime de {self.prize} Ezryn Coins !", color=discord.Color.green())
+        await interaction.response.edit_message(embed=embed, view=None)
+        channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
+        if channel:
+            await channel.send(embed=embed)
+
+        # Supprimer la prime uniquement si le chasseur gagne
+        if winner == self.player1:
+            bounties.pop(loser.id, None)
 
 @bot.command()
 async def bounty(ctx, member: discord.Member, prize: int):
@@ -3024,7 +3035,7 @@ async def capture(ctx, target: discord.Member):
         await ctx.send("Ce joueur n'a pas de prime sur sa tête !")
         return
     
-    prize = bounties.pop(target.id)
+    prize = bounties[target.id]
     view = DuelView(ctx.author, target, prize, ctx)
     embed = discord.Embed(title="🎯 Chasse en cours !", description=f"{ctx.author.mention} tente de capturer {target.mention} ! Un duel commence !", color=discord.Color.orange())
     await ctx.send(embed=embed, view=view)

@@ -2929,7 +2929,6 @@ async def start10(ctx):
     embed = discord.Embed(title="💥 Fuite explosive", description="Une voiture piégée bloque l'issue, choisissez une option :", color=discord.Color.red())
     await ctx.send(embed=embed, view=EscapeDecisionView(view))
 
-
 bounties = {}  # Dictionnaire stockant les primes
 hunter_rewards = {}  # Dictionnaire stockant les récompenses des chasseurs
 ROLE_BOUNTY_MANAGER = 1244339296706760726
@@ -3009,6 +3008,7 @@ class DuelView(discord.ui.View):
 
     async def end_duel(self, interaction, winner, loser):
         embed = discord.Embed(title="🏆 Victoire !", description=f"{winner.mention} remporte la prime de {self.prize} Ezryn Coins !", color=discord.Color.green())
+        embed.set_footer(text=f"Félicitations à {winner.display_name} !")
         await interaction.response.edit_message(embed=embed, view=None)
         channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
         if channel:
@@ -3030,24 +3030,26 @@ class DuelView(discord.ui.View):
 async def bounty(ctx, member: discord.Member, prize: int):
     """Met une prime sur un joueur (réservé au rôle bounty manager)"""
     if ROLE_BOUNTY_MANAGER not in [role.id for role in ctx.author.roles]:
-        await ctx.send("Tu n'as pas la permission d'exécuter cette commande.")
+        await ctx.send("🚫 Tu n'as pas la permission d'exécuter cette commande.")
         return
     
     bounties[member.id] = prize
     embed = discord.Embed(title="📜 Nouvelle Prime !", description=f"Une prime de {prize} Ezryn Coins a été placée sur {member.mention} !", color=discord.Color.gold())
     embed.set_image(url=PRIME_IMAGE_URL)
+    embed.set_footer(text=f"Prime active sur {member.display_name}")
     await ctx.send(embed=embed)
 
 @bot.command()
 async def capture(ctx, target: discord.Member):
     """Déclenche un duel pour capturer un joueur avec une prime"""
     if target.id not in bounties:
-        await ctx.send("Ce joueur n'a pas de prime sur sa tête !")
+        await ctx.send("❌ Ce joueur n'a pas de prime sur sa tête !")
         return
     
     prize = bounties[target.id]
     view = DuelView(ctx.author, target, prize, ctx)
     embed = discord.Embed(title="🎯 Chasse en cours !", description=f"{ctx.author.mention} tente de capturer {target.mention} ! Un duel commence !", color=discord.Color.orange())
+    embed.set_footer(text=f"Bonne chance à {ctx.author.display_name} !")
     await ctx.send(embed=embed, view=view)
 
 @bot.command()
@@ -3055,19 +3057,38 @@ async def prime(ctx, member: discord.Member = None):
     """Affiche la prime du joueur ou de l'utilisateur"""
     member = member or ctx.author  # Par défaut, on affiche la prime du commanditaire
     if member.id not in bounties:
-        await ctx.send(f"Aucune prime n'est actuellement placée sur {member.mention}.")
+        embed = discord.Embed(title="📉 Aucune prime !", description=f"Aucune prime n'est actuellement placée sur {member.mention}.", color=discord.Color.red())
+        await ctx.send(embed=embed)
     else:
         prize = bounties[member.id]
-        await ctx.send(f"La prime actuelle sur {member.mention} est de {prize} Ezryn Coins.")
+        embed = discord.Embed(title="💰 Prime actuelle", description=f"La prime sur {member.mention} est de **{prize} Ezryn Coins**.", color=discord.Color.green())
+        await ctx.send(embed=embed)
         
 @bot.command()
 async def rewards(ctx):
     """Affiche les récompenses accumulées par le chasseur"""
     if ctx.author.id not in hunter_rewards:
-        await ctx.send(f"{ctx.author.mention} n'a pas encore de récompenses.")
+        embed = discord.Embed(title="🎯 Aucune récompense !", description=f"{ctx.author.mention} n'a pas encore de récompenses.", color=discord.Color.red())
+        await ctx.send(embed=embed)
     else:
         rewards = hunter_rewards[ctx.author.id]
-        await ctx.send(f"{ctx.author.mention} a actuellement {rewards} Ezryn Coins en récompenses.")
+        embed = discord.Embed(title="🏅 Tes récompenses", description=f"{ctx.author.mention} a actuellement **{rewards} Ezryn Coins** en récompenses.", color=discord.Color.blue())
+        await ctx.send(embed=embed)
+
+@bot.command()
+async def rrewards(ctx, target: discord.Member, amount: int):
+    """Commande réservée aux admins pour retirer des récompenses à un joueur"""
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.send("🚫 Tu n'as pas la permission d'utiliser cette commande.")
+        return
+
+    if target.id not in hunter_rewards or hunter_rewards[target.id] < amount:
+        await ctx.send(f"❌ {target.mention} n'a pas assez de récompenses ou n'en a pas du tout.")
+        return
+
+    hunter_rewards[target.id] -= amount
+    embed = discord.Embed(title="⚠️ Récompenses modifiées", description=f"{amount} récompenses ont été retirées à {target.mention}. Il reste **{hunter_rewards[target.id]} Ezryn Coins**.", color=discord.Color.orange())
+    await ctx.send(embed=embed)
 
 @bot.tree.command(name="calcul", description="Effectue une opération mathématique")
 @app_commands.describe(nombre1="Le premier nombre", operation="L'opération à effectuer (+, -, *, /)", nombre2="Le deuxième nombre")

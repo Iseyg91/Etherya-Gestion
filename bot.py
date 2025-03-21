@@ -37,6 +37,17 @@ try:
 except Exception as e:
     print(f"❌ Échec de connexion à MongoDB : {e}")
     exit()
+import ssl
+
+try:
+    print("Version OpenSSL utilisée :", ssl.OPENSSL_VERSION)
+    mongo_uri = os.getenv("MONGO_DB") + "&tls=True"
+    client = MongoClient(mongo_uri)
+    client.admin.command('ping')
+    print("✅ Connexion à MongoDB réussie !")
+except Exception as e:
+    print(f"❌ Échec de connexion à MongoDB : {e.__class__.__name__} - {str(e)}")
+
 
 def load_guild_settings(guild_id):
     setup_data = collection.find_one({"guild_id": guild_id}) or {}

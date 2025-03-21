@@ -2064,7 +2064,7 @@ class DynamiteGame(discord.ui.View):
 
 
 @bot.command()
-async def start(ctx):
+async def start9(ctx):
         await ctx.message.delete()
 
         embed = discord.Embed(
@@ -2150,7 +2150,7 @@ class LuckGame(discord.ui.View):
         await self.handle_button_click(interaction, 4)
 
 @bot.command()
-async def start2(ctx):
+async def start7(ctx):
     """Démarre le jeu et affiche la barre de vie au-dessus de l'embed."""
     await ctx.message.delete()
 
@@ -2294,7 +2294,7 @@ class CorruptionGame(discord.ui.View):
         await self.ask_question(interaction)
 
 @bot.command()
-async def start3(ctx):
+async def start1(ctx):
     await ctx.message.delete()
 
     # URL de l'image à ajouter pour le début du jeu
@@ -2443,7 +2443,7 @@ class ToolButton(discord.ui.Button):
                 await interaction.response.send_message(embed=embed)
                 
 @bot.command()
-async def start4(ctx):
+async def start3(ctx):
     """Commande pour lancer l'épreuve du vol de camion"""
     embed = discord.Embed(
         title="🚚 Tentative de Vol de Camion 🏃‍♂️",
@@ -2555,7 +2555,7 @@ class EscapeButton(discord.ui.Button):
         await interaction.response.send_message(embed=embed, ephemeral=False)
 
 @bot.command()
-async def start5(ctx):
+async def start2(ctx):
     """Commande pour lancer l'épreuve de récupération du matériel"""
     embed = discord.Embed(
         title="🔧 Récupération du Matériel",
@@ -2682,7 +2682,7 @@ async def step_2(interaction):
 
 # 🚀 Commande pour démarrer l'épreuve
 @bot.command()
-async def start6(ctx):
+async def start8(ctx):
     await step_1(ctx)
 
 class DiversionGame(discord.ui.View):
@@ -2732,7 +2732,7 @@ class DiversionButton(discord.ui.Button):
         await interaction.response.edit_message(embed=result_embed, view=None)
 
 @bot.command()
-async def start7(ctx):
+async def start5(ctx):
     """Commande pour lancer l'épreuve de diversion"""
     embed = discord.Embed(
         title="🎭 Choix de la Diversion",
@@ -2816,7 +2816,7 @@ class FightView(View):
             await interaction.response.edit_message(content="🚨 Tentative d'assommage échouée !", embed=self.update_embed(interaction))
 
 @bot.command()
-async def start8(ctx):
+async def start6(ctx):
     view = FightView()
     embed = view.update_embed(ctx)
     await ctx.send(embed=embed, view=view)

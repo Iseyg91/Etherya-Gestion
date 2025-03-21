@@ -2955,7 +2955,10 @@ async def update_message(self, interaction):
     embed.add_field(name=f"{self.player1.display_name}", value=f"❤️ {self.hp1} PV", inline=True)
     embed.add_field(name=f"{self.player2.display_name}", value=f"❤️ {self.hp2} PV", inline=True)
     embed.set_footer(text=f"Tour de {self.turn.display_name}")
-    
+
+    self.clear_items()  # Supprime les anciens boutons pour éviter les bugs
+    self.add_buttons()  # Fonction pour réajouter les boutons
+
     await interaction.message.edit(embed=embed, view=self)
 
     @discord.ui.button(label="Attaquer", style=discord.ButtonStyle.red)

@@ -2929,7 +2929,9 @@ async def start10(ctx):
     embed = discord.Embed(title="💥 Fuite explosive", description="Une voiture piégée bloque l'issue, choisissez une option :", color=discord.Color.red())
     await ctx.send(embed=embed, view=EscapeDecisionView(view))
 
+
 bounties = {}  # Dictionnaire stockant les primes
+hunter_rewards = {}  # Dictionnaire stockant les récompenses des chasseurs
 ROLE_BOUNTY_MANAGER = 1244339296706760726
 BOUNTY_CHANNEL_ID = 1244339296706760726  # Salon où les victoires sont annoncées
 PRIME_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/MUnIIu5yOv6nMFAXKteig.jpg"
@@ -3012,9 +3014,17 @@ class DuelView(discord.ui.View):
         if channel:
             await channel.send(embed=embed)
 
-        # Supprimer la prime uniquement si le chasseur gagne
+        # Ajouter la prime du joueur capturé au chasseur
         if winner == self.player1:
-            bounties.pop(loser.id, None)
+            bounties.pop(loser.id, None)  # Supprimer la prime du joueur capturé
+            if winner.id not in hunter_rewards:
+                hunter_rewards[winner.id] = 0
+            hunter_rewards[winner.id] += self.prize  # Ajouter la prime au chasseur
+        elif winner == self.player2:
+            bounties.pop(loser.id, None)  # Supprimer la prime du joueur capturé
+            if winner.id not in hunter_rewards:
+                hunter_rewards[winner.id] = 0
+            hunter_rewards[winner.id] += self.prize  # Ajouter la prime au chasseur
 
 @bot.command()
 async def bounty(ctx, member: discord.Member, prize: int):
@@ -3039,6 +3049,25 @@ async def capture(ctx, target: discord.Member):
     view = DuelView(ctx.author, target, prize, ctx)
     embed = discord.Embed(title="🎯 Chasse en cours !", description=f"{ctx.author.mention} tente de capturer {target.mention} ! Un duel commence !", color=discord.Color.orange())
     await ctx.send(embed=embed, view=view)
+
+@bot.command()
+async def prime(ctx, member: discord.Member = None):
+    """Affiche la prime du joueur ou de l'utilisateur"""
+    member = member or ctx.author  # Par défaut, on affiche la prime du commanditaire
+    if member.id not in bounties:
+        await ctx.send(f"Aucune prime n'est actuellement placée sur {member.mention}.")
+    else:
+        prize = bounties[member.id]
+        await ctx.send(f"La prime actuelle sur {member.mention} est de {prize} Ezryn Coins.")
+        
+@bot.command()
+async def rewards(ctx):
+    """Affiche les récompenses accumulées par le chasseur"""
+    if ctx.author.id not in hunter_rewards:
+        await ctx.send(f"{ctx.author.mention} n'a pas encore de récompenses.")
+    else:
+        rewards = hunter_rewards[ctx.author.id]
+        await ctx.send(f"{ctx.author.mention} a actuellement {rewards} Ezryn Coins en récompenses.")
 
 @bot.tree.command(name="calcul", description="Effectue une opération mathématique")
 @app_commands.describe(nombre1="Le premier nombre", operation="L'opération à effectuer (+, -, *, /)", nombre2="Le deuxième nombre")

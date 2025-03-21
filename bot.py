@@ -2937,7 +2937,7 @@ PRIME_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/MUnIIu
 
 class DuelView(discord.ui.View):
     def __init__(self, player1, player2, prize, ctx):
-        super().__init__(timeout=None)
+        super().__init__(timeout=60)
         self.player1 = player1
         self.player2 = player2
         self.hp1 = 100
@@ -2947,19 +2947,12 @@ class DuelView(discord.ui.View):
         self.ctx = ctx
         self.winner = None
 
-async def update_message(self, interaction):
-    if interaction.message is None:
-        return  # Évite une erreur si le message a été supprimé
-
-    embed = discord.Embed(title="⚔️ Duel en cours !", color=discord.Color.red())
-    embed.add_field(name=f"{self.player1.display_name}", value=f"❤️ {self.hp1} PV", inline=True)
-    embed.add_field(name=f"{self.player2.display_name}", value=f"❤️ {self.hp2} PV", inline=True)
-    embed.set_footer(text=f"Tour de {self.turn.display_name}")
-
-    self.clear_items()  # Supprime les anciens boutons pour éviter les bugs
-    self.add_buttons()  # Fonction pour réajouter les boutons
-
-    await interaction.message.edit(embed=embed, view=self)
+    async def update_message(self, interaction):
+        embed = discord.Embed(title="⚔️ Duel en cours !", color=discord.Color.red())
+        embed.add_field(name=f"{self.player1.display_name}", value=f"❤️ {self.hp1} PV", inline=True)
+        embed.add_field(name=f"{self.player2.display_name}", value=f"❤️ {self.hp2} PV", inline=True)
+        embed.set_footer(text=f"Tour de {self.turn.display_name}")
+        await interaction.message.edit(embed=embed, view=self)
 
     @discord.ui.button(label="Attaquer", style=discord.ButtonStyle.red)
     async def attack(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -2970,7 +2963,7 @@ async def update_message(self, interaction):
         # Calcul du dégât d'attaque
         success_chance = random.random()
         if success_chance > 0.2:  # 80% chance de succès de l'attaque
-            damage = random.randint(15, 50)
+            damage = random.randint(10, 30)
             if self.turn == self.player1:
                 self.hp2 -= damage
                 self.turn = self.player2
@@ -2994,7 +2987,7 @@ async def update_message(self, interaction):
         if success:
             await interaction.response.send_message(f"{interaction.user.mention} esquive l'attaque avec succès !", ephemeral=False)
         else:
-            damage = random.randint(10, 30)
+            damage = random.randint(5, 15)
             if self.turn == self.player1:
                 self.hp1 -= damage
             else:
@@ -3013,58 +3006,49 @@ async def update_message(self, interaction):
         else:
             await self.update_message(interaction)
 
-async def end_duel(self, interaction, winner, loser):
-    embed = discord.Embed(title="🏆 Victoire !", description=f"{winner.mention} remporte le duel !", color=discord.Color.green())
-    embed.set_footer(text=f"Félicitations à {winner.display_name} !")
-    await interaction.response.edit_message(embed=embed, view=None)
+    async def end_duel(self, interaction, winner, loser):
+        embed = discord.Embed(title="🏆 Victoire !", description=f"{winner.mention} remporte la prime de {self.prize} Ezryn Coins !", color=discord.Color.green())
+        await interaction.response.edit_message(embed=embed, view=None)
+        channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
+        if channel:
+            await channel.send(embed=embed)
 
-    channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
-    if channel:
-        await channel.send(embed=embed)
-
-    # Vérifier si le joueur perdant avait une prime et si le gagnant mérite une récompense
-    if loser.id in bounties:
-        loser_prize = bounties.pop(loser.id, 0)  # Supprimer la prime du joueur perdu
-
-        # Le gagnant reçoit la prime **seulement si l'attaquant avait une prime initiale**
-        if bounties.get(self.player1.id, 0) > 0 or bounties.get(self.player2.id, 0) > 0:
+        # Ajouter la prime du joueur capturé au chasseur
+        if winner == self.player1:
+            bounties.pop(loser.id, None)  # Supprimer la prime du joueur capturé
             if winner.id not in hunter_rewards:
                 hunter_rewards[winner.id] = 0
-            hunter_rewards[winner.id] += loser_prize
-
-            # Mise à jour de l'embed avec les gains
-            embed.add_field(name="💰 Récompense", value=f"{winner.mention} a gagné **{loser_prize}** Ezryn Coins !", inline=False)
-
-        else:
-            embed.add_field(name="🚫 Aucune récompense", value=f"{winner.mention} ne gagne **rien** car l'attaquant avait une prime de 0.", inline=False)
-
-    await channel.send(embed=embed)
+            hunter_rewards[winner.id] += self.prize  # Ajouter la prime au chasseur
+        elif winner == self.player2:
+            bounties.pop(loser.id, None)  # Supprimer la prime du joueur capturé
+            if winner.id not in hunter_rewards:
+                hunter_rewards[winner.id] = 0
+            hunter_rewards[winner.id] += self.prize  # Ajouter la prime au chasseur
 
 @bot.command()
 async def bounty(ctx, member: discord.Member, prize: int):
     """Met une prime sur un joueur (réservé au rôle bounty manager)"""
     if ROLE_BOUNTY_MANAGER not in [role.id for role in ctx.author.roles]:
-        await ctx.send("🚫 Tu n'as pas la permission d'exécuter cette commande.")
+        await ctx.send("Tu n'as pas la permission d'exécuter cette commande.")
         return
     
     bounties[member.id] = prize
     embed = discord.Embed(title="📜 Nouvelle Prime !", description=f"Une prime de {prize} Ezryn Coins a été placée sur {member.mention} !", color=discord.Color.gold())
     embed.set_image(url=PRIME_IMAGE_URL)
-    embed.set_footer(text=f"Prime active sur {member.display_name}")
     await ctx.send(embed=embed)
 
 @bot.command()
 async def capture(ctx, target: discord.Member):
     """Déclenche un duel pour capturer un joueur avec une prime"""
     if target.id not in bounties:
-        await ctx.send("❌ Ce joueur n'a pas de prime sur sa tête !")
+        await ctx.send("Ce joueur n'a pas de prime sur sa tête !")
         return
     
     prize = bounties[target.id]
     view = DuelView(ctx.author, target, prize, ctx)
     embed = discord.Embed(title="🎯 Chasse en cours !", description=f"{ctx.author.mention} tente de capturer {target.mention} ! Un duel commence !", color=discord.Color.orange())
-    embed.set_footer(text=f"Bonne chance à {ctx.author.display_name} !")
     await ctx.send(embed=embed, view=view)
+
 
 @bot.command()
 async def prime(ctx, member: discord.Member = None):

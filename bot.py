@@ -2937,7 +2937,7 @@ PRIME_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/MUnIIu
 
 class DuelView(discord.ui.View):
     def __init__(self, player1, player2, prize, ctx):
-        super().__init__(timeout=60)
+        super().__init__(timeout=None)
         self.player1 = player1
         self.player2 = player2
         self.hp1 = 100
@@ -2947,12 +2947,16 @@ class DuelView(discord.ui.View):
         self.ctx = ctx
         self.winner = None
 
-    async def update_message(self, interaction):
-        embed = discord.Embed(title="⚔️ Duel en cours !", color=discord.Color.red())
-        embed.add_field(name=f"{self.player1.display_name}", value=f"❤️ {self.hp1} PV", inline=True)
-        embed.add_field(name=f"{self.player2.display_name}", value=f"❤️ {self.hp2} PV", inline=True)
-        embed.set_footer(text=f"Tour de {self.turn.display_name}")
-        await interaction.message.edit(embed=embed, view=self)
+async def update_message(self, interaction):
+    if interaction.message is None:
+        return  # Évite une erreur si le message a été supprimé
+
+    embed = discord.Embed(title="⚔️ Duel en cours !", color=discord.Color.red())
+    embed.add_field(name=f"{self.player1.display_name}", value=f"❤️ {self.hp1} PV", inline=True)
+    embed.add_field(name=f"{self.player2.display_name}", value=f"❤️ {self.hp2} PV", inline=True)
+    embed.set_footer(text=f"Tour de {self.turn.display_name}")
+    
+    await interaction.message.edit(embed=embed, view=self)
 
     @discord.ui.button(label="Attaquer", style=discord.ButtonStyle.red)
     async def attack(self, interaction: discord.Interaction, button: discord.ui.Button):

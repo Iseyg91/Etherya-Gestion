@@ -2962,7 +2962,7 @@ class DuelView(discord.ui.View):
 
         success_chance = random.random()
         if success_chance > 0.2:  # 80% chance de succès
-            damage = random.randint(10, 30)
+            damage = random.randint(15, 50)
             if self.turn == self.player1:
                 self.hp2 -= damage
                 self.turn = self.player2
@@ -2985,7 +2985,7 @@ class DuelView(discord.ui.View):
         if success:
             await interaction.response.send_message(f"{interaction.user.mention} esquive l'attaque avec succès !", ephemeral=False)
         else:
-            damage = random.randint(5, 15)
+            damage = random.randint(15, 30)
             if self.turn == self.player1:
                 self.hp1 -= damage
             else:

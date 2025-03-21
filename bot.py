@@ -238,6 +238,7 @@ async def send_alert_to_admin(message, detected_word):
 
 private_threads = {}  # Stocke les fils privés des nouveaux membres
 
+ETHERYA_SERVER_ID = 1034007767050104892  # L'ID du serveur Etherya
 # ID du salon de bienvenue
 WELCOME_CHANNEL_ID = 1344194595092697108
 
@@ -428,6 +429,11 @@ async def on_member_join(member):
 @bot.tree.command(name="guide", description="Ouvre un guide personnalisé pour comprendre l'économie du serveur.")
 async def guide_command(interaction: discord.Interaction):
     user = interaction.user
+
+    # Vérifie si le serveur est Etherya avant d'exécuter le reste du code
+    if interaction.guild.id != ETHERYA_SERVER_ID:
+        await interaction.response.send_message("❌ Cette commande est uniquement disponible sur le serveur Etherya.", ephemeral=True)
+        return
 
     # Crée un nouveau thread privé à chaque commande
     channel_id = 1342179655263977492

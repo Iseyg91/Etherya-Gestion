@@ -26,6 +26,7 @@ bot = commands.Bot(command_prefix="+", intents=intents)
 
 # Connexion MongoDB
 mongo_uri = os.getenv("MONGO_DB")
+print("Mongo URI :", mongo_uri)  # Cela affichera l'URI de connexion (assure-toi de ne pas laisser cela en prod)
 client = MongoClient(mongo_uri)
 db = client['SetupEtherya']
 collection = db['setup']

@@ -163,77 +163,76 @@ sensitive_words = [
 
 ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 
-def get_main_guild():
-    return bot.guilds[0] if bot.guilds else None
-
 @bot.event
 async def on_message(message):
     if message.author.bot:
-        return
+        return  # Ignorer les bots
 
-guild = message.guild
+    guild = message.guild
 
-# Vérifier si le script s'exécute uniquement sur Etherya
-if guild.id == 1034007767050104892:
-    member = guild.get_member(message.author.id)
+    # Vérifier si le message est dans Etherya
+    if guild and guild.id == 1034007767050104892:
+        member = guild.get_member(message.author.id)
 
-    # Vérifier si le message mentionne l'Owner
-    if f"<@{ADMIN_ID}>" in message.content:
-        embed = discord.Embed(
-            title="🔹 Hey, besoin d'aide ?",  
-            description=(f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
-                         "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
-                         "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**"),
-            color=0x00aaff  # Bleu cyan chill
-        )
-        embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png") 
-        if bot.user.avatar:
-            embed.set_thumbnail(url=bot.user.avatar.url) 
-        embed.add_field(name="❓ Pourquoi éviter de mentionner le Owner ?", 
-                        value="Le Owner est souvent occupé avec la gestion du serveur. Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀", 
-                        inline=False)
-        embed.set_footer(text="Merci de ta compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
+        # Vérifier si le message mentionne l'Owner
+        if f"<@{ADMIN_ID}>" in message.content:
+            embed = discord.Embed(
+                title="🔹 Hey, besoin d'aide ?",  
+                description=(f"Salut {message.author.mention}, merci d’éviter de mentionner le Owner inutilement.\n\n"
+                             "👥 **L'équipe d'administration est là pour répondre à tes questions et t’aider !**\n"
+                             "📩 **Besoin d'aide ? Clique sur le bouton ci-dessous ou va dans <#1166093151589634078>.**"),
+                color=0x00aaff  # Bleu cyan chill
+            )
+            embed.set_image(url="https://raw.githubusercontent.com/Cass64/EtheryaBot/refs/heads/main/images_etherya/etheryaBot_banniere.png") 
+            if bot.user.avatar:
+                embed.set_thumbnail(url=bot.user.avatar.url) 
+            embed.add_field(name="❓ Pourquoi éviter de mentionner le Owner ?", 
+                            value="Le Owner est souvent occupé avec la gestion du serveur. Pour une réponse rapide et efficace, passe par le support ou un admin ! 🚀", 
+                            inline=False)
+            embed.set_footer(text="Merci de ta compréhension • L'équipe d'administration", icon_url=bot.user.avatar.url)
 
-        button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
-        view = View()
-        view.add_item(button)
-        await message.channel.send(embed=embed, view=view)
+            button = Button(label="📩 Ouvrir un ticket", style=discord.ButtonStyle.primary, url="https://discord.com/channels/1034007767050104892/1166093151589634078/1340663542335934488")
+            view = View()
+            view.add_item(button)
+            await message.channel.send(embed=embed, view=view)
 
-    # Détection des mots sensibles
-    for word in sensitive_words:
-        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
-            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
-            asyncio.create_task(send_alert_to_admin(message, word))
-            break
+        # Détection des mots sensibles
+        for word in sensitive_words:
+            if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
+                print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
+                asyncio.create_task(send_alert_to_admin(message, word))
+                break  # On arrête la boucle dès qu'on trouve un mot interdit
 
-    # Réponse automatique aux mentions du bot
-    # Vérifie si le message mentionne uniquement le bot
-    if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
-        embed = discord.Embed(
-            title="👋 Besoin d’aide ?",
-            description=(f"Salut {message.author.mention} ! Moi, c’est **{bot.user.name}**, ton assistant sur ce serveur. 🤖\n\n"
-                         "🔹 **Pour voir toutes mes commandes :** Appuie sur le bouton ci-dessous ou tape `+aide`\n"
-                         "🔹 **Une question ? Un souci ?** Contacte le staff !\n\n"
-                         "✨ **Profite bien du serveur et amuse-toi !**"),
-            color=discord.Color.blue()
-        )
-        embed.set_thumbnail(url=bot.user.avatar.url)
-        embed.set_footer(text="Réponse automatique • Disponible 24/7", icon_url=bot.user.avatar.url)
-        view = discord.ui.View()
-        button = discord.ui.Button(label="📜 Voir les commandes", style=discord.ButtonStyle.primary, custom_id="help_button")
-        
-        async def button_callback(interaction: discord.Interaction):
-            ctx = await bot.get_context(interaction.message)
-            await ctx.invoke(bot.get_command("aide"))
-            await interaction.response.send_message("Voici la liste des commandes !", ephemeral=True)
-        
-        button.callback = button_callback
-        view.add_item(button)
-        await message.channel.send(embed=embed, view=view)
+        # Réponse automatique aux mentions du bot
+        if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
+            embed = discord.Embed(
+                title="👋 Besoin d’aide ?",
+                description=(f"Salut {message.author.mention} ! Moi, c’est **{bot.user.name}**, ton assistant sur ce serveur. 🤖\n\n"
+                             "🔹 **Pour voir toutes mes commandes :** Appuie sur le bouton ci-dessous ou tape `+aide`\n"
+                             "🔹 **Une question ? Un souci ?** Contacte le staff !\n\n"
+                             "✨ **Profite bien du serveur et amuse-toi !**"),
+                color=discord.Color.blue()
+            )
+            embed.set_thumbnail(url=bot.user.avatar.url)
+            embed.set_footer(text="Réponse automatique • Disponible 24/7", icon_url=bot.user.avatar.url)
+            
+            view = View()
+            button = Button(label="📜 Voir les commandes", style=discord.ButtonStyle.primary, custom_id="help_button")
+
+            async def button_callback(interaction: discord.Interaction):
+                ctx = await bot.get_context(interaction.message)
+                await ctx.invoke(bot.get_command("aide"))
+                await interaction.response.send_message("Voici la liste des commandes !", ephemeral=True)
+
+            button.callback = button_callback
+            view.add_item(button)
+
+            await message.channel.send(embed=embed, view=view)
 
     await bot.process_commands(message)
 
 async def send_alert_to_admin(message, detected_word):
+    """Envoie une alerte privée à l'admin en cas de mot interdit détecté."""
     try:
         admin = await bot.fetch_user(ADMIN_ID)
         embed = discord.Embed(

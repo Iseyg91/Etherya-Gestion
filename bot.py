@@ -2929,6 +2929,9 @@ async def start10(ctx):
     embed = discord.Embed(title="💥 Fuite explosive", description="Une voiture piégée bloque l'issue, choisissez une option :", color=discord.Color.red())
     await ctx.send(embed=embed, view=EscapeDecisionView(view))
 
+import discord
+import random
+
 bounties = {}  # Dictionnaire stockant les primes
 hunter_rewards = {}  # Dictionnaire stockant les récompenses des chasseurs
 ROLE_BOUNTY_MANAGER = 1244339296706760726
@@ -2992,7 +2995,7 @@ class DuelView(discord.ui.View):
                 self.hp1 -= damage
             else:
                 self.hp2 -= damage
-                
+
         await self.check_winner(interaction)
         await self.update_message(interaction)
 

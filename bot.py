@@ -2951,9 +2951,10 @@ class DuelView(discord.ui.View):
         self.winner = None
 
     async def update_message(self, interaction):
+        # Ne pas afficher les PV négatifs
         embed = discord.Embed(title="⚔️ Duel en cours !", color=discord.Color.red())
-        embed.add_field(name=f"{self.player1.display_name}", value=f"❤️ {self.hp1} PV", inline=True)
-        embed.add_field(name=f"{self.player2.display_name}", value=f"❤️ {self.hp2} PV", inline=True)
+        embed.add_field(name=f"{self.player1.display_name}", value=f"❤️ {max(self.hp1, 0)} PV", inline=True)
+        embed.add_field(name=f"{self.player2.display_name}", value=f"❤️ {max(self.hp2, 0)} PV", inline=True)
         embed.set_footer(text=f"Tour de {self.turn.display_name}")
         embed.set_thumbnail(url=self.player1.avatar.url)
         await interaction.message.edit(embed=embed, view=self)
@@ -2978,9 +2979,9 @@ class DuelView(discord.ui.View):
             await interaction.response.send_message(f"{interaction.user.mention} rate son attaque !", ephemeral=False)
             self.turn = self.player2 if self.turn == self.player1 else self.player1
 
-        # Désactiver les boutons après l'attaque et mettre à jour l'état du duel
-        button.disabled = True
+        # Vérification de la victoire avant de continuer les attaques
         await self.check_winner(interaction)
+        # Mise à jour des messages et des boutons
         await self.update_message(interaction)
 
     @discord.ui.button(label="Esquiver", style=discord.ButtonStyle.blurple)
@@ -3000,9 +3001,9 @@ class DuelView(discord.ui.View):
             else:
                 self.hp2 -= damage
 
-        # Désactiver les boutons après l'esquive et mettre à jour l'état du duel
-        button.disabled = True
+        # Vérification de la victoire avant de continuer les esquives
         await self.check_winner(interaction)
+        # Mise à jour des messages et des boutons
         await self.update_message(interaction)
 
     async def check_winner(self, interaction):

@@ -86,14 +86,124 @@ BOT_OWNER_ID = 792755123587645461
 def is_owner(ctx):
     return ctx.author.id == BOT_OWNER_ID
 
-# Exemple de commande spéciale pour l'owner
 @bot.command()
 async def shutdown(ctx):
     if is_owner(ctx):
-        await ctx.send("Arrêt du bot...")
+        embed = discord.Embed(
+            title="Arrêt du Bot",
+            description="Le bot va maintenant se fermer. Tous les services seront arrêtés.",
+            color=discord.Color.red()
+        )
+        embed.set_footer(text="Cette action est irréversible.")
+        await ctx.send(embed=embed)
         await bot.close()
     else:
         await ctx.send("Seul l'owner peut arrêter le bot.")
+
+@bot.command()
+async def restart(ctx):
+    if is_owner(ctx):
+        embed = discord.Embed(
+            title="Redémarrage du Bot",
+            description="Le bot va redémarrer maintenant...",
+            color=discord.Color.blue()
+        )
+        await ctx.send(embed=embed)
+        os.execv(sys.executable, ['python'] + sys.argv)  # Redémarre le bot
+    else:
+        await ctx.send("Seul l'owner peut redémarrer le bot.")
+
+@bot.command()
+async def setstatus(ctx, status: str):
+    if is_owner(ctx):
+        await bot.change_presence(activity=discord.Game(name=status))
+        embed = discord.Embed(
+            title="Changement de Statut",
+            description=f"Le statut du bot a été changé en : {status}",
+            color=discord.Color.green()
+        )
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send("Seul l'owner peut changer le statut du bot.")
+
+import os
+
+@bot.command()
+async def clearlogs(ctx):
+    if is_owner(ctx):
+        log_file_path = "logs.txt"  # Remplace par ton fichier de logs
+        if os.path.exists(log_file_path):
+            os.remove(log_file_path)
+            embed = discord.Embed(
+                title="Logs Effacés",
+                description="Les logs du bot ont été supprimés avec succès.",
+                color=discord.Color.green()
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("Aucun fichier de log trouvé.")
+    else:
+        await ctx.send("Seul l'owner peut supprimer les logs.")
+
+import time
+
+@bot.command()
+async def getbotinfo(ctx):
+    if is_owner(ctx):
+        uptime = time.time() - bot.uptime  # Si tu définis un attribut bot.uptime pour l'heure de lancement
+        embed = discord.Embed(
+            title="Informations sur le Bot",
+            description=f"**Uptime :** {uptime // 3600} heures, {(uptime % 3600) // 60} minutes\n"
+                        f"**Serveurs :** {len(bot.guilds)}\n"
+                        f"**Utilisateurs :** {len([member for guild in bot.guilds for member in guild.members])}",
+            color=discord.Color.orange()
+        )
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send("Seul l'owner peut obtenir ces informations.")
+
+@bot.command()
+async def serverinfoall(ctx):
+    if is_owner(ctx):
+        embed = discord.Embed(
+            title="Informations sur les Serveurs",
+            description="Voici les informations sur tous les serveurs où le bot est présent.",
+            color=discord.Color.purple()
+        )
+        for guild in bot.guilds:
+            embed.add_field(
+                name=guild.name,
+                value=f"Membres : {guild.member_count} | Rôles : {len(guild.roles)} | Canaux : {len(guild.channels)}",
+                inline=False
+            )
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send("Seul l'owner peut obtenir ces informations.")
+
+# Dictionnaire pour stocker les utilisateurs blacklistés
+blacklist = {}
+
+@bot.command()
+async def blacklist(ctx, action: str, user_id: int):
+    """Ajoute ou retire un utilisateur de la blacklist.
+    
+    action: "add" ou "remove"
+    user_id: L'ID de l'utilisateur à ajouter ou retirer
+    """
+    if is_owner(ctx):  # Vérifie si l'utilisateur qui utilise la commande est l'owner
+        if action == "add":
+            blacklist[user_id] = True
+            await ctx.send(f"Utilisateur {user_id} ajouté à la blacklist.")
+        elif action == "remove":
+            if user_id in blacklist:
+                del blacklist[user_id]
+                await ctx.send(f"Utilisateur {user_id} retiré de la blacklist.")
+            else:
+                await ctx.send(f"Utilisateur {user_id} n'est pas dans la blacklist.")
+        else:
+            await ctx.send("Action invalide. Utilise 'add' ou 'remove'.")
+    else:
+        await ctx.send("Seul l'owner peut gérer la blacklist.")
 
 #------------------------------------------------------------------------- Commande SETUP
 
@@ -165,8 +275,9 @@ ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 
 @bot.event
 async def on_message(message):
-    if message.author.bot:
-        return  # Ignorer les bots
+    # Empêche les utilisateurs blacklistés d'utiliser le bot
+    if message.author.id in blacklist:
+        return  # Ignore complètement le message sans réponse
 
     guild = message.guild
 

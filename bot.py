@@ -2883,7 +2883,7 @@ class CameraHackView(BaseHackView):
         await self.attempt_hack(interaction, 0.35, "❌ Tentative échouée !")
 
 @bot.command()
-async def start9(ctx):
+async def start4(ctx):
     view = HackView()
     embed = discord.Embed(title="🔑 Étape 1 : Forcer le mot de passe", description="Essayez de deviner ou de forcer le mot de passe du système !", color=discord.Color.blue())
     await ctx.send(embed=embed, view=PasswordHackView(view))

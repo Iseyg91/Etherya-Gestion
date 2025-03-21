@@ -378,7 +378,9 @@ async def send_economy_info(user: discord.Member):
 
 @bot.event
 async def on_member_join(member):
-    guild = member.guild
+    # Vérifie si le membre a rejoint le serveur Etherya
+    if member.guild.id != ETHERYA_SERVER_ID:
+        return  # Stoppe l'exécution si ce n'est pas Etherya
     
     # Envoi du message de bienvenue
     channel = bot.get_channel(WELCOME_CHANNEL_ID)

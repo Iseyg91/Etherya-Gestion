@@ -78,6 +78,22 @@ async def on_ready():
                 await asyncio.sleep(10)  # Attente de 10 secondes avant de changer l'activité et le statut
     for guild in bot.guilds:
         GUILD_SETTINGS[guild.id] = load_guild_settings(guild.id)
+#--------------------------------------------------------------------------- Owner Verif
+
+BOT_OWNER_ID = 792755123587645461
+
+# Vérification si l'utilisateur est l'owner du bot
+def is_owner(ctx):
+    return ctx.author.id == BOT_OWNER_ID
+
+# Exemple de commande spéciale pour l'owner
+@bot.command()
+async def shutdown(ctx):
+    if is_owner(ctx):
+        await ctx.send("Arrêt du bot...")
+        await bot.close()
+    else:
+        await ctx.send("Seul l'owner peut arrêter le bot.")
 
 #------------------------------------------------------------------------- Commande SETUP
 
@@ -155,7 +171,10 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    guild = message.guild
+guild = message.guild
+
+# Vérifier si le script s'exécute uniquement sur Etherya
+if guild.id == 1034007767050104892:
     member = guild.get_member(message.author.id)
 
     # Vérifier si le message mentionne l'Owner
@@ -3386,6 +3405,42 @@ async def suggestions_command(interaction: discord.Interaction):
 
     # Envoi des embeds
     await interaction.response.send_message(embeds=embeds)
+
+#-------------------------------------------------------------------------------- Rappel: /rappel
+
+# Commande de rappel
+@bot.tree.command(name="rappel", description="Définis un rappel avec une durée, une raison et un mode d'alerte.")
+@app_commands.describe(
+    duree="Durée en secondes",
+    raison="Pourquoi veux-tu ce rappel ?",
+    prive="Voulez-vous un rappel en privé ? (True/False)"
+)
+async def rappel(interaction: discord.Interaction, duree: int, raison: str, prive: bool):
+    # Confirmation du rappel
+    embed = discord.Embed(
+        title="🔔 Rappel programmé !",
+        description=f"**Raison :** {raison}\n**Durée :** {duree} secondes\n**Mode :** {'Privé' if prive else 'Public'}",
+        color=discord.Color.blue()
+    )
+    embed.set_footer(text="Je te rappellerai à temps ⏳")
+    await interaction.response.send_message(embed=embed, ephemeral=True)  # Message visible que par l'utilisateur
+
+    # Attendre le temps indiqué
+    await asyncio.sleep(duree)
+
+    # Envoyer le rappel
+    rappel_embed = discord.Embed(
+        title="⏰ Rappel !",
+        description=f"**Raison :** {raison}\n\n⏳ Temps écoulé : {duree} secondes",
+        color=discord.Color.green()
+    )
+    rappel_embed.set_footer(text="Pense à ne pas oublier ! 😉")
+
+    # Envoi en MP ou dans le salon
+    if prive:
+        await interaction.user.send(embed=rappel_embed)
+    else:
+        await interaction.channel.send(f"{interaction.user.mention}", embed=rappel_embed)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

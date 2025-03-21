@@ -2955,6 +2955,7 @@ class DuelView(discord.ui.View):
         embed.add_field(name=f"{self.player1.display_name}", value=f"❤️ {self.hp1} PV", inline=True)
         embed.add_field(name=f"{self.player2.display_name}", value=f"❤️ {self.hp2} PV", inline=True)
         embed.set_footer(text=f"Tour de {self.turn.display_name}")
+        embed.set_thumbnail(url=self.player1.avatar.url)
         await interaction.message.edit(embed=embed, view=self)
 
     @discord.ui.button(label="Attaquer", style=discord.ButtonStyle.red)
@@ -2977,7 +2978,10 @@ class DuelView(discord.ui.View):
             await interaction.response.send_message(f"{interaction.user.mention} rate son attaque !", ephemeral=False)
             self.turn = self.player2 if self.turn == self.player1 else self.player1
 
+        # Désactiver les boutons après l'attaque et mettre à jour l'état du duel
+        button.disabled = True
         await self.check_winner(interaction)
+        await self.update_message(interaction)
 
     @discord.ui.button(label="Esquiver", style=discord.ButtonStyle.blurple)
     async def dodge(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -2996,6 +3000,8 @@ class DuelView(discord.ui.View):
             else:
                 self.hp2 -= damage
 
+        # Désactiver les boutons après l'esquive et mettre à jour l'état du duel
+        button.disabled = True
         await self.check_winner(interaction)
         await self.update_message(interaction)
 
@@ -3007,10 +3013,14 @@ class DuelView(discord.ui.View):
             self.winner = self.player1
             await self.end_duel(interaction, self.player1, self.player2)
         else:
+            # Réactiver les boutons pour le tour suivant
+            for button in self.children:
+                button.disabled = False
             await self.update_message(interaction)
 
     async def end_duel(self, interaction, winner, loser):
-        embed = discord.Embed(title="🏆 Victoire !", description=f"{winner.mention} remporte la prime de {self.prize} Ezryn Coins !", color=discord.Color.green())
+        embed = discord.Embed(title="🏆 Victoire !", description=f"**{winner.mention}** remporte la prime de **{self.prize} Ezryn Coins** !", color=discord.Color.green())
+        embed.set_thumbnail(url=winner.avatar.url)
         embed.set_footer(text=f"Félicitations à {winner.display_name} !")
         await interaction.response.edit_message(embed=embed, view=None)
         channel = self.ctx.guild.get_channel(BOUNTY_CHANNEL_ID)
@@ -3037,9 +3047,10 @@ async def bounty(ctx, member: discord.Member, prize: int):
         return
     
     bounties[member.id] = prize
-    embed = discord.Embed(title="📜 Nouvelle Prime !", description=f"Une prime de {prize} Ezryn Coins a été placée sur {member.mention} !", color=discord.Color.gold())
+    embed = discord.Embed(title="📜 Nouvelle Prime !", description=f"Une prime de **{prize} Ezryn Coins** a été placée sur **{member.mention}** !", color=discord.Color.gold())
     embed.set_image(url=PRIME_IMAGE_URL)
     embed.set_footer(text=f"Prime active sur {member.display_name}")
+    embed.set_thumbnail(url=member.avatar.url)
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -3051,8 +3062,9 @@ async def capture(ctx, target: discord.Member):
     
     prize = bounties[target.id]
     view = DuelView(ctx.author, target, prize, ctx)
-    embed = discord.Embed(title="🎯 Chasse en cours !", description=f"{ctx.author.mention} tente de capturer {target.mention} ! Un duel commence !", color=discord.Color.orange())
+    embed = discord.Embed(title="🎯 Chasse en cours !", description=f"**{ctx.author.mention}** tente de capturer **{target.mention}** ! Un duel commence !", color=discord.Color.orange())
     embed.set_footer(text=f"Bonne chance à {ctx.author.display_name} !")
+    embed.set_thumbnail(url=target.avatar.url)
     await ctx.send(embed=embed, view=view)
 
 @bot.command()
@@ -3060,22 +3072,26 @@ async def prime(ctx, member: discord.Member = None):
     """Affiche la prime du joueur ou de l'utilisateur"""
     member = member or ctx.author  # Par défaut, on affiche la prime du commanditaire
     if member.id not in bounties:
-        embed = discord.Embed(title="📉 Aucune prime !", description=f"Aucune prime n'est actuellement placée sur {member.mention}.", color=discord.Color.red())
+        embed = discord.Embed(title="📉 Aucune prime !", description=f"Aucune prime n'est actuellement placée sur **{member.mention}**.", color=discord.Color.red())
+        embed.set_thumbnail(url=member.avatar.url)
         await ctx.send(embed=embed)
     else:
         prize = bounties[member.id]
-        embed = discord.Embed(title="💰 Prime actuelle", description=f"La prime sur {member.mention} est de **{prize} Ezryn Coins**.", color=discord.Color.green())
+        embed = discord.Embed(title="💰 Prime actuelle", description=f"La prime sur **{member.mention}** est de **{prize} Ezryn Coins**.", color=discord.Color.green())
+        embed.set_thumbnail(url=member.avatar.url)
         await ctx.send(embed=embed)
         
 @bot.command()
 async def rewards(ctx):
     """Affiche les récompenses accumulées par le chasseur"""
     if ctx.author.id not in hunter_rewards:
-        embed = discord.Embed(title="🎯 Aucune récompense !", description=f"{ctx.author.mention} n'a pas encore de récompenses.", color=discord.Color.red())
+        embed = discord.Embed(title="🎯 Aucune récompense !", description=f"**{ctx.author.mention}** n'a pas encore de récompenses.", color=discord.Color.red())
+        embed.set_thumbnail(url=ctx.author.avatar.url)
         await ctx.send(embed=embed)
     else:
         rewards = hunter_rewards[ctx.author.id]
-        embed = discord.Embed(title="🏅 Tes récompenses", description=f"{ctx.author.mention} a actuellement **{rewards} Ezryn Coins** en récompenses.", color=discord.Color.blue())
+        embed = discord.Embed(title="🏅 Tes récompenses", description=f"**{ctx.author.mention}** a actuellement **{rewards} Ezryn Coins** en récompenses.", color=discord.Color.blue())
+        embed.set_thumbnail(url=ctx.author.avatar.url)
         await ctx.send(embed=embed)
 
 @bot.command()
@@ -3086,11 +3102,12 @@ async def rrewards(ctx, target: discord.Member, amount: int):
         return
 
     if target.id not in hunter_rewards or hunter_rewards[target.id] < amount:
-        await ctx.send(f"❌ {target.mention} n'a pas assez de récompenses ou n'en a pas du tout.")
+        await ctx.send(f"❌ **{target.mention}** n'a pas assez de récompenses ou n'en a pas du tout.")
         return
 
     hunter_rewards[target.id] -= amount
-    embed = discord.Embed(title="⚠️ Récompenses modifiées", description=f"{amount} récompenses ont été retirées à {target.mention}. Il reste **{hunter_rewards[target.id]} Ezryn Coins**.", color=discord.Color.orange())
+    embed = discord.Embed(title="⚠️ Récompenses modifiées", description=f"**{amount}** récompenses ont été retirées à **{target.mention}**. Il reste **{hunter_rewards[target.id]} Ezryn Coins**.", color=discord.Color.orange())
+    embed.set_thumbnail(url=target.avatar.url)
     await ctx.send(embed=embed)
 
 @bot.tree.command(name="calcul", description="Effectue une opération mathématique")

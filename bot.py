@@ -1472,10 +1472,23 @@ async def blague(ctx):
     # Envoyer la blague dans le salon
     await ctx.send(blague_choisie)
 #------------------------------------------------------------------------- Commandes d'économie : +prison, +evasion, +arrestation, +liberation, +cautionpayer, +ticket_euro_million
+
+# ID du serveur autorisé (Etherya)
+AUTORIZED_SERVER_ID = 1034007767050104892
+
 # Commande +prison
 @bot.command()
 @commands.has_role(1165936153418006548)  # ID du rôle sans guillemets
 async def prison(ctx, member: discord.Member = None):
+    if ctx.guild.id != AUTORIZED_SERVER_ID:
+        embed = discord.Embed(
+            title="Commande non autorisée",
+            description="Cette commande n'est pas disponible sur ce serveur.",
+            color=0xff0000
+        )
+        await ctx.send(embed=embed)
+        return
+
     if not member:
         await ctx.send("Vous n'avez ciblé personne.")
         return
@@ -1502,6 +1515,15 @@ async def prison(ctx, member: discord.Member = None):
 @bot.command()
 @commands.has_role(1165936153418006548)
 async def arrestation(ctx, member: discord.Member = None):
+    if ctx.guild.id != AUTORIZED_SERVER_ID:
+        embed = discord.Embed(
+            title="Commande non autorisée",
+            description="Cette commande n'est pas disponible sur ce serveur.",
+            color=0xff0000
+        )
+        await ctx.send(embed=embed)
+        return
+
     if not member:
         await ctx.send("Vous n'avez ciblé personne.")
         return
@@ -1528,6 +1550,15 @@ async def arrestation(ctx, member: discord.Member = None):
 @bot.command()
 @commands.has_role(1165936153418006548)
 async def liberation(ctx, member: discord.Member = None):
+    if ctx.guild.id != AUTORIZED_SERVER_ID:
+        embed = discord.Embed(
+            title="Commande non autorisée",
+            description="Cette commande n'est pas disponible sur ce serveur.",
+            color=0xff0000
+        )
+        await ctx.send(embed=embed)
+        return
+
     if not member:
         await ctx.send("Vous n'avez ciblé personne.")
         return
@@ -1554,6 +1585,15 @@ async def liberation(ctx, member: discord.Member = None):
 @bot.command()
 @commands.has_role(1344591867068809268)
 async def evasion(ctx):
+    if ctx.guild.id != AUTORIZED_SERVER_ID:
+        embed = discord.Embed(
+            title="Commande non autorisée",
+            description="Cette commande n'est pas disponible sur ce serveur.",
+            color=0xff0000
+        )
+        await ctx.send(embed=embed)
+        return
+
     member = ctx.author  # L'auteur de la commande s'évade
 
     embed = discord.Embed(
@@ -1576,10 +1616,20 @@ async def evasion(ctx):
         await member.remove_roles(role_remove_1)
     if role_remove_2:
         await member.remove_roles(role_remove_2)
-        
+
+# Commande cautionpayer
 @bot.command()
 @commands.has_role(1347165421958205470)
 async def cautionpayer(ctx, member: discord.Member = None):
+    if ctx.guild.id != AUTORIZED_SERVER_ID:
+        embed = discord.Embed(
+            title="Commande non autorisée",
+            description="Cette commande n'est pas disponible sur ce serveur.",
+            color=0xff0000
+        )
+        await ctx.send(embed=embed)
+        return
+
     if not member:
         await ctx.send("Vous n'avez ciblé personne.")
         return
@@ -1599,15 +1649,22 @@ async def cautionpayer(ctx, member: discord.Member = None):
     if role_remove:
         await member.remove_roles(role_remove)
 
-AUTHORIZED_ROLES = ["1341458600559644672"]
-
+# Commande ticket_euro_million
 @bot.command()
 async def ticket_euro_million(ctx, user: discord.Member):
+    if ctx.guild.id != AUTORIZED_SERVER_ID:
+        embed = discord.Embed(
+            title="Commande non autorisée",
+            description="Cette commande n'est pas disponible sur ce serveur.",
+            color=0xff0000
+        )
+        await ctx.send(embed=embed)
+        return
+
     # Générer 5 chiffres entre 0 et 5
     numeros = [str(random.randint(0, 5)) for _ in range(5)]
     combinaison = " - ".join(numeros)
-    
-    # Créer l'embed pour le salon où la commande a été exécutée
+
     embed_user = discord.Embed(
         title="🎟️ Ticket Euro Million",
         description=f"Voici votre combinaison, **{user.mention}** : **{combinaison}**\n\n"
@@ -1615,12 +1672,10 @@ async def ticket_euro_million(ctx, user: discord.Member):
         color=discord.Color.gold()
     )
     embed_user.set_footer(text="Ticket généré par " + ctx.author.name)
-    embed.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
+    embed_user.set_footer(text=f"♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
-    # Envoie de l'embed dans le salon où la commande a été effectuée
     await ctx.send(embed=embed_user)
-    
-    # Créer un deuxième embed pour le salon spécifique
+
     embed_announce = discord.Embed(
         title="🎟️ Euro Million - Résultat",
         description=f"**{user.mention}** a tiré le combiné suivant : **{combinaison}**\n\n"
@@ -1628,14 +1683,14 @@ async def ticket_euro_million(ctx, user: discord.Member):
         color=discord.Color.green()
     )
     embed_announce.set_footer(text="Ticket généré avec succès !")
-    embed.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
+    embed_announce.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
-    # Envoie de l'embed dans le salon spécifique (ID du salon : 1343358346287120514)
     salon_announce = bot.get_channel(1343358346287120514)
     if salon_announce:
         await salon_announce.send(embed=embed_announce)
     else:
         await ctx.send("Erreur : Le salon d'annonce est introuvable.")
+
 #------------------------------------------------------------------------- Commandes de Moderation : +ban, +unban, +mute, +unmute, +kick, +warn
 # Gestion des erreurs pour les commandes
 

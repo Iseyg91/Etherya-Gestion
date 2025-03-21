@@ -3061,6 +3061,20 @@ async def capture(ctx, target: discord.Member):
     await ctx.send(embed=embed, view=view)
 
 @bot.command()
+async def prime(ctx, member: discord.Member = None):
+    """Affiche la prime du joueur ou de l'utilisateur"""
+    member = member or ctx.author  # Par défaut, on affiche la prime du commanditaire
+    if member.id not in bounties:
+        embed = discord.Embed(title="📉 Aucune prime !", description=f"Aucune prime n'est actuellement placée sur **{member.mention}**.", color=discord.Color.red())
+        embed.set_thumbnail(url=member.avatar.url)
+        await ctx.send(embed=embed)
+    else:
+        prize = bounties[member.id]
+        embed = discord.Embed(title="💰 Prime actuelle", description=f"La prime sur **{member.mention}** est de **{prize} Ezryn Coins**.", color=discord.Color.green())
+        embed.set_thumbnail(url=member.avatar.url)
+        await ctx.send(embed=embed)
+
+@bot.command()
 async def rewards(ctx, member: discord.Member = None):
     """Affiche les récompenses accumulées par un joueur ou par soi-même"""
     member = member or ctx.author  # Si aucun membre n'est spécifié, on affiche pour l'auteur

@@ -50,7 +50,7 @@ async def on_ready():
         discord.Game("Etherya"),  # Playing
         discord.Activity(type=discord.ActivityType.watching, name=" Le Monde d'Etherya"),  # Watching
         discord.Activity(type=discord.ActivityType.listening, name=" Les Murmures du Passé"),  # Listening
-        discord.Activity(type=discord.ActivityType.streaming, name=" Les Sombres Secrets", url="https://twitch.tv/ton_stream")  # Streaming
+        discord.Activity(type=discord.ActivityType.streaming, name=" Les Sombres Secrets")  # Streaming
     ]
 
     # Liste des statuts à alterner
@@ -146,6 +146,8 @@ async def getbotinfo(ctx):
     # Récupération des statistiques du bot
     total_servers = len(bot.guilds)
     total_users = sum(g.member_count for g in bot.guilds)
+    total_text_channels = sum(len(g.text_channels) for g in bot.guilds)
+    total_voice_channels = sum(len(g.voice_channels) for g in bot.guilds)
     latency = round(bot.latency * 1000, 2)  # Latence en ms
     total_commands = len(bot.commands)
 
@@ -154,21 +156,26 @@ async def getbotinfo(ctx):
         title="🤖 Informations du Bot",
         description=f"✨ **Nom :** `{bot.user.name}`\n"
                     f"🔹 **ID :** `{bot.user.id}`\n"
-                    f"🌐 **Créé le :** `{bot.user.created_at.strftime('%d/%m/%Y')}`",
-        color=discord.Color.orange(),
+                    f"📅 **Créé le :** `{bot.user.created_at.strftime('%d/%m/%Y')}`",
+        color=discord.Color.gold(),  # Changement de couleur pour un look premium
         timestamp=datetime.utcnow()
     )
     
     embed.set_thumbnail(url=bot.user.avatar.url)
+    if bot.user.banner:  # Vérifie si le bot a une bannière
+        embed.set_image(url=bot.user.banner.url)
+
     embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar.url)
 
-    # Ajout des stats principales
+    # Ajout des stats principales avec formatage des nombres
     embed.add_field(
         name="📊 **Statistiques**",
         value=(
-            f"> **🖥️ Serveurs :** `{total_servers}`\n"
-            f"> **👥 Utilisateurs :** `{total_users}`\n"
-            f"> **⌨️ Commandes :** `{total_commands}`\n"
+            f"> **🖥️ Serveurs :** `{total_servers:,}`\n"
+            f"> **👥 Utilisateurs :** `{total_users:,}`\n"
+            f"> **💬 Textuels :** `{total_text_channels:,}`\n"
+            f"> **🔊 Vocaux :** `{total_voice_channels:,}`\n"
+            f"> **⌨️ Commandes :** `{total_commands:,}`\n"
             f"> **📡 Latence :** `{latency} ms`\n"
         ),
         inline=False
@@ -177,17 +184,20 @@ async def getbotinfo(ctx):
     # Ajout de l'uptime
     embed.add_field(
         name="⏳ **Uptime**",
-        value=f"> {uptime_days} jours, {uptime_hours} heures, {uptime_minutes} min, {uptime_seconds} sec",
+        value=f"> `{uptime_days}j {uptime_hours}h {uptime_minutes}m {uptime_seconds}s`",
         inline=False
     )
 
-    # Ajout d'un bouton d'invitation
+    # Ajout d'un bouton d'invitation avec ton lien
     view = discord.ui.View()
-    invite_button = discord.ui.Button(label="📩 Inviter le Bot", style=discord.ButtonStyle.link, url="https://discord.com/oauth2/authorize?client_id=TON_ID&scope=bot&permissions=8")
+    invite_button = discord.ui.Button(
+        label="📩 Inviter le Bot",
+        style=discord.ButtonStyle.link,
+        url="https://discord.com/oauth2/authorize?client_id=1346161481988706325&permissions=8&integration_type=0&scope=bot"
+    )
     view.add_item(invite_button)
 
     await ctx.send(embed=embed, view=view)
-
 
 # Liste d'emojis qui tournent pour éviter la répétition
 EMOJIS_SERVEURS = ["🎭", "🌍", "🏰", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]

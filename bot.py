@@ -84,6 +84,18 @@ async def on_ready():
     for guild in bot.guilds:
         GUILD_SETTINGS[guild.id] = load_guild_settings(guild.id)
 
+
+# Gestion des erreurs globales pour toutes les commandes
+@bot.event
+async def on_error(event, *args, **kwargs):
+    print(f"Une erreur s'est produite : {event}")
+    embed = discord.Embed(
+        title="❗ Erreur inattendue",
+        description="Une erreur s'est produite lors de l'exécution de la commande. Veuillez réessayer plus tard.",
+        color=discord.Color.red()
+    )
+    await args[0].response.send_message(embed=embed)
+
 #--------------------------------------------------------------------------- Owner Verif
 
 BOT_OWNER_ID = 792755123587645461
@@ -247,8 +259,12 @@ async def create_embed(self):
         status_emoji = "💬" if guild.online else "🛑"
         status_text = "En ligne" if guild.online else "Hors ligne"
 
-        invite_url = await guild.text_channels[0].create_invite(max_uses=1, unique=True) if guild.text_channels else None
-        invitation = invite_url.url if invite_url else '🔒 *Aucune invitation disponible*'
+        # Vérification si des canaux texte sont présents avant d'en créer une invitation
+        if guild.text_channels:
+            invite_url = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
+            invitation = invite_url.url
+        else:
+            invitation = '🔒 *Aucune invitation disponible*'
 
         embed.add_field(
             name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
@@ -294,24 +310,80 @@ premium_servers = {}
 # Code Premium valide
 valid_code = "Etherya_Iseyg=91"
 
+# Ajout d'une commande pour afficher le statut du bot
+@bot.tree.command(name="statut")
+async def statut(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="🤖 Statut du Bot",
+        description=f"Le bot est actuellement en ligne et fonctionnel !",
+        color=discord.Color.purple()
+    )
+    embed.add_field(
+        name="Version",
+        value="Bot v1.0",
+        inline=True
+    )
+    embed.add_field(
+        name="Serveurs Premium",
+        value=f"**{len(premium_servers)}** serveurs premium activés.",
+        inline=True
+    )
+    embed.set_footer(text="Bot géré par Etherya")
+    embed.set_thumbnail(url=bot.user.avatar.url)
+    await interaction.response.send_message(embed=embed)
+
 # Commande slash /premium
 @bot.tree.command(name="premium")
 @app_commands.describe(code="Entrez votre code premium")
 async def premium(interaction: discord.Interaction, code: str):
     if code == valid_code:
         premium_servers[interaction.guild.id] = interaction.guild.name  # Enregistrer le serveur comme premium
-        await interaction.response.send_message(f"Le serveur {interaction.guild.name} est maintenant premium !")
+        embed = discord.Embed(
+            title="✅ Serveur Premium Activé",
+            description=f"Le serveur **{interaction.guild.name}** est maintenant premium ! 🎉",
+            color=discord.Color.green()
+        )
+        embed.set_footer(text="Merci d'utiliser nos services premium.")
+        embed.set_thumbnail(url=interaction.guild.icon.url)  # Icône du serveur
+        await interaction.response.send_message(embed=embed)
     else:
-        await interaction.response.send_message("Code premium invalide. Veuillez vérifier votre code.")
+        embed = discord.Embed(
+            title="❌ Code Invalide",
+            description="Le code que vous avez entré est invalide. Veuillez vérifier votre code ou contactez le support.",
+            color=discord.Color.red()
+        )
+        embed.add_field(
+            name="Suggestions",
+            value="Assurez-vous d'avoir saisi le code exactement comme il est fourni. Le code premium est sensible à la casse.",
+            inline=False
+        )
+        await interaction.response.send_message(embed=embed)
 
 # Commande slash /viewpremium
 @bot.tree.command(name="viewpremium")
 async def viewpremium(interaction: discord.Interaction):
     if not premium_servers:
-        await interaction.response.send_message("Aucun serveur premium n'a été activé.")
+        embed = discord.Embed(
+            title="🔒 Aucun Serveur Premium",
+            description="Aucun serveur premium n'a été activé sur ce bot.",
+            color=discord.Color.red()
+        )
+        embed.add_field(
+            name="Pourquoi devenir premium ?",
+            value="Devenez premium pour profiter de fonctionnalités exclusives et de plus de personnalisation pour votre serveur !",
+            inline=False
+        )
+        embed.set_footer(text="Rejoignez notre programme premium.")
+        await interaction.response.send_message(embed=embed)
     else:
-        premium_list = "\n".join([f"{server_name}" for server_name in premium_servers.values()])
-        await interaction.response.send_message(f"Serveurs premium activés :\n{premium_list}")
+        premium_list = "\n".join([f"**{server_name}**" for server_name in premium_servers.values()])
+        embed = discord.Embed(
+            title="🌟 Liste des Serveurs Premium",
+            description=f"Les serveurs premium activés sont :\n{premium_list}",
+            color=discord.Color.blue()
+        )
+        embed.set_footer(text="Merci pour votre soutien !")
+        await interaction.response.send_message(embed=embed)
 #------------------------------------------------------------------------- Commande SETUP
 
 @bot.tree.command(name="setup", description="Configure les rôles et salons du bot.")

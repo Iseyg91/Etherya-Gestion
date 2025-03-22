@@ -1209,6 +1209,24 @@ async def gay(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
+async def singe(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+    
+    percentage = random.randint(0, 100)
+    
+    embed = discord.Embed(
+        title=f"Analyse de singe 🐒", 
+        description=f"{member.mention} est un singe à **{percentage}%** !\n\n*Le pourcentage varie en fonction de l'énergie primate du membre.*", 
+        color=discord.Color.green()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} 🐵 by Isey", icon_url=ctx.author.avatar.url)
+    
+    await ctx.send(embed=embed)
+
+@bot.command()
 async def racist(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send("Vous n'avez ciblé personne !")
@@ -1819,6 +1837,23 @@ async def superpouvoir(ctx, user: discord.Member = None):
         "Respiration sous l'eau 🐠 - Mais panique dès qu'il voit une méduse.",
         "Contrôle de la gravité 🌍 - Peut voler, mais oublie souvent de redescendre.",
         "Capacité d’arrêter le temps ⏳ - Mais uniquement quand il dort."
+        "Voyage dans le temps ⏰ - Peut voyager dans le passé ou le futur… mais toujours à la mauvaise époque."
+        "Télépathie inversée 🧠 - Peut faire entendre ses pensées aux autres… mais ils ne peuvent jamais comprendre."
+        "Manipulation des rêves 🌙 - Peut entrer dans les rêves des gens… mais se retrouve toujours dans des cauchemars."
+        "Super mémoire 📚 - Se souvient de tout… sauf des choses qu’il vient de dire."
+        "Manipulation des ombres 🌑 - Peut faire bouger les ombres… mais ne peut jamais les arrêter."
+        "Création de pluie 🍃 - Peut faire pleuvoir… mais uniquement sur ses amis."
+        "Maîtrise des plantes 🌱 - Peut faire pousser des plantes à une vitesse folle… mais elles ne cessent de pousser partout."
+        "Contrôle des rêves éveillés 💤 - Peut contrôler ses rêves quand il est éveillé… mais se retrouve toujours dans une réunion ennuyante."
+        "Maîtrise de l’éclairage ✨ - Peut illuminer n'importe quelle pièce… mais oublie d’éteindre."
+        "Création de souvenirs 🧳 - Peut créer des souvenirs… mais ceux-ci sont toujours un peu bizarres."
+        "Changement de taille 📏 - Peut grandir ou rapetisser… mais n'arrive jamais à garder une taille stable."
+        "Vision nocturne 🌙 - Peut voir dans l’obscurité… mais tout est toujours en noir et blanc."
+        "Contrôle des éléments 🤹‍♂️ - Peut manipuler tous les éléments naturels… mais uniquement quand il pleut."
+        "Phasing à travers les murs 🚪 - Peut traverser les murs… mais parfois il traverse aussi les portes."
+        "Régénération de l’esprit 🧠 - Guérit les blessures mentales… mais les oublie instantanément après."
+
+
     ]
 
     pouvoir = random.choice(pouvoirs)
@@ -1859,6 +1894,24 @@ async def totem(ctx, member: discord.Member = None):
         "Poisson rouge 🐠": "Mémoire de 3 secondes, mais au moins il ne s’inquiète jamais.",
         "Canard 🦆": "Semble idiot, mais cache une intelligence surprenante.",
         "Raton laveur 🦝": "Petit voleur mignon qui adore piquer des trucs."
+        "Lynx 🐆" : "Serré dans ses mouvements, il frappe avec précision et discrétion."
+        "Loup de mer 🌊🐺" : "Un loup qui conquiert aussi bien les océans que la terre, fier et audacieux."
+        "Baleine 🐋" : "Majestueuse et bienveillante, elle nage dans les eaux profondes avec sagesse."
+        "Léopard 🐆" : "Vif et agile, il disparaît dans la jungle avant même qu'on ait pu le voir."
+        "Ours 🐻" : "Fort et protecteur, il défend son territoire sans hésiter."
+        "Cygne 🦢" : "Gracieux et élégant, il incarne la beauté dans la tranquillité."
+        "Chameau 🐫" : "Patient et résistant, il traverse les déserts sans jamais se fatiguer."
+        "Grizzly 🐻‍❄️" : "Imposant et puissant, il est le roi des forêts froides."
+        "Koala 🐨" : "Doux et calme, il passe sa vie à dormir dans les arbres."
+        "Panthère noire 🐆" : "Silencieuse et mystérieuse, elle frappe toujours quand on s'y attend le moins."
+        "Zèbre 🦓" : "Unique et surprenant, il se distingue dans la foule grâce à ses rayures."
+        "Éléphant 🐘" : "Sage et majestueux, il marche au rythme de sa propre grandeur."
+        "Croco 🐊" : "Implacable et rusé, il attend patiemment avant de bondir."
+        "Mouflon 🐏" : "Fort et tenace, il n'a pas peur de braver les montagnes."
+        "Perroquet 🦜" : "Coloré et bavard, il ne cesse jamais de répéter ce qu'il entend."
+        "Rhinocéros 🦏" : "Imposant et robuste, il se fraye un chemin à travers tout sur son passage."
+        "Bison 🦬" : "Solide et puissant, il traverse les prairies avec une énergie inébranlable."
+
     }
 
     totem, description = random.choice(list(animaux_totem.items()))
@@ -1890,6 +1943,27 @@ async def futur(ctx, user: discord.Member = None):
         "Dans un mois, tu vivras une aventure épique où tu devras résoudre un mystère impliquant des chaussettes perdues.",
         "Prochainement, tu seras récompensé pour avoir trouvé une solution révolutionnaire au problème de la pizza froide.",
         "Dans un futur lointain, tu seras le leader d'une civilisation intergalactique. Tes sujets seront principalement des pandas."
+        "Dans 5 minutes, tu rencontreras un robot qui te demandera comment faire des pancakes… mais il n'a pas de mains.",
+        "Ce week-end, tu seras choisi pour participer à un concours de danse avec des flamants roses, mais tu devras danser sans musique.",
+        "Demain, un magicien te proposera un vœu… mais il te le refusera en te montrant un tour de cartes.",
+        "Un perroquet va te confier un secret très important, mais tu l'oublieras dès que tu entras dans une pièce.",
+        "Dans quelques jours, tu découvriras un trésor enfoui sous ta maison… mais il sera composé uniquement de petites pierres colorées.",
+        "Prochainement, tu feras une rencontre étrange avec un extraterrestre qui te demandera de lui apprendre à jouer aux échecs.",
+        "Dans un futur proche, tu gagneras un prix prestigieux pour avoir créé un objet du quotidien, mais personne ne saura vraiment à quoi il sert.",
+        "Bientôt, tu recevras une invitation pour un dîner chez des créatures invisibles. Le menu ? Des nuages et des rayons de lune.",
+        "Dans un mois, tu seras choisi pour représenter ton pays dans un concours de chant… mais tu devras chanter sous l'eau.",
+        "Dans un futur lointain, tu seras une légende vivante, reconnu pour avoir inventé la première machine à fabriquer des sourires."
+        "Dans 5 minutes, tu verras un nuage prendre la forme de ton visage, mais il te fera une grimace étrange.",
+        "Demain, tu seras invité à une réunion secrète de licornes qui discuteront des nouvelles tendances en matière de paillettes.",
+        "Prochainement, un dauphin te confiera un message codé que tu devras résoudre… mais il sera écrit en chantant.",
+        "Un dragon viendra te rendre visite et te proposera de partager son trésor… mais il s’avère que ce trésor est un stock infini de bonbons à la menthe.",
+        "Dans quelques jours, tu apprendras à parler couramment le langage des grenouilles, mais seulement quand il pleut.",
+        "Cette semaine, un voleur masqué viendra te voler une chaussette… mais il te laissera un billet pour un concert de musique classique.",
+        "Prochainement, un fantôme te demandera de l'aider à retrouver ses clés perdues… mais tu découvriras qu'il a oublié où il les a mises.",
+        "Dans un futur proche, tu seras élu président d'un club de fans de légumes, et tu recevras une médaille en forme de carotte.",
+        "Bientôt, tu découvriras un raccourci secret qui te permettra de voyager dans des mondes parallèles… mais il te fera revenir à ton point de départ.",
+        "Dans un mois, tu recevras une lettre d'invitation à un bal masqué organisé par des robots, mais tu ne pourras pas danser car tu porteras des chaussons trop grands."
+
     ]
 
     prediction = random.choice(predicions)

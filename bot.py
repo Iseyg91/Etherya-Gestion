@@ -332,7 +332,7 @@ class ServerInfoView(View):
 
 @bot.command()
 async def serverinfoall(ctx):
-    if ctx.author.id == bot.owner_id:  # Assurez-vous que seul l'owner peut voir ça
+    if ctx.author.id == BOT_OWNER_ID:  # Assurez-vous que seul l'owner peut voir ça
         view = ServerInfoView(ctx, bot, bot.guilds, premium_servers)
         embed = await view.create_embed()
         await ctx.send(embed=embed, view=view)

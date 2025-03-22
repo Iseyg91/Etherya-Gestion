@@ -72,4 +72,3 @@ dnspython
 aiocron
 PyNaCl
 yt-dlp
-pip install yt-dlp

@@ -147,8 +147,6 @@ async def getbotinfo(ctx):
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
 
-from datetime import datetime
-
 @bot.command()
 async def serverinfoall(ctx):
     if is_owner(ctx):
@@ -165,10 +163,12 @@ async def serverinfoall(ctx):
 
         # Informations sur chaque serveur
         for guild in bot.guilds:
-            invite_url = f"https://discord.gg/{guild.id}"  # Lien d'invitation du serveur
-            
+            # Générer une invitation pour chaque serveur
+            invite = await guild.text_channels[0].create_invite(max_uses=1, unique=True)  # Crée une invite unique pour chaque serveur
+            invite_url = invite.url
+
             embed.add_field(
-                name=f"**[{guild.name}]({invite_url})**",  # Le nom du serveur devient un lien cliquable
+                name=f"**[{guild.name}]({invite_url})**",  # Le nom du serveur devient un lien vers une invitation spécifique
                 value=(
                     f"**📊 Membres** : {guild.member_count} membres\n"
                     f"**🛠️ Rôles** : {len(guild.roles)} rôles\n"

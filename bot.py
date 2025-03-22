@@ -250,14 +250,6 @@ async def create_embed(self):
     start = self.page * self.servers_per_page
     end = start + self.servers_per_page
 
-    for i, guild in enumerate(self.guilds[start:end]):
-        emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)] if len(EMOJIS_SERVEURS) > 0 else "🔴"
-
-        embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
-
-        status_emoji = "💬" if guild.online else "🛑"
-        status_text = "En ligne" if guild.online else "Hors ligne"
-
         # Vérification si des canaux texte sont présents avant d'en créer une invitation
         invitation = '🔒 *Aucune invitation disponible*'
         if guild.text_channels:

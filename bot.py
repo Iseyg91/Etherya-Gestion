@@ -378,9 +378,9 @@ async def get_server_members_count(guild):
     return len(guild.members)
 
 
-# Fonction pour récupérer l'uptime du bot
 async def get_bot_uptime():
-    uptime_seconds = int((discord.utils.utcnow() - bot.user.created_at).total_seconds())
+    now = datetime.datetime.utcnow()
+    uptime_seconds = int((now - bot.start_time).total_seconds())
     uptime = str(datetime.timedelta(seconds=uptime_seconds))
     return uptime
 

@@ -72,3 +72,4 @@ dnspython
 aiocron
 PyNaCl
 yt-dlp
+spotipy

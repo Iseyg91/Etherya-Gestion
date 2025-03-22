@@ -691,7 +691,7 @@ async def etherya(interaction: discord.Interaction):
         "☕ ・ Divers **Salons** pour un divertissement optimal.\n"
         "☁️ ・ Un staff sympa, à l'écoute et qui **recrute** !\n"
         "🔥 ・ Pas convaincu ? Rejoins-nous et vois par toi-même le potentiel de notre serveur !\n\n"
-        "🎫 **[Accès direct au serveur Etherya !](https://discord.com/invite/tVVYC2Ynfy)**\n\n"
+        "🎫 **[Accès direct au serveur Etherya !](https://discord.com/invite/tVVYC2Ynfy) **\n\n"
         "Rejoins-nous et amuse-toi ! 🎉"
     )
 

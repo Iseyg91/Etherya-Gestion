@@ -199,7 +199,7 @@ async def getbotinfo(ctx):
 
 
 # Liste d'emojis qui tournent pour éviter la répétition
-EMOJIS_SERVEURS = ["🎭", "🌍", "🏰", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]
+EMOJIS_SERVEURS = ["🌍","🎭","🏰", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]
 
 class ServerInfoView(View):
     def __init__(self, ctx, bot, guilds):
@@ -221,52 +221,49 @@ class ServerInfoView(View):
         self.update_buttons()
         await interaction.response.edit_message(embed=embed, view=self)
 
-    async def create_embed(self):
-        total_servers = len(self.guilds)
+async def create_embed(self):
+    total_servers = len(self.guilds)
 
-        embed = discord.Embed(
-            title=f"🌍 Serveurs du Bot (`{total_servers}` total)",
-            description="🔍 Liste des serveurs où le bot est présent, triés par popularité.",
-            color=discord.Color.gold(),
-            timestamp=datetime.utcnow()
+    embed = discord.Embed(
+        title=f"🌍 Serveurs du Bot (`{total_servers}` total)",
+        description="🔍 Liste des serveurs où le bot est présent, triés par popularité.",
+        color=discord.Color.green(),  # Utilisation d'une couleur dynamique
+        timestamp=datetime.utcnow()
+    )
+    embed.set_footer(text=f"Page {self.page + 1}/{self.max_page + 1} • Demandé par {self.ctx.author}", icon_url=self.ctx.author.avatar.url)
+    embed.set_thumbnail(url=self.bot.user.avatar.url)
+
+    start = self.page * self.servers_per_page
+    end = start + self.servers_per_page
+
+    for i, guild in enumerate(self.guilds[start:end]):
+        emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Sélectionne un emoji en alternance
+
+        # Dynamiser la couleur en fonction du nombre de membres
+        embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
+
+        # Ajouter un statut de serveur (En ligne / Hors ligne)
+        status_emoji = "💬" if guild.online else "🛑"
+        status_text = "En ligne" if guild.online else "Hors ligne"
+
+        embed.add_field(
+            name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
+            value=(
+                f"> **👑 Propriétaire** : {guild.owner.mention if guild.owner else '❓ *Inconnu*'}\n"
+                f"> **📊 Membres** : `{guild.member_count}`\n"
+                f"> **💎 Boosts** : `Niveau {guild.premium_tier if guild.premium_tier > 0 else '0'}`\n"
+                f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
+                f"> **💬 Canaux** : `{len(guild.channels)}`\n"
+                f"> **😃 Emojis** : `{len(guild.emojis)}`\n"
+                f"> **🆔 ID** : `{guild.id}`\n"
+                f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
+                f"> [🔗 Invitation]({(await guild.text_channels[0].create_invite(max_uses=1, unique=True)).url if guild.text_channels else '🔒 *Aucune invitation disponible*'})"
+            ),
+            inline=False
         )
-        embed.set_footer(text=f"Page {self.page + 1}/{self.max_page + 1} • Demandé par {self.ctx.author}", icon_url=self.ctx.author.avatar.url)
-        embed.set_thumbnail(url=self.bot.user.avatar.url)
 
-        start = self.page * self.servers_per_page
-        end = start + self.servers_per_page
-
-        for i, guild in enumerate(self.guilds[start:end]):
-            emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Sélectionne un emoji en alternance
-            
-            invite_url = "🔒 *Aucune invitation disponible*"
-            if guild.text_channels:
-                invite = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
-                invite_url = f"[🔗 Invitation]({invite.url})"
-
-            owner = guild.owner.mention if guild.owner else "❓ *Inconnu*"
-            member_display = f"**{guild.member_count}**" if guild.member_count > 1000 else f"{guild.member_count}"
-            boost_level = guild.premium_tier if guild.premium_tier > 0 else "0"
-            emoji_count = len(guild.emojis)
-
-            embed.add_field(
-                name=f"{emoji} **{guild.name}**",
-                value=(
-                    f"> **👑 Propriétaire** : {owner}\n"
-                    f"> **📊 Membres** : `{member_display}`\n"
-                    f"> **💎 Boosts** : `Niveau {boost_level}`\n"
-                    f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
-                    f"> **💬 Canaux** : `{len(guild.channels)}`\n"
-                    f"> **😃 Emojis** : `{emoji_count}`\n"
-                    f"> **🆔 ID** : `{guild.id}`\n"
-                    f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
-                    f"> {invite_url}"
-                ),
-                inline=False
-            )
-
-        embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
-        return embed
+    embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+    return embed
 
     @discord.ui.button(label="⬅️ Précédent", style=discord.ButtonStyle.green, disabled=True)
     async def previous(self, interaction: discord.Interaction, button: Button):

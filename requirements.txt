@@ -71,4 +71,5 @@ pymongo==4.6.1
 dnspython
 aiocron
 PyNaCl
+yt-dlp
 pip install yt-dlp

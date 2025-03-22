@@ -18,6 +18,8 @@ from collections import defaultdict
 from collections import deque
 import pymongo
 from pymongo import MongoClient
+import psutil
+import platform
 
 token = os.environ['ETHERYA']
 intents = discord.Intents.all()
@@ -248,39 +250,39 @@ async def create_embed(self):
     start = self.page * self.servers_per_page
     end = start + self.servers_per_page
 
-    for i, guild in enumerate(self.guilds[start:end]):
-        # Utiliser un emoji en fonction du nombre de serveurs
-        emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Cela va éviter d'aller au-delà du nombre d'emojis
+for i, guild in enumerate(self.guilds[start:end]):
+    # Utiliser un emoji en fonction du nombre de serveurs, en évitant d'aller au-delà du nombre d'emojis
+    emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)] if len(EMOJIS_SERVEURS) > 0 else "🔴"  # Emoji par défaut si la liste est vide
 
-        # Dynamiser la couleur en fonction du nombre de membres
-        embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
+    # Dynamiser la couleur en fonction du nombre de membres
+    embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
 
-        # Ajouter un statut de serveur (En ligne / Hors ligne)
-        status_emoji = "💬" if guild.online else "🛑"
-        status_text = "En ligne" if guild.online else "Hors ligne"
+    # Ajouter un statut de serveur (En ligne / Hors ligne)
+    status_emoji = "💬" if guild.online else "🛑"
+    status_text = "En ligne" if guild.online else "Hors ligne"
 
-        # Vérification si des canaux texte sont présents avant d'en créer une invitation
-        if guild.text_channels:
-            invite_url = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
-            invitation = invite_url.url
-        else:
-            invitation = '🔒 *Aucune invitation disponible*'
+    # Vérification si des canaux texte sont présents avant d'en créer une invitation
+    if guild.text_channels:
+        invite_url = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
+        invitation = invite_url.url
+    else:
+        invitation = '🔒 *Aucune invitation disponible*'
 
-        embed.add_field(
-            name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
-            value=(
-                f"> **👑 Propriétaire** : {guild.owner.mention if guild.owner else '❓ *Inconnu*'}\n"
-                f"> **📊 Membres** : `{guild.member_count}`\n"
-                f"> **💎 Boosts** : `Niveau {guild.premium_tier if guild.premium_tier > 0 else '0'}`\n"
-                f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
-                f"> **💬 Canaux** : `{len(guild.channels)}`\n"
-                f"> **😃 Emojis** : `{len(guild.emojis)}`\n"
-                f"> **🆔 ID** : `{guild.id}`\n"
-                f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
-                f"> [🔗 Invitation]({invitation})"
-            ),
-            inline=False
-        )
+    embed.add_field(
+        name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
+        value=(
+            f"> **👑 Propriétaire** : {guild.owner.mention if guild.owner else '❓ *Inconnu*'}\n"
+            f"> **📊 Membres** : `{guild.member_count}`\n"
+            f"> **💎 Boosts** : `Niveau {guild.premium_tier if guild.premium_tier > 0 else '0'}`\n"
+            f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
+            f"> **💬 Canaux** : `{len(guild.channels)}`\n"
+            f"> **😃 Emojis** : `{len(guild.emojis)}`\n"
+            f"> **🆔 ID** : `{guild.id}`\n"
+            f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
+            f"> [🔗 Invitation]({invitation})"
+        ),
+        inline=False
+    )
 
     embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
     return embed
@@ -313,56 +315,166 @@ valid_code = "Etherya_Iseyg=91"
 # Ajout d'une commande pour afficher le statut du bot
 @bot.tree.command(name="statut")
 async def statut(interaction: discord.Interaction):
-    embed = discord.Embed(
-        title="🤖 Statut du Bot",
-        description=f"Le bot est actuellement en ligne et fonctionnel !",
-        color=discord.Color.purple()
-    )
-    embed.add_field(
-        name="Version",
-        value="Bot v1.0",
-        inline=True
-    )
-    embed.add_field(
-        name="Serveurs Premium",
-        value=f"**{len(premium_servers)}** serveurs premium activés.",
-        inline=True
-    )
-    embed.set_footer(text="Bot géré par Etherya")
-    embed.set_thumbnail(url=bot.user.avatar.url)
-    await interaction.response.send_message(embed=embed)
+    try:
+        # Message d'attente pendant que les données sont récupérées
+        await interaction.response.defer(thinking=True)
+
+        # Récupération des informations en parallèle
+        latency_task = asyncio.create_task(get_latency())
+        premium_task = asyncio.create_task(get_premium_servers_count())
+        members_task = asyncio.create_task(get_server_members_count(interaction.guild))
+        uptime_task = asyncio.create_task(get_bot_uptime())
+        memory_task = asyncio.create_task(get_bot_memory_usage())
+        
+        # Récupérer les résultats de toutes les tâches
+        latency, premium_count, member_count, uptime, memory_usage = await asyncio.gather(
+            latency_task, premium_task, members_task, uptime_task, memory_task
+        )
+        
+        # Déterminer la couleur de l'embed en fonction de la latence
+        color = discord.Color.green() if latency < 100 else discord.Color.orange() if latency < 200 else discord.Color.red()
+        
+        # Création de l'embed
+        embed = discord.Embed(
+            title="🤖 Statut du Bot",
+            description="Le bot est actuellement en ligne et opérationnel.",
+            color=color
+        )
+        
+        # Ajout des informations dans l'embed
+        embed.add_field(name="Version", value="Bot v1.0", inline=True)
+        embed.add_field(name="Serveurs Premium", value=f"**{premium_count}** serveurs premium activés.", inline=True)
+        embed.add_field(name="Latence", value=f"{latency:.2f} ms", inline=True)
+        embed.add_field(name="Membres sur le serveur", value=f"{member_count} membres actifs", inline=True)
+        embed.add_field(name="Uptime du Bot", value=uptime, inline=True)
+        embed.add_field(name="Utilisation Mémoire", value=f"{memory_usage} MB", inline=True)
+        
+        # Informations sur l'environnement
+        embed.add_field(name="Environnement", value=f"{platform.system()} {platform.release()} - Python {platform.python_version()}", inline=False)
+        
+        # Footer dynamique
+        embed.set_footer(text=f"Bot géré par Etherya | {bot.user.name}")
+
+        # Ajouter le thumbnail du bot
+        embed.set_thumbnail(url=bot.user.avatar.url)
+
+        # Envoi du message avec l'embed
+        await interaction.followup.send(embed=embed)
+
+    except Exception as e:
+        # Gestion d'erreur plus détaillée
+        await interaction.followup.send(
+            f"Une erreur est survenue lors de la récupération du statut du bot : {str(e)}"
+        )
+
+
+# Fonction pour récupérer la latence du bot
+async def get_latency():
+    return bot.latency * 1000  # Retourne la latence en millisecondes
+
+
+# Fonction pour récupérer le nombre de serveurs premium
+async def get_premium_servers_count():
+    return len(premium_servers)
+
+
+# Fonction pour récupérer le nombre de membres sur le serveur
+async def get_server_members_count(guild):
+    return len(guild.members)
+
+
+# Fonction pour récupérer l'uptime du bot
+async def get_bot_uptime():
+    uptime_seconds = int((discord.utils.utcnow() - bot.user.created_at).total_seconds())
+    uptime = str(datetime.timedelta(seconds=uptime_seconds))
+    return uptime
+
+
+# Fonction pour récupérer l'utilisation de la mémoire du bot
+async def get_bot_memory_usage():
+    # Utilisation de psutil pour obtenir l'utilisation mémoire du processus Python
+    process = psutil.Process()
+    memory_info = process.memory_info()
+    memory_usage_mb = memory_info.rss / (1024 * 1024)  # Convertir en Mo
+    return round(memory_usage_mb, 2)
 
 # Commande slash /premium
 @bot.tree.command(name="premium")
 @app_commands.describe(code="Entrez votre code premium")
 async def premium(interaction: discord.Interaction, code: str):
-    if code == valid_code:
-        premium_servers[interaction.guild.id] = interaction.guild.name  # Enregistrer le serveur comme premium
-        embed = discord.Embed(
-            title="✅ Serveur Premium Activé",
-            description=f"Le serveur **{interaction.guild.name}** est maintenant premium ! 🎉",
-            color=discord.Color.green()
+    await interaction.response.defer(thinking=True)  # Message d'attente pendant le traitement
+
+    try:
+        # Vérification si le code est valide
+        if code == valid_code:
+            # Vérification si le serveur est déjà premium
+            if interaction.guild.id in premium_servers:
+                embed = discord.Embed(
+                    title="⚠️ Serveur déjà Premium",
+                    description=f"Le serveur **{interaction.guild.name}** est déjà un serveur premium. 🎉",
+                    color=discord.Color.yellow()
+                )
+                embed.add_field(
+                    name="Pas de double activation",
+                    value="Ce serveur a déjà activé le code premium. Aucun changement nécessaire.",
+                    inline=False
+                )
+                embed.set_footer(text="Merci d'utiliser nos services premium.")
+                embed.set_thumbnail(url=interaction.guild.icon.url)  # Icône du serveur
+                await interaction.followup.send(embed=embed)
+            else:
+                # Enregistrement du serveur comme premium
+                premium_servers[interaction.guild.id] = interaction.guild.name
+                embed = discord.Embed(
+                    title="✅ Serveur Premium Activé",
+                    description=f"Le serveur **{interaction.guild.name}** est maintenant premium ! 🎉",
+                    color=discord.Color.green()
+                )
+                embed.add_field(
+                    name="Avantages Premium",
+                    value="Profitez des fonctionnalités exclusives réservées aux serveurs premium. 🎁",
+                    inline=False
+                )
+                embed.set_footer(text="Merci d'utiliser nos services premium.")
+                embed.set_thumbnail(url=interaction.guild.icon.url)  # Icône du serveur
+                await interaction.followup.send(embed=embed)
+
+        else:
+            # Code invalide, avec des suggestions supplémentaires
+            embed = discord.Embed(
+                title="❌ Code Invalide",
+                description="Le code que vous avez entré est invalide. Veuillez vérifier votre code ou contactez le support.",
+                color=discord.Color.red()
+            )
+            embed.add_field(
+                name="Suggestions",
+                value="1. Assurez-vous d'avoir saisi le code exactement comme il est fourni.\n"
+                      "2. Le code est sensible à la casse.\n"
+                      "3. Si vous avez des doutes, contactez le support.",
+                inline=False
+            )
+            embed.add_field(
+                name="Code Expiré ?",
+                value="Si vous pensez que votre code devrait être valide mais ne l'est pas, il est possible qu'il ait expiré. "
+                      "Dans ce cas, veuillez contacter notre équipe de support.",
+                inline=False
+            )
+            await interaction.followup.send(embed=embed)
+    
+    except Exception as e:
+        # Gestion des erreurs
+        await interaction.followup.send(
+            f"Une erreur est survenue lors de la vérification du code premium : {str(e)}"
         )
-        embed.set_footer(text="Merci d'utiliser nos services premium.")
-        embed.set_thumbnail(url=interaction.guild.icon.url)  # Icône du serveur
-        await interaction.response.send_message(embed=embed)
-    else:
-        embed = discord.Embed(
-            title="❌ Code Invalide",
-            description="Le code que vous avez entré est invalide. Veuillez vérifier votre code ou contactez le support.",
-            color=discord.Color.red()
-        )
-        embed.add_field(
-            name="Suggestions",
-            value="Assurez-vous d'avoir saisi le code exactement comme il est fourni. Le code premium est sensible à la casse.",
-            inline=False
-        )
-        await interaction.response.send_message(embed=embed)
+
+
+from discord.ui import Button, View
 
 # Commande slash /viewpremium
 @bot.tree.command(name="viewpremium")
 async def viewpremium(interaction: discord.Interaction):
     if not premium_servers:
+        # Embed pour indiquer qu'il n'y a aucun serveur premium
         embed = discord.Embed(
             title="🔒 Aucun Serveur Premium",
             description="Aucun serveur premium n'a été activé sur ce bot.",
@@ -370,20 +482,91 @@ async def viewpremium(interaction: discord.Interaction):
         )
         embed.add_field(
             name="Pourquoi devenir premium ?",
-            value="Devenez premium pour profiter de fonctionnalités exclusives et de plus de personnalisation pour votre serveur !",
+            value="Devenez premium pour profiter de fonctionnalités exclusives et de plus de personnalisation pour votre serveur !\n\n"
+                  "👉 **Contactez-nous** pour en savoir plus sur les avantages et les fonctionnalités offertes.",
             inline=False
         )
         embed.set_footer(text="Rejoignez notre programme premium.")
-        await interaction.response.send_message(embed=embed)
+        
+        # Ajout d'un bouton pour rejoindre le programme premium
+        join_button = Button(label="Rejoindre Premium", style=discord.ButtonStyle.green, url="https://votre-lien-premium.com")
+
+        view = View()
+        view.add_item(join_button)
+
+        await interaction.response.send_message(embed=embed, view=view)
     else:
+        # Si des serveurs premium existent, afficher la liste
         premium_list = "\n".join([f"**{server_name}**" for server_name in premium_servers.values()])
-        embed = discord.Embed(
-            title="🌟 Liste des Serveurs Premium",
-            description=f"Les serveurs premium activés sont :\n{premium_list}",
-            color=discord.Color.blue()
-        )
-        embed.set_footer(text="Merci pour votre soutien !")
-        await interaction.response.send_message(embed=embed)
+        
+        # Si la liste est trop longue, la diviser en pages
+        if len(premium_servers) > 10:
+            pages = split_list(premium_servers.values(), 10)  # Diviser la liste en pages de 10 serveurs
+            current_page = 0
+
+            # Embed initial
+            embed = discord.Embed(
+                title="🌟 Liste des Serveurs Premium",
+                description=f"Page {current_page + 1}/{len(pages)}\n\n{'\n'.join(pages[current_page])}",
+                color=discord.Color.blue()
+            )
+            embed.set_footer(text="Merci pour votre soutien !")
+
+            # Créer les boutons de pagination
+            previous_button = Button(label="Précédent", style=discord.ButtonStyle.secondary, disabled=True)
+            next_button = Button(label="Suivant", style=discord.ButtonStyle.secondary)
+
+            async def update_embed(page_number):
+                # Mettre à jour l'embed avec les serveurs de la page sélectionnée
+                embed.description = f"Page {page_number + 1}/{len(pages)}\n\n{'\n'.join(pages[page_number])}"
+                await interaction.edit_original_response(embed=embed)
+
+            # Fonction pour gérer le bouton "Suivant"
+            async def next_page_callback(interaction):
+                nonlocal current_page
+                if current_page < len(pages) - 1:
+                    current_page += 1
+                    await update_embed(current_page)
+                previous_button.disabled = current_page == 0
+                next_button.disabled = current_page == len(pages) - 1
+                await interaction.edit_original_response(view=view)
+
+            # Fonction pour gérer le bouton "Précédent"
+            async def previous_page_callback(interaction):
+                nonlocal current_page
+                if current_page > 0:
+                    current_page -= 1
+                    await update_embed(current_page)
+                previous_button.disabled = current_page == 0
+                next_button.disabled = current_page == len(pages) - 1
+                await interaction.edit_original_response(view=view)
+
+            # Ajouter les actions aux boutons
+            previous_button.callback = previous_page_callback
+            next_button.callback = next_page_callback
+
+            # Créer la vue avec les boutons
+            view = View()
+            view.add_item(previous_button)
+            view.add_item(next_button)
+
+            # Envoyer le message avec l'embed et la vue de pagination
+            await interaction.response.send_message(embed=embed, view=view)
+        else:
+            # Si la liste est courte, tout afficher d'un coup
+            embed = discord.Embed(
+                title="🌟 Liste des Serveurs Premium",
+                description=f"Les serveurs premium activés sont :\n{premium_list}",
+                color=discord.Color.blue()
+            )
+            embed.set_footer(text="Merci pour votre soutien !")
+            await interaction.response.send_message(embed=embed)
+
+
+# Fonction pour diviser la liste des serveurs en pages
+def split_list(lst, page_size):
+    return [lst[i:i + page_size] for i in range(0, len(lst), page_size)]
+
 #------------------------------------------------------------------------- Commande SETUP
 
 @bot.tree.command(name="setup", description="Configure les rôles et salons du bot.")

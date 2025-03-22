@@ -388,12 +388,11 @@ premium_servers = {}
 # Code Premium valide
 valid_code = "Etherya_Iseyg=91"
 
-# Ajout d'une commande pour afficher le statut du bot
 @bot.tree.command(name="statut")
 async def statut(interaction: discord.Interaction):
     try:
         # Message d'attente pendant que les données sont récupérées
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer()
 
         # Récupération des informations en parallèle
         latency_task = asyncio.create_task(get_latency())
@@ -401,22 +400,22 @@ async def statut(interaction: discord.Interaction):
         members_task = asyncio.create_task(get_server_members_count(interaction.guild))
         uptime_task = asyncio.create_task(get_bot_uptime())
         memory_task = asyncio.create_task(get_bot_memory_usage())
-        
+
         # Récupérer les résultats de toutes les tâches
         latency, premium_count, member_count, uptime, memory_usage = await asyncio.gather(
             latency_task, premium_task, members_task, uptime_task, memory_task
         )
-        
+
         # Déterminer la couleur de l'embed en fonction de la latence
         color = discord.Color.green() if latency < 100 else discord.Color.orange() if latency < 200 else discord.Color.red()
-        
+
         # Création de l'embed
         embed = discord.Embed(
             title="🤖 Statut du Bot",
             description="Le bot est actuellement en ligne et opérationnel.",
             color=color
         )
-        
+
         # Ajout des informations dans l'embed
         embed.add_field(name="Version", value="Bot v1.0", inline=True)
         embed.add_field(name="Serveurs Premium", value=f"**{premium_count}** serveurs premium activés.", inline=True)
@@ -424,10 +423,10 @@ async def statut(interaction: discord.Interaction):
         embed.add_field(name="Membres sur le serveur", value=f"{member_count} membres actifs", inline=True)
         embed.add_field(name="Uptime du Bot", value=uptime, inline=True)
         embed.add_field(name="Utilisation Mémoire", value=f"{memory_usage} MB", inline=True)
-        
+
         # Informations sur l'environnement
         embed.add_field(name="Environnement", value=f"{platform.system()} {platform.release()} - Python {platform.python_version()}", inline=False)
-        
+
         # Footer dynamique
         embed.set_footer(text=f"Bot géré par Etherya | {bot.user.name}")
 
@@ -442,7 +441,6 @@ async def statut(interaction: discord.Interaction):
         await interaction.followup.send(
             f"Une erreur est survenue lors de la récupération du statut du bot : {str(e)}"
         )
-
 
 # Fonction pour récupérer la latence du bot
 async def get_latency():

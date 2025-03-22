@@ -148,7 +148,7 @@ async def setstatus(ctx, status: str):
 
 @bot.command()
 async def getbotinfo(ctx):
-    """Affiche les statistiques détaillées du bot avec un embed amélioré visuellement."""
+    """Affiche les statistiques détaillées du bot avec un design ultra-amélioré."""
     try:
         start_time = time.time()
         
@@ -166,15 +166,17 @@ async def getbotinfo(ctx):
         latency = round(bot.latency * 1000, 2)  # Latence en ms
         total_commands = len(bot.commands)
 
-        # Génération d'une barre de progression pour la latence
-        latency_bar = "🟩" * min(10, int(10 - (latency / 50))) + "🟥" * max(0, int(latency / 50))
+        # Génération d'une barre de progression pour la latence (avec fond et barre dynamique)
+        latency_bar_length = int(10 - (latency / 50))
+        latency_bar = "🟩" * max(0, latency_bar_length) + "🟥" * max(0, 10 - latency_bar_length)
+        latency_color = discord.Color.green() if latency <= 100 else discord.Color.orange() if latency <= 200 else discord.Color.red()
 
         # Création de l'embed
         embed = discord.Embed(
             title="✨ Informations du Bot",
             description=f"📌 **Nom :** `{bot.user.name}`\n"
                         f"🆔 **ID :** `{bot.user.id}`\n"
-                        f"🛠️ **Développé par :** `Iseyg`",
+                        f"🛠️ **Développé par :** `TonNomOuTonPseudo`",
             color=discord.Color.gold(),
             timestamp=datetime.utcnow()
         )
@@ -199,28 +201,45 @@ async def getbotinfo(ctx):
             inline=False
         )
 
-        # 🔄 Uptime
+        # 🔄 Uptime avec icône stylisée
         embed.add_field(
             name="⏳ **Uptime**",
             value=f"🕰️ `{uptime_days}j {uptime_hours}h {uptime_minutes}m {uptime_seconds}s`",
             inline=True
         )
 
-        # 📡 Latence
+        # 📡 Latence avec barre et couleur dynamique
         embed.add_field(
             name="📡 **Latence**",
             value=f"⏳ `{latency} ms`\n{latency_bar}",
             inline=True
         )
+        embed.set_field_at(2, embed.fields[2].copy())
+        embed.fields[2].value = embed.fields[2].value.replace("📡", f"📡 **Latence** {latency_color}")
+        embed.color = latency_color  # Change la couleur de l'embed selon la latence
 
-        # 🌐 Hébergement (modifiable selon ton setup)
+        # 🌐 Hébergement
         embed.add_field(
             name="🌐 **Hébergement**",
             value="🖥️ `Render + Uptime Robot`",  # Change ça si nécessaire
             inline=False
         )
 
-        # Ajout d'un bouton d'invitation
+        # 🛠️ Version du bot
+        embed.add_field(
+            name="🔧 **Version**",
+            value="v2.0.1",  # Change selon la version de ton bot
+            inline=True
+        )
+
+        # 📅 Dernière mise à jour
+        embed.add_field(
+            name="📅 **Dernière mise à jour**",
+            value=f"🕐 `{bot.user.created_at.strftime('%d/%m/%Y')}`",
+            inline=True
+        )
+
+        # Ajout d'un bouton d'invitation avec effet de survol
         view = discord.ui.View()
         invite_button = discord.ui.Button(
             label="📩 Inviter le Bot",

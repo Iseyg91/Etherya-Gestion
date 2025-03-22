@@ -3991,34 +3991,54 @@ async def suggestions_command(interaction: discord.Interaction):
 # Commande de rappel
 @bot.tree.command(name="rappel", description="Définis un rappel avec une durée, une raison et un mode d'alerte.")
 @app_commands.describe(
-    duree="Durée en secondes",
+    duree="Durée du rappel (format: nombre suivi de 's', 'm' ou 'd')",
     raison="Pourquoi veux-tu ce rappel ?",
     prive="Voulez-vous un rappel en privé ? (True/False)"
 )
-async def rappel(interaction: discord.Interaction, duree: int, raison: str, prive: bool):
+async def rappel(interaction: discord.Interaction, duree: str, raison: str, prive: bool):
+    # Parsing de la durée
+    time_value = int(duree[:-1])  # Extrait le nombre
+    time_unit = duree[-1]  # Extrait l'unité de temps
+
+    # Convertir la durée en secondes
+    if time_unit == 's':
+        total_seconds = time_value
+    elif time_unit == 'm':
+        total_seconds = time_value * 60
+    elif time_unit == 'h':
+        total_seconds = time_value * 3600
+    elif time_unit == 'd':
+        total_seconds = time_value * 86400
+    else:
+        await interaction.response.send_message("Format de durée invalide. Utilisez 's' pour secondes, 'm' pour minutes, ou 'd' pour jours.", ephemeral=True)
+        return
+
     # Confirmation du rappel
     embed = discord.Embed(
         title="🔔 Rappel programmé !",
-        description=f"**Raison :** {raison}\n**Durée :** {duree} secondes\n**Mode :** {'Privé' if prive else 'Public'}",
+        description=f"**Raison :** {raison}\n**Durée :** {duree}\n**Mode :** {'Privé' if prive else 'Public'}",
         color=discord.Color.blue()
     )
     embed.set_footer(text="Je te rappellerai à temps ⏳")
     await interaction.response.send_message(embed=embed, ephemeral=True)  # Message visible que par l'utilisateur
 
     # Attendre le temps indiqué
-    await asyncio.sleep(duree)
+    await asyncio.sleep(total_seconds)
 
-    # Envoyer le rappel
+    # Création du rappel
     rappel_embed = discord.Embed(
         title="⏰ Rappel !",
-        description=f"**Raison :** {raison}\n\n⏳ Temps écoulé : {duree} secondes",
+        description=f"**Raison :** {raison}\n\n⏳ Temps écoulé : {str(timedelta(seconds=total_seconds))}",
         color=discord.Color.green()
     )
     rappel_embed.set_footer(text="Pense à ne pas oublier ! 😉")
 
     # Envoi en MP ou dans le salon
     if prive:
-        await interaction.user.send(embed=rappel_embed)
+        try:
+            await interaction.user.send(embed=rappel_embed)
+        except discord.Forbidden:
+            await interaction.response.send_message("Je n'ai pas pu t'envoyer le message en privé. Veuillez vérifier vos paramètres de confidentialité.", ephemeral=True)
     else:
         await interaction.channel.send(f"{interaction.user.mention}", embed=rappel_embed)
 

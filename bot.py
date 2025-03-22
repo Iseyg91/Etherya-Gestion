@@ -131,21 +131,63 @@ async def setstatus(ctx, status: str):
     else:
         await ctx.send("Seul l'owner peut changer le statut du bot.")
 
-# Commande pour obtenir les informations du bot
 @bot.command()
 async def getbotinfo(ctx):
-    if is_owner(ctx):
-        uptime = time.time() - bot.uptime  # Calcul de l'uptime en secondes
-        embed = discord.Embed(
-            title="Informations sur le Bot",
-            description=f"**Uptime :** {uptime // 3600} heures, {(uptime % 3600) // 60} minutes\n"
-                        f"**Serveurs :** {len(bot.guilds)}\n"
-                        f"**Utilisateurs :** {len([member for guild in bot.guilds for member in guild.members])}",
-            color=discord.Color.orange()
-        )
-        await ctx.send(embed=embed)
-    else:
-        await ctx.send("Seul l'owner peut obtenir ces informations.")
+    if not is_owner(ctx):
+        return await ctx.send("Seul l'owner peut obtenir ces informations.")
+
+    # Calcul de l'uptime du bot
+    uptime_seconds = time.time() - bot.uptime
+    uptime_days = int(uptime_seconds // 86400)
+    uptime_hours = int((uptime_seconds % 86400) // 3600)
+    uptime_minutes = int((uptime_seconds % 3600) // 60)
+    uptime_seconds = int(uptime_seconds % 60)
+
+    # Récupération des statistiques du bot
+    total_servers = len(bot.guilds)
+    total_users = sum(g.member_count for g in bot.guilds)
+    latency = round(bot.latency * 1000, 2)  # Latence en ms
+    total_commands = len(bot.commands)
+
+    # Création de l'embed
+    embed = discord.Embed(
+        title="🤖 Informations du Bot",
+        description=f"✨ **Nom :** `{bot.user.name}`\n"
+                    f"🔹 **ID :** `{bot.user.id}`\n"
+                    f"🌐 **Créé le :** `{bot.user.created_at.strftime('%d/%m/%Y')}`",
+        color=discord.Color.orange(),
+        timestamp=datetime.utcnow()
+    )
+    
+    embed.set_thumbnail(url=bot.user.avatar.url)
+    embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar.url)
+
+    # Ajout des stats principales
+    embed.add_field(
+        name="📊 **Statistiques**",
+        value=(
+            f"> **🖥️ Serveurs :** `{total_servers}`\n"
+            f"> **👥 Utilisateurs :** `{total_users}`\n"
+            f"> **⌨️ Commandes :** `{total_commands}`\n"
+            f"> **📡 Latence :** `{latency} ms`\n"
+        ),
+        inline=False
+    )
+
+    # Ajout de l'uptime
+    embed.add_field(
+        name="⏳ **Uptime**",
+        value=f"> {uptime_days} jours, {uptime_hours} heures, {uptime_minutes} min, {uptime_seconds} sec",
+        inline=False
+    )
+
+    # Ajout d'un bouton d'invitation
+    view = discord.ui.View()
+    invite_button = discord.ui.Button(label="📩 Inviter le Bot", style=discord.ButtonStyle.link, url="https://discord.com/oauth2/authorize?client_id=TON_ID&scope=bot&permissions=8")
+    view.add_item(invite_button)
+
+    await ctx.send(embed=embed, view=view)
+
 
 # Liste d'emojis qui tournent pour éviter la répétition
 EMOJIS_SERVEURS = ["🎭", "🌍", "🏰", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]

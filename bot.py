@@ -468,8 +468,6 @@ async def premium(interaction: discord.Interaction, code: str):
         )
 
 
-from discord.ui import Button, View
-
 # Commande slash /viewpremium
 @bot.tree.command(name="viewpremium")
 async def viewpremium(interaction: discord.Interaction):
@@ -499,18 +497,21 @@ async def viewpremium(interaction: discord.Interaction):
         # Si des serveurs premium existent, afficher la liste
         premium_list = "\n".join([f"**{server_name}**" for server_name in premium_servers.values()])
         
-        # Si la liste est trop longue, la diviser en pages
-        if len(premium_servers) > 10:
-            pages = split_list(premium_servers.values(), 10)  # Diviser la liste en pages de 10 serveurs
-            current_page = 0
+if len(premium_servers) > 10:
+    pages = split_list(premium_servers.values(), 10)  # Diviser la liste en pages de 10 serveurs
+    current_page = 0
 
-            # Embed initial
-            embed = discord.Embed(
-                title="🌟 Liste des Serveurs Premium",
-                description=f"Page {current_page + 1}/{len(pages)}\n\n{'\n'.join(pages[current_page])}",
-                color=discord.Color.blue()
-            )
-            embed.set_footer(text="Merci pour votre soutien !")
+    # Créer une chaîne de texte avec les serveurs de la page actuelle
+    page_content = '\n'.join(pages[current_page])
+
+    # Embed initial
+    embed = discord.Embed(
+        title="🌟 Liste des Serveurs Premium",
+        description=f"Page {current_page + 1}/{len(pages)}\n\n{page_content}",
+        color=discord.Color.blue()
+    )
+    embed.set_footer(text="Merci pour votre soutien !")
+
 
             # Créer les boutons de pagination
             previous_button = Button(label="Précédent", style=discord.ButtonStyle.secondary, disabled=True)

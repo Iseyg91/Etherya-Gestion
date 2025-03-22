@@ -211,16 +211,16 @@ async def getbotinfo(ctx):
 
     await ctx.send(embed=embed, view=view)
 
-
 # Liste d'emojis qui tournent pour éviter la répétition
 EMOJIS_SERVEURS = ["🎭", "🌍", "🏰", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]
 
 class ServerInfoView(View):
-    def __init__(self, ctx, bot, guilds):
+    def __init__(self, ctx, bot, guilds, premium_servers):
         super().__init__()
         self.ctx = ctx
         self.bot = bot
         self.guilds = sorted(guilds, key=lambda g: g.member_count, reverse=True)  # Tri par popularité
+        self.premium_servers = premium_servers
         self.page = 0
         self.servers_per_page = 5
         self.max_page = (len(self.guilds) - 1) // self.servers_per_page
@@ -237,6 +237,7 @@ class ServerInfoView(View):
 
     async def create_embed(self):
         total_servers = len(self.guilds)
+        total_premium = len(self.premium_servers)  # Nombre de serveurs premium
 
         embed = discord.Embed(
             title=f"🌍 Serveurs du Bot (`{total_servers}` total)",
@@ -252,7 +253,8 @@ class ServerInfoView(View):
 
         for i, guild in enumerate(self.guilds[start:end]):
             emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Sélectionne un emoji en alternance
-            
+            is_premium = "⭐ **Premium**" if guild.id in self.premium_servers else "❌ Standard"
+
             invite_url = "🔒 *Aucune invitation disponible*"
             if guild.text_channels:
                 invite = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
@@ -264,7 +266,7 @@ class ServerInfoView(View):
             emoji_count = len(guild.emojis)
 
             embed.add_field(
-                name=f"{emoji} **{guild.name}**",
+                name=f"{emoji} **{guild.name}** {'⭐' if guild.id in self.premium_servers else ''}",
                 value=(
                     f"> **👑 Propriétaire** : {owner}\n"
                     f"> **📊 Membres** : `{member_display}`\n"
@@ -274,10 +276,17 @@ class ServerInfoView(View):
                     f"> **😃 Emojis** : `{emoji_count}`\n"
                     f"> **🆔 ID** : `{guild.id}`\n"
                     f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
+                    f"> **🏅 Statut** : {is_premium}\n"
                     f"> {invite_url}"
                 ),
                 inline=False
             )
+
+        embed.add_field(
+            name="📜 Statistiques Premium",
+            value=f"⭐ **{total_premium}** serveurs Premium activés.",
+            inline=False
+        )
 
         embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
         return embed
@@ -295,11 +304,12 @@ class ServerInfoView(View):
 @bot.command()
 async def serverinfoall(ctx):
     if is_owner(ctx):
-        view = ServerInfoView(ctx, bot, bot.guilds)
+        view = ServerInfoView(ctx, bot, bot.guilds, premium_servers)
         embed = await view.create_embed()
         await ctx.send(embed=embed, view=view)
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
+
 #-------------------------------------------------------------------------- Commandes /premium et /viewpremium
 # Dictionnaire pour stocker les serveurs premium
 premium_servers = {}

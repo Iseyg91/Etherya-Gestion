@@ -211,17 +211,17 @@ async def getbotinfo(ctx):
 
     await ctx.send(embed=embed, view=view)
 
-# 🎭 Liste d'emojis pour varier l'affichage
-EMOJIS_SERVEURS = ["🎭", "🌍", "🏰", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]
+# 🎭 Emojis dynamiques pour chaque serveur
+EMOJIS_SERVEURS = ["🌍", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]
 
 # 🏆 Liste des serveurs Premium
 premium_servers = {}
 
-# ⚜️ ID du serveur Etherya (remplace par le vrai ID)
-ETHERYA_ID = 1034007767050104892  
+# ⚜️ ID du serveur Etherya
+ETHERYA_ID = 123456789012345678  
 
 def boost_bar(level):
-    """Affiche une barre de progression pour le niveau de boost"""
+    """Génère une barre de progression pour le niveau de boost."""
     filled = "🟣" * level
     empty = "⚫" * (3 - level)
     return filled + empty
@@ -251,7 +251,7 @@ class ServerInfoView(View):
         total_servers = len(self.guilds)
         total_premium = len(self.premium_servers)
 
-        # 🌟 Définition de la couleur en fonction des Premium
+        # 🌟 Couleur spéciale pour Etherya
         embed_color = discord.Color.purple() if ETHERYA_ID in self.premium_servers else discord.Color.gold()
 
         embed = discord.Embed(
@@ -272,15 +272,21 @@ class ServerInfoView(View):
 
         for rank, guild in enumerate(self.guilds[start:end], start=start + 1):
             emoji = EMOJIS_SERVEURS[rank % len(EMOJIS_SERVEURS)]
-            is_premium = "⭐ **Premium**" if guild.id in self.premium_servers else "❌ Standard"
+            is_premium = "💎 **Premium**" if guild.id in self.premium_servers else "⚪ Standard"
             vip_badge = " 👑 VIP" if guild.member_count > 10000 else ""
+            boost_display = f"{boost_bar(guild.premium_tier)} *(Niveau {guild.premium_tier})*"
 
             # 💎 Mise en avant spéciale d’Etherya
             if guild.id == ETHERYA_ID:
                 guild_name = f"⚜️ **{guild.name}** ⚜️"
                 is_premium = "**🔥 Serveur Premium Ultime !**"
                 embed.color = discord.Color.purple()
-                embed.description = "**🎖️ Etherya est notre serveur principal ! Rejoignez-nous !**\n\n🔗 [Invitation permanente](https://discord.gg/votre-invitation)"
+                embed.description = (
+                    "━━━━━━━━━━━━━━━━━━━\n"
+                    "🎖️ **Etherya est notre serveur principal !**\n"
+                    "🔗 [Invitation permanente](https://discord.gg/votre-invitation)\n"
+                    "━━━━━━━━━━━━━━━━━━━"
+                )
             else:
                 guild_name = f"**#{rank}** {emoji} **{guild.name}**{vip_badge}"
 
@@ -291,22 +297,23 @@ class ServerInfoView(View):
                 invite_url = f"[🔗 Invitation]({invite.url})"
 
             owner = guild.owner.mention if guild.owner else "❓ *Inconnu*"
-            boost_level = boost_bar(guild.premium_tier)
             emoji_count = len(guild.emojis)
 
+            # 🎨 Affichage plus propre
             embed.add_field(
                 name=guild_name,
                 value=(
-                    f"> **👑 Propriétaire** : {owner}\n"
-                    f"> **📊 Membres** : `{guild.member_count}`\n"
-                    f"> **💎 Boosts** : {boost_level} *(Niveau {guild.premium_tier})*\n"
-                    f"> **🛠️ Rôles** : `{len(guild.roles)}` | **💬 Canaux** : `{len(guild.channels)}`\n"
-                    f"> **😃 Emojis** : `{emoji_count}`\n"
-                    f"> **🆔 ID** : `{guild.id}`\n"
-                    f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
-                    f"> **🏅 Statut** : {is_premium}\n"
-                    f"> {invite_url}\n"
-                    "━━━━━━━━━━━━━━━━━━━"
+                    f"━━━━━━━━━━━━━━━━━━━\n"
+                    f"👑 **Propriétaire** : {owner}\n"
+                    f"📊 **Membres** : `{guild.member_count}`\n"
+                    f"💎 **Boosts** : {boost_display}\n"
+                    f"🛠️ **Rôles** : `{len(guild.roles)}` • 💬 **Canaux** : `{len(guild.channels)}`\n"
+                    f"😃 **Emojis** : `{emoji_count}`\n"
+                    f"🆔 **ID** : `{guild.id}`\n"
+                    f"📅 **Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
+                    f"🏅 **Statut** : {is_premium}\n"
+                    f"{invite_url}\n"
+                    f"━━━━━━━━━━━━━━━━━━━"
                 ),
                 inline=False
             )

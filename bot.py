@@ -722,13 +722,14 @@ def get_lyrics(song_name, artist_name=""):
                 return lyrics if lyrics else "❌ Paroles introuvables."
     return "❌ Paroles introuvables."
 
-# 🎵 Récupérer les infos YouTube
-def get_youtube_info(song_name):
-    ydl_opts = {"format": "bestaudio", "quiet": True}
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(f"ytsearch:{song_name}", download=False)['entries'][0]
-        duration = info.get('duration', 0)
-        return info['url'], info['thumbnail'], duration
+# 🎵 Récupérer les infos Spotify
+def get_spotify_info(song_name):
+    result = sp.search(song_name, limit=1, type="track")
+    track = result['tracks']['items'][0]
+    track_url = track['external_urls']['spotify']
+    thumbnail_url = track['album']['images'][0]['url']
+    duration = track['duration_ms'] // 1000  # Convertir la durée en secondes
+    return track_url, thumbnail_url, duration
 
 # 🎛️ Classe pour les boutons
 class MusicControls(discord.ui.View):
@@ -779,8 +780,8 @@ async def play(ctx, *, song_name: str):
         voice_channel = ctx.author.voice.channel
         voice_client = await voice_channel.connect() if not ctx.voice_client else ctx.voice_client
 
-        youtube_url, thumbnail_url, duration = get_youtube_info(song_name)
-        music_queue.append((song_name, youtube_url, thumbnail_url, duration))
+        spotify_url, thumbnail_url, duration = get_spotify_info(song_name)
+        music_queue.append((song_name, spotify_url, thumbnail_url, duration))
 
         if voice_client.is_playing():
             embed = discord.Embed(title="✅ Musique ajoutée", description=f"**{song_name}** a été ajouté à la file d'attente.", color=discord.Color.blue())
@@ -795,9 +796,9 @@ async def play(ctx, *, song_name: str):
 # 🎵 Jouer la prochaine musique avec paroles
 async def play_next(ctx, voice_client):
     if music_queue:
-        song_name, youtube_url, thumbnail_url, duration = music_queue.popleft()
+        song_name, spotify_url, thumbnail_url, duration = music_queue.popleft()
         duration_str = f"{duration // 60}:{duration % 60:02d}"
-        audio_source = discord.FFmpegPCMAudio(youtube_url, options='-vn')
+        audio_source = discord.FFmpegPCMAudio(spotify_url, options='-vn')
         voice_client.play(audio_source, after=lambda e: asyncio.run_coroutine_threadsafe(play_next(ctx, voice_client), bot.loop))
 
         lyrics = get_lyrics(song_name)

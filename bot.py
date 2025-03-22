@@ -497,76 +497,15 @@ async def viewpremium(interaction: discord.Interaction):
         # Si des serveurs premium existent, afficher la liste
         premium_list = "\n".join([f"**{server_name}**" for server_name in premium_servers.values()])
         
-if len(premium_servers) > 10:
-    pages = split_list(premium_servers.values(), 10)  # Diviser la liste en pages de 10 serveurs
-    current_page = 0
+        # Si la liste est courte, tout afficher d'un coup
+        embed = discord.Embed(
+            title="🌟 Liste des Serveurs Premium",
+            description=f"Les serveurs premium activés sont :\n{premium_list}",
+            color=discord.Color.blue()
+        )
+        embed.set_footer(text="Merci pour votre soutien !")
+        await interaction.response.send_message(embed=embed)
 
-    # Créer une chaîne de texte avec les serveurs de la page actuelle
-    page_content = '\n'.join(pages[current_page])
-
-    # Embed initial
-    embed = discord.Embed(
-        title="🌟 Liste des Serveurs Premium",
-        description=f"Page {current_page + 1}/{len(pages)}\n\n{page_content}",
-        color=discord.Color.blue()
-    )
-    embed.set_footer(text="Merci pour votre soutien !")
-
-    # Créer les boutons de pagination (indentation correcte ici)
-    previous_button = Button(label="Précédent", style=discord.ButtonStyle.secondary, disabled=True)
-    next_button = Button(label="Suivant", style=discord.ButtonStyle.secondary)
-
-# Fonction pour mettre à jour l'embed avec les serveurs de la page sélectionnée
-async def update_embed(page_number):
-    embed.description = f"Page {page_number + 1}/{len(pages)}\n\n{'\n'.join(pages[page_number])}"
-    await interaction.edit_original_response(embed=embed)
-
-
-            # Fonction pour gérer le bouton "Suivant"
-async def next_page_callback(interaction):
-                nonlocal current_page
-                if current_page < len(pages) - 1:
-                    current_page += 1
-                    await update_embed(current_page)
-                previous_button.disabled = current_page == 0
-                next_button.disabled = current_page == len(pages) - 1
-                await interaction.edit_original_response(view=view)
-
-            # Fonction pour gérer le bouton "Précédent"
-async def previous_page_callback(interaction):
-                nonlocal current_page
-                if current_page > 0:
-                    current_page -= 1
-                    await update_embed(current_page)
-                previous_button.disabled = current_page == 0
-                next_button.disabled = current_page == len(pages) - 1
-                await interaction.edit_original_response(view=view)
-
-            # Ajouter les actions aux boutons
-            previous_button.callback = previous_page_callback
-            next_button.callback = next_page_callback
-
-            # Créer la vue avec les boutons
-            view = View()
-            view.add_item(previous_button)
-            view.add_item(next_button)
-
-            # Envoyer le message avec l'embed et la vue de pagination
-            await interaction.response.send_message(embed=embed, view=view)
-        else:
-            # Si la liste est courte, tout afficher d'un coup
-            embed = discord.Embed(
-                title="🌟 Liste des Serveurs Premium",
-                description=f"Les serveurs premium activés sont :\n{premium_list}",
-                color=discord.Color.blue()
-            )
-            embed.set_footer(text="Merci pour votre soutien !")
-            await interaction.response.send_message(embed=embed)
-
-
-# Fonction pour diviser la liste des serveurs en pages
-def split_list(lst, page_size):
-    return [lst[i:i + page_size] for i in range(0, len(lst), page_size)]
 
 #------------------------------------------------------------------------- Commande SETUP
 

@@ -334,6 +334,7 @@ async def setup(interaction: discord.Interaction):
     
     await interaction.response.send_message(embed=embed, ephemeral=True)
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
+
 # Liste des mots sensibles
 sensitive_words = [
     # Insultes et injures
@@ -386,8 +387,14 @@ async def on_message(message):
     if message.author.bot:
         return  # Ignorer les messages des bots
 
-    # Nettoyage du message de toute ponctuation
+    # Log du contenu du message pour debug
+    print(f"Message reçu: {message.content}")
+
+    # Nettoyage du message de toute ponctuation et conversion en minuscules
     clean_message = re.sub(r'[^\w\s]', '', message.content.lower())
+
+    # Log du message nettoyé pour vérifier le contenu
+    print(f"Message nettoyé: {clean_message}")
 
     # Détection des mots sensibles
     for word in sensitive_words:
@@ -773,12 +780,8 @@ async def send_embed(ctx, embed, view=None):
 def get_audio_source(url):
     ydl_opts = {
         'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegAudioConvertor',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-        'outtmpl': 'downloads/%(id)s.%(ext)s',
+        'outtmpl': 'downloads/%(id)s.%(ext)s',  # N'utiliser pas de post-traitement
+        'quiet': True,  # Supprimer les logs non nécessaires
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:

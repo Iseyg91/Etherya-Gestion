@@ -156,9 +156,6 @@ async def setstatus(ctx, status: str):
 
 @bot.command()
 async def getbotinfo(ctx):
-    if not is_owner(ctx):
-        return await ctx.send("Seul l'owner peut obtenir ces informations.")
-
     # Calcul de l'uptime du bot
     uptime_seconds = time.time() - bot.uptime
     uptime_days = int(uptime_seconds // 86400)
@@ -193,7 +190,7 @@ async def getbotinfo(ctx):
     # Ajout des stats principales avec formatage des nombres
     embed.add_field(
         name="📊 **Statistiques**",
-        value=(
+        value=( 
             f"> **🖥️ Serveurs :** `{total_servers:,}`\n"
             f"> **👥 Utilisateurs :** `{total_users:,}`\n"
             f"> **💬 Textuels :** `{total_text_channels:,}`\n"
@@ -221,6 +218,7 @@ async def getbotinfo(ctx):
     view.add_item(invite_button)
 
     await ctx.send(embed=embed, view=view)
+
 
 # Liste d'emojis qui tournent pour éviter la répétition
 EMOJIS_SERVEURS = ["🎭", "🌍", "🏰", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]
@@ -385,16 +383,17 @@ def get_main_guild():
 @bot.event
 async def on_message(message):
     if message.author.bot:
-        return  # Ignorer les bots
-
-    guild = message.guild
+        return  # Ignorer les messages des bots
 
     # Détection des mots sensibles
     for word in sensitive_words:
         if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
             print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
             asyncio.create_task(send_alert_to_admin(message, word))
-            break  # On arrête la boucle dès qu'on trouve un mot interdit
+            break  # Arrête la boucle dès qu'un mot sensible est trouvé
+
+    # Important: Assure-toi d'appeler cette ligne pour traiter les commandes après le filtrage des messages
+    await bot.process_commands(message)
 
     # Réponse automatique aux mentions du bot
     if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
@@ -791,7 +790,6 @@ async def play(ctx, *, song_name: str):
     except Exception as e:
         embed = discord.Embed(title="❌ Erreur", description=f"Une erreur est survenue : {str(e)}", color=discord.Color.red())
         await ctx.send(embed=embed)
-        traceback.print_exc()
 
 # 🎵 Jouer la prochaine musique avec paroles
 async def play_next(ctx, voice_client):
@@ -799,6 +797,8 @@ async def play_next(ctx, voice_client):
         song_name, spotify_url, thumbnail_url, duration = music_queue.popleft()
         duration_str = f"{duration // 60}:{duration % 60:02d}"
         audio_source = discord.FFmpegPCMAudio(spotify_url, options='-vn')
+
+        # Lecture de la musique
         voice_client.play(audio_source, after=lambda e: asyncio.run_coroutine_threadsafe(play_next(ctx, voice_client), bot.loop))
 
         lyrics = get_lyrics(song_name)
@@ -848,7 +848,6 @@ async def stop(ctx):
         ctx.voice_client.stop()
         music_queue.clear()
         previous_tracks.clear()
-        
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 
 @bot.command()

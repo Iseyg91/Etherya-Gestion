@@ -41,6 +41,10 @@ GUILD_SETTINGS = {}
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
+
+    # Initialiser l'uptime du bot
+    bot.uptime = time.time()
+
     # Liste des activités à alterner
     activity_types = [
         discord.Game("Etherya"),  # Playing
@@ -78,6 +82,7 @@ async def on_ready():
                 await asyncio.sleep(10)  # Attente de 10 secondes avant de changer l'activité et le statut
     for guild in bot.guilds:
         GUILD_SETTINGS[guild.id] = load_guild_settings(guild.id)
+
 #--------------------------------------------------------------------------- Owner Verif
 
 BOT_OWNER_ID = 792755123587645461
@@ -126,27 +131,11 @@ async def setstatus(ctx, status: str):
     else:
         await ctx.send("Seul l'owner peut changer le statut du bot.")
 
-@bot.command()
-async def clearlogs(ctx):
-    if is_owner(ctx):
-        log_file_path = "logs.txt"  # Remplace par ton fichier de logs
-        if os.path.exists(log_file_path):
-            os.remove(log_file_path)
-            embed = discord.Embed(
-                title="Logs Effacés",
-                description="Les logs du bot ont été supprimés avec succès.",
-                color=discord.Color.green()
-            )
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send("Aucun fichier de log trouvé.")
-    else:
-        await ctx.send("Seul l'owner peut supprimer les logs.")
-
+# Commande pour obtenir les informations du bot
 @bot.command()
 async def getbotinfo(ctx):
     if is_owner(ctx):
-        uptime = time.time() - bot.uptime  # Si tu définis un attribut bot.uptime pour l'heure de lancement
+        uptime = time.time() - bot.uptime  # Calcul de l'uptime en secondes
         embed = discord.Embed(
             title="Informations sur le Bot",
             description=f"**Uptime :** {uptime // 3600} heures, {(uptime % 3600) // 60} minutes\n"
@@ -158,20 +147,31 @@ async def getbotinfo(ctx):
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
 
+
 @bot.command()
 async def serverinfoall(ctx):
     if is_owner(ctx):
         embed = discord.Embed(
             title="Informations sur les Serveurs",
-            description="Voici les informations sur tous les serveurs où le bot est présent.",
-            color=discord.Color.purple()
+            description="Voici les informations détaillées sur tous les serveurs où le bot est présent.",
+            color=discord.Color.purple(),
+            timestamp=datetime.datetime.utcnow()  # Ajout de la date/heure
         )
+        embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar_url)  # Ajout du footer avec l'avatar de l'utilisateur
+        
         for guild in bot.guilds:
             embed.add_field(
                 name=guild.name,
-                value=f"Membres : {guild.member_count} | Rôles : {len(guild.roles)} | Canaux : {len(guild.channels)}",
+                value=(
+                    f"**Membres** : {guild.member_count}\n"
+                    f"**Rôles** : {len(guild.roles)}\n"
+                    f"**Canaux** : {len(guild.channels)}\n"
+                    f"**ID du Serveur** : {guild.id}\n"
+                    f"**Créé le** : {guild.created_at.strftime('%d/%m/%Y %H:%M:%S')}\n"
+                ),
                 inline=False
             )
+
         await ctx.send(embed=embed)
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")

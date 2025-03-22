@@ -516,13 +516,13 @@ if len(premium_servers) > 10:
     previous_button = Button(label="Précédent", style=discord.ButtonStyle.secondary, disabled=True)
     next_button = Button(label="Suivant", style=discord.ButtonStyle.secondary)
 
-            async def update_embed(page_number):
+async def update_embed(page_number):
                 # Mettre à jour l'embed avec les serveurs de la page sélectionnée
                 embed.description = f"Page {page_number + 1}/{len(pages)}\n\n{'\n'.join(pages[page_number])}"
                 await interaction.edit_original_response(embed=embed)
 
             # Fonction pour gérer le bouton "Suivant"
-            async def next_page_callback(interaction):
+async def next_page_callback(interaction):
                 nonlocal current_page
                 if current_page < len(pages) - 1:
                     current_page += 1
@@ -532,7 +532,7 @@ if len(premium_servers) > 10:
                 await interaction.edit_original_response(view=view)
 
             # Fonction pour gérer le bouton "Précédent"
-            async def previous_page_callback(interaction):
+async def previous_page_callback(interaction):
                 nonlocal current_page
                 if current_page > 0:
                     current_page -= 1

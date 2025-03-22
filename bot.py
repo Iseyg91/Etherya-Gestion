@@ -147,6 +147,9 @@ async def getbotinfo(ctx):
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
 
+# Liste d'emojis qui tournent pour éviter la répétition
+EMOJIS_SERVEURS = ["🎭", "🌍", "🏰", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]
+
 class ServerInfoView(View):
     def __init__(self, ctx, bot, guilds):
         super().__init__()
@@ -159,8 +162,8 @@ class ServerInfoView(View):
         self.update_buttons()
     
     def update_buttons(self):
-        self.children[0].disabled = self.page == 0  # Précédent désactivé sur la première page
-        self.children[1].disabled = self.page == self.max_page  # Suivant désactivé sur la dernière page
+        self.children[0].disabled = self.page == 0  # Désactiver "Précédent" si première page
+        self.children[1].disabled = self.page == self.max_page  # Désactiver "Suivant" si dernière page
 
     async def update_embed(self, interaction):
         embed = await self.create_embed()
@@ -182,7 +185,9 @@ class ServerInfoView(View):
         start = self.page * self.servers_per_page
         end = start + self.servers_per_page
 
-        for guild in self.guilds[start:end]:
+        for i, guild in enumerate(self.guilds[start:end]):
+            emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Sélectionne un emoji en alternance
+            
             invite_url = "🔒 *Aucune invitation disponible*"
             if guild.text_channels:
                 invite = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
@@ -190,13 +195,11 @@ class ServerInfoView(View):
 
             owner = guild.owner.mention if guild.owner else "❓ *Inconnu*"
             member_display = f"**{guild.member_count}**" if guild.member_count > 1000 else f"{guild.member_count}"
-            
-            # Ajout du niveau de boost et des emojis
             boost_level = guild.premium_tier if guild.premium_tier > 0 else "0"
             emoji_count = len(guild.emojis)
 
             embed.add_field(
-                name=f"🎭 **{guild.name}**",
+                name=f"{emoji} **{guild.name}**",
                 value=(
                     f"> **👑 Propriétaire** : {owner}\n"
                     f"> **📊 Membres** : `{member_display}`\n"

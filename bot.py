@@ -147,51 +147,82 @@ async def getbotinfo(ctx):
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
 
-@bot.command()
-async def serverinfoall(ctx):
-    if is_owner(ctx):
+import discord
+from discord.ext import commands
+from discord.ui import View, Button
+from datetime import datetime
+
+class ServerInfoView(View):
+    def __init__(self, ctx, bot, guilds):
+        super().__init__()
+        self.ctx = ctx
+        self.bot = bot
+        self.guilds = sorted(guilds, key=lambda g: g.member_count, reverse=True)  # Tri décroissant
+        self.page = 0
+        self.servers_per_page = 5
+        self.max_page = (len(self.guilds) - 1) // self.servers_per_page
+        self.update_buttons()
+    
+    def update_buttons(self):
+        self.children[0].disabled = self.page == 0  # Désactive "Précédent" si on est sur la première page
+        self.children[1].disabled = self.page == self.max_page  # Désactive "Suivant" si on est sur la dernière page
+
+    async def update_embed(self, interaction):
+        embed = await self.create_embed()
+        self.update_buttons()
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    async def create_embed(self):
         embed = discord.Embed(
             title="Informations sur les Serveurs",
             description="Voici les informations détaillées sur tous les serveurs où le bot est présent.",
             color=discord.Color.purple(),
-            timestamp=datetime.utcnow()  # Utilisation de datetime directement ici
+            timestamp=datetime.utcnow()
         )
-        embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar.url)
+        embed.set_footer(text=f"Requête faite par {self.ctx.author}", icon_url=self.ctx.author.avatar.url)
+        embed.set_thumbnail(url=self.bot.user.avatar.url)
 
-        # Ajouter un thumbnail pour l'avatar du bot
-        embed.set_thumbnail(url=bot.user.avatar.url)
+        start = self.page * self.servers_per_page
+        end = start + self.servers_per_page
 
-        # Informations sur chaque serveur
-        for guild in bot.guilds:
-            # Générer une invitation pour chaque serveur
-            invite = await guild.text_channels[0].create_invite(max_uses=1, unique=True)  # Crée une invite unique pour chaque serveur
-            invite_url = invite.url
+        for guild in self.guilds[start:end]:
+            invite_url = "Aucun canal disponible"
+            if guild.text_channels:
+                invite = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
+                invite_url = invite.url
 
             embed.add_field(
-                name=f"**[{guild.name}]({invite_url})**",  # Le nom du serveur devient un lien vers une invitation spécifique
+                name=f"**{guild.name}**",
                 value=(
-                    f"**📊 Membres** : {guild.member_count} membres\n"
-                    f"**🛠️ Rôles** : {len(guild.roles)} rôles\n"
-                    f"**💬 Canaux** : {len(guild.channels)} canaux\n"
+                    f"**📊 Membres** : {guild.member_count}\n"
+                    f"**🛠️ Rôles** : {len(guild.roles)}\n"
+                    f"**💬 Canaux** : {len(guild.channels)}\n"
                     f"**🆔 ID du Serveur** : `{guild.id}`\n"
                     f"**📅 Créé le** : {guild.created_at.strftime('%d/%m/%Y %H:%M:%S')}\n"
+                    f"🔗 **[Lien d'invitation]({invite_url})**"
                 ),
                 inline=False
             )
 
-            # Si le serveur a une icône, l'ajouter à l'image du serveur
-            if guild.icon:
-                embed.set_image(url=guild.icon.url)
-
-        # Si le nombre de serveurs est trop élevé, avertir l'utilisateur
-        if len(bot.guilds) > 5:
-            embed.add_field(name="🔒 Note", value="Il y a trop de serveurs pour afficher toutes les informations, seulement les 5 premiers sont inclus.")
-
-        # Ajouter l'image spécifique en bas de l'embed
         embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+        return embed
 
-        # Envoi de l'embed
-        await ctx.send(embed=embed)
+    @discord.ui.button(label="⬅️ Précédent", style=discord.ButtonStyle.primary, disabled=True)
+    async def previous(self, interaction: discord.Interaction, button: Button):
+        self.page -= 1
+        await self.update_embed(interaction)
+
+    @discord.ui.button(label="➡️ Suivant", style=discord.ButtonStyle.primary)
+    async def next(self, interaction: discord.Interaction, button: Button):
+        self.page += 1
+        await self.update_embed(interaction)
+
+@bot.command()
+async def serverinfoall(ctx):
+    if is_owner(ctx):
+        view = ServerInfoView(ctx, bot, bot.guilds)
+        embed = await view.create_embed()
+        await ctx.send(embed=embed, view=view)
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
 

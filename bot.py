@@ -512,10 +512,9 @@ if len(premium_servers) > 10:
     )
     embed.set_footer(text="Merci pour votre soutien !")
 
-
-            # Créer les boutons de pagination
-            previous_button = Button(label="Précédent", style=discord.ButtonStyle.secondary, disabled=True)
-            next_button = Button(label="Suivant", style=discord.ButtonStyle.secondary)
+    # Créer les boutons de pagination (indentation correcte ici)
+    previous_button = Button(label="Précédent", style=discord.ButtonStyle.secondary, disabled=True)
+    next_button = Button(label="Suivant", style=discord.ButtonStyle.secondary)
 
             async def update_embed(page_number):
                 # Mettre à jour l'embed avec les serveurs de la page sélectionnée

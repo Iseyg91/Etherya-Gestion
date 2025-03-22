@@ -354,60 +354,75 @@ sensitive_words = [
     "insurrection", "émeute", "rébellion", "coup d'état", "anarchie", "terroriste", "séparatiste"
 ]
 
-ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
-
 def get_main_guild():
     return bot.guilds[0] if bot.guilds else None
     
 @bot.event
 async def on_message(message):
     if message.author.bot:
-        return  # Ignorer les messages des bots
+        return  # Ignorer les bots
 
-    # Log du contenu du message pour debug
-    print(f"Message reçu: {message.content}")
+    guild = message.guild
 
-    # Nettoyage du message de toute ponctuation et conversion en minuscules
-    clean_message = re.sub(r'[^\w\s]', '', message.content.lower())
+    # Vérifier si le message est dans Etherya
+    if guild and guild.id == 1034007767050104892:
+        member = guild.get_member(message.author.id)
 
-    # Log du message nettoyé pour vérifier le contenu
-    print(f"Message nettoyé: {clean_message}")
+        # Détection des mots sensibles
+        for word in sensitive_words:
+            if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
+                print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
+                asyncio.create_task(send_alert_to_admin(message, word))
+                break  # On arrête la boucle dès qu'on trouve un mot interdit
 
-    # Détection des mots sensibles
-    for word in sensitive_words:
-        if word in clean_message:
-            print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
-            asyncio.create_task(send_alert_to_admin(message, word))
-            break  # Arrête la boucle dès qu'un mot sensible est trouvé
+        # Réponse automatique aux mentions du bot
+        if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
+            embed = discord.Embed(
+                title="👋 Besoin d’aide ?",
+                description=(f"Salut {message.author.mention} ! Moi, c’est **{bot.user.name}**, ton assistant sur ce serveur. 🤖\n\n"
+                             "🔹 **Pour voir toutes mes commandes :** Appuie sur le bouton ci-dessous ou tape `+aide`\n"
+                             "🔹 **Une question ? Un souci ?** Contacte le staff !\n\n"
+                             "✨ **Profite bien du serveur et amuse-toi !**"),
+                color=discord.Color.blue()
+            )
+            embed.set_thumbnail(url=bot.user.avatar.url)
+            embed.set_footer(text="Réponse automatique • Disponible 24/7", icon_url=bot.user.avatar.url)
+            
+            view = View()
+            button = Button(label="📜 Voir les commandes", style=discord.ButtonStyle.primary, custom_id="help_button")
 
-    # Traiter les commandes après la vérification
+            async def button_callback(interaction: discord.Interaction):
+                ctx = await bot.get_context(interaction.message)
+                await ctx.invoke(bot.get_command("aide"))
+                await interaction.response.send_message("Voici la liste des commandes !", ephemeral=True)
+
+            button.callback = button_callback
+            view.add_item(button)
+
+            await message.channel.send(embed=embed, view=view)
+
     await bot.process_commands(message)
 
-    # Réponse automatique aux mentions du bot
-    if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
+async def send_alert_to_admin(message, detected_word):
+    """Envoie une alerte privée à l'admin en cas de mot interdit détecté."""
+    try:
+        admin = await bot.fetch_user(ADMIN_ID)
         embed = discord.Embed(
-            title="👋 Besoin d’aide ?",
-            description=(f"Salut {message.author.mention} ! Moi, c’est **{bot.user.name}**, ton assistant sur ce serveur. 🤖\n\n"
-                         "🔹 **Pour voir toutes mes commandes :** Appuie sur le bouton ci-dessous ou tape `+aide`\n"
-                         "🔹 **Une question ? Un souci ?** Contacte le staff !\n\n"
-                         "✨ **Profite bien du serveur et amuse-toi !**"),
-            color=discord.Color.blue()
+            title="🚨 Alerte : Mot sensible détecté !",
+            description=f"Un message contenant un mot interdit a été détecté sur le serveur **{message.guild.name}**.",
+            color=discord.Color.red(),
+            timestamp=datetime.utcnow()
         )
-        embed.set_thumbnail(url=bot.user.avatar.url)
-        embed.set_footer(text="Réponse automatique • Disponible 24/7", icon_url=bot.user.avatar.url)
-
-        view = View()
-        button = Button(label="📜 Voir les commandes", style=discord.ButtonStyle.primary, custom_id="help_button")
-
-        async def button_callback(interaction: discord.Interaction):
-            ctx = await bot.get_context(interaction.message)
-            await ctx.invoke(bot.get_command("aide"))
-            await interaction.response.send_message("Voici la liste des commandes !", ephemeral=True)
-
-        button.callback = button_callback
-        view.add_item(button)
-
-        await message.channel.send(embed=embed, view=view)
+        embed.add_field(name="📍 Salon", value=f"{message.channel.mention}", inline=True)
+        embed.add_field(name="👤 Auteur", value=f"{message.author.mention} (`{message.author.id}`)", inline=True)
+        embed.add_field(name="💬 Message", value=f"```{message.content}```", inline=False)
+        embed.add_field(name="⚠️ Mot détecté", value=f"`{detected_word}`", inline=True)
+        if message.guild:
+            embed.add_field(name="🔗 Lien vers le message", value=f"[Clique ici]({message.jump_url})", inline=False)
+        embed.set_footer(text="Système de détection automatique", icon_url=bot.user.avatar.url)
+        await admin.send(embed=embed)
+    except Exception as e:
+        print(f"⚠️ Erreur lors de l'envoi de l'alerte : {e}")
     
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 

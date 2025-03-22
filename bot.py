@@ -654,6 +654,33 @@ async def guide_command(interaction: discord.Interaction):
 
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(message)
+#-------------------------------------------------------------------------- Commandes Liens Etherya: /etherya
+
+# 🎨 Couleur et style de l'embed
+color_embed = 0xff69b4  # Rose flashy
+
+@bot.tree.command(name="etherya", description="Obtiens le lien du serveur Etherya !")
+async def etherya(interaction: discord.Interaction):
+    """Commande slash pour envoyer l'invitation du serveur Etherya"""
+    embed = discord.Embed(
+        title="🌟 __[𝑺ץ] 𝑬𝒕𝒉𝒆𝒓𝒚𝒂 !__ 🌟",
+        description=(
+            "🍣 ・ Un serveur **Communautaire**\n"
+            "🌸 ・ Des membres sympas et qui **sont actifs** !\n"
+            "🌋 ・ Des rôles **exclusifs** avec une **boutique** !\n"
+            "🎐 ・ **Safe place** & **Un Système Économique développé** !\n"
+            "☕ ・ Divers **Salons** pour un divertissement optimal.\n"
+            "☁️ ・ Un staff sympa, à l'écoute et qui **recrute** !\n"
+            "🔥 ・ Pas convaincu ? Rejoins-nous et vois par toi-même le potentiel de notre serveur !\n\n"
+            "[🎫 **Accès direct**](https://discord.com/invite/tVVYC2Ynfy)"
+        ),
+        color=color_embed
+    )
+
+    embed.set_thumbnail(url="https://cdn.discordapp.com/icons/123456789012345678/your_icon.png")  # Mets une image ici
+    embed.set_footer(text="Rejoins-nous et amuse-toi ! 🎉")
+
+    await interaction.response.send_message(embed=embed)
 
 #------------------------------------------------------------------------- Commandes de Gestion : +clear, +nuke, +addrole, +delrole
 

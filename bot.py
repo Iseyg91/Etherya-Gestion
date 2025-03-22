@@ -3294,8 +3294,7 @@ async def start10(ctx):
 
 bounties = {}  # Dictionnaire stockant les primes
 hunter_rewards = {}  # Dictionnaire stockant les récompenses des chasseurs
-ROLE_BOUNTY_MANAGER = 1244339296706760726
-BOUNTY_CHANNEL_ID = 1244339296706760726  # Salon où les victoires sont annoncées
+BOUNTY_CHANNEL_ID = 1352651647955898440  # Salon où les victoires sont annoncées
 PRIME_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/MUnIIu5yOv6nMFAXKteig.jpg"
 
 class DuelView(discord.ui.View):
@@ -3386,8 +3385,8 @@ class DuelView(discord.ui.View):
 
 @bot.command()
 async def bounty(ctx, member: discord.Member, prize: int):
-    """Met une prime sur un joueur (réservé au rôle bounty manager)"""
-    if ROLE_BOUNTY_MANAGER not in [role.id for role in ctx.author.roles]:
+    """Met une prime sur un joueur (réservé aux administrateurs)"""
+    if not ctx.author.guild_permissions.administrator:
         await ctx.send("Tu n'as pas la permission d'exécuter cette commande.")
         return
 

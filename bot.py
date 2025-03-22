@@ -175,7 +175,7 @@ async def getbotinfo(ctx):
             description=f"📌 **Nom :** `{bot.user.name}`\n"
                         f"🆔 **ID :** `{bot.user.id}`\n"
                         f"🛠️ **Développé par :** `Iseyg`\n"
-                        f"🔄 **Version :** `1.0.0`",
+                        f"🔄 **Version :** `1.1.5`",
             color=discord.Color.blurple(),  # Dégradé bleu-violet pour une touche dynamique
             timestamp=datetime.utcnow()
         )
@@ -460,7 +460,7 @@ async def get_server_members_count(guild):
 
 
 async def get_bot_uptime():
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.utcnow()  # Utilisation correcte de datetime.datetime
     uptime_seconds = int((now - bot.start_time).total_seconds())
     uptime = str(datetime.timedelta(seconds=uptime_seconds))
     return uptime

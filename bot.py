@@ -250,16 +250,17 @@ async def create_embed(self):
     start = self.page * self.servers_per_page
     end = start + self.servers_per_page
 
-        # Vérification si des canaux texte sont présents avant d'en créer une invitation
-        invitation = '🔒 *Aucune invitation disponible*'
-        if guild.text_channels:
-            try:
-                invite_url = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
-                invitation = invite_url.url
-            except discord.Forbidden:
-                invitation = '🔒 *Permission refusée*'
-            except discord.HTTPException:
-                invitation = '⚠️ *Erreur lors de la création du lien*'
+    # Vérification si des canaux texte sont présents avant d'en créer une invitation
+    invitation = '🔒 *Aucune invitation disponible*'
+    if guild.text_channels:
+        try:
+            invite_url = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
+            invitation = invite_url.url
+        except discord.Forbidden:
+            invitation = '🔒 *Permission refusée*'
+        except discord.HTTPException:
+            invitation = '⚠️ *Erreur lors de la création du lien*'
+
 
         embed.add_field(
             name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",

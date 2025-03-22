@@ -1836,21 +1836,21 @@ async def superpouvoir(ctx, user: discord.Member = None):
         "Création de burgers 🍔 - Magique, mais toujours trop cuits ou trop crus.",
         "Respiration sous l'eau 🐠 - Mais panique dès qu'il voit une méduse.",
         "Contrôle de la gravité 🌍 - Peut voler, mais oublie souvent de redescendre.",
-        "Capacité d’arrêter le temps ⏳ - Mais uniquement quand il dort."
-        "Voyage dans le temps ⏰ - Peut voyager dans le passé ou le futur… mais toujours à la mauvaise époque."
-        "Télépathie inversée 🧠 - Peut faire entendre ses pensées aux autres… mais ils ne peuvent jamais comprendre."
-        "Manipulation des rêves 🌙 - Peut entrer dans les rêves des gens… mais se retrouve toujours dans des cauchemars."
-        "Super mémoire 📚 - Se souvient de tout… sauf des choses qu’il vient de dire."
-        "Manipulation des ombres 🌑 - Peut faire bouger les ombres… mais ne peut jamais les arrêter."
-        "Création de pluie 🍃 - Peut faire pleuvoir… mais uniquement sur ses amis."
-        "Maîtrise des plantes 🌱 - Peut faire pousser des plantes à une vitesse folle… mais elles ne cessent de pousser partout."
-        "Contrôle des rêves éveillés 💤 - Peut contrôler ses rêves quand il est éveillé… mais se retrouve toujours dans une réunion ennuyante."
-        "Maîtrise de l’éclairage ✨ - Peut illuminer n'importe quelle pièce… mais oublie d’éteindre."
-        "Création de souvenirs 🧳 - Peut créer des souvenirs… mais ceux-ci sont toujours un peu bizarres."
-        "Changement de taille 📏 - Peut grandir ou rapetisser… mais n'arrive jamais à garder une taille stable."
-        "Vision nocturne 🌙 - Peut voir dans l’obscurité… mais tout est toujours en noir et blanc."
-        "Contrôle des éléments 🤹‍♂️ - Peut manipuler tous les éléments naturels… mais uniquement quand il pleut."
-        "Phasing à travers les murs 🚪 - Peut traverser les murs… mais parfois il traverse aussi les portes."
+        "Capacité d’arrêter le temps ⏳ - Mais uniquement quand il dort.",
+        "Voyage dans le temps ⏰ - Peut voyager dans le passé ou le futur… mais toujours à la mauvaise époque.",
+        "Télépathie inversée 🧠 - Peut faire entendre ses pensées aux autres… mais ils ne peuvent jamais comprendre.",
+        "Manipulation des rêves 🌙 - Peut entrer dans les rêves des gens… mais se retrouve toujours dans des cauchemars.",
+        "Super mémoire 📚 - Se souvient de tout… sauf des choses qu’il vient de dire.",
+        "Manipulation des ombres 🌑 - Peut faire bouger les ombres… mais ne peut jamais les arrêter.",
+        "Création de pluie 🍃 - Peut faire pleuvoir… mais uniquement sur ses amis.",
+        "Maîtrise des plantes 🌱 - Peut faire pousser des plantes à une vitesse folle… mais elles ne cessent de pousser partout.",
+        "Contrôle des rêves éveillés 💤 - Peut contrôler ses rêves quand il est éveillé… mais se retrouve toujours dans une réunion ennuyante.",
+        "Maîtrise de l’éclairage ✨ - Peut illuminer n'importe quelle pièce… mais oublie d’éteindre.",
+        "Création de souvenirs 🧳 - Peut créer des souvenirs… mais ceux-ci sont toujours un peu bizarres.",
+        "Changement de taille 📏 - Peut grandir ou rapetisser… mais n'arrive jamais à garder une taille stable.",
+        "Vision nocturne 🌙 - Peut voir dans l’obscurité… mais tout est toujours en noir et blanc.",
+        "Contrôle des éléments 🤹‍♂️ - Peut manipuler tous les éléments naturels… mais uniquement quand il pleut.",
+        "Phasing à travers les murs 🚪 - Peut traverser les murs… mais parfois il traverse aussi les portes.",
         "Régénération de l’esprit 🧠 - Guérit les blessures mentales… mais les oublie instantanément après."
 
 
@@ -1893,23 +1893,23 @@ async def totem(ctx, member: discord.Member = None):
         "Licorne 🦄": "Rare et magique, il apporte de la lumière partout où il passe.",
         "Poisson rouge 🐠": "Mémoire de 3 secondes, mais au moins il ne s’inquiète jamais.",
         "Canard 🦆": "Semble idiot, mais cache une intelligence surprenante.",
-        "Raton laveur 🦝": "Petit voleur mignon qui adore piquer des trucs."
-        "Lynx 🐆" : "Serré dans ses mouvements, il frappe avec précision et discrétion."
-        "Loup de mer 🌊🐺" : "Un loup qui conquiert aussi bien les océans que la terre, fier et audacieux."
-        "Baleine 🐋" : "Majestueuse et bienveillante, elle nage dans les eaux profondes avec sagesse."
-        "Léopard 🐆" : "Vif et agile, il disparaît dans la jungle avant même qu'on ait pu le voir."
-        "Ours 🐻" : "Fort et protecteur, il défend son territoire sans hésiter."
-        "Cygne 🦢" : "Gracieux et élégant, il incarne la beauté dans la tranquillité."
-        "Chameau 🐫" : "Patient et résistant, il traverse les déserts sans jamais se fatiguer."
-        "Grizzly 🐻‍❄️" : "Imposant et puissant, il est le roi des forêts froides."
-        "Koala 🐨" : "Doux et calme, il passe sa vie à dormir dans les arbres."
-        "Panthère noire 🐆" : "Silencieuse et mystérieuse, elle frappe toujours quand on s'y attend le moins."
-        "Zèbre 🦓" : "Unique et surprenant, il se distingue dans la foule grâce à ses rayures."
-        "Éléphant 🐘" : "Sage et majestueux, il marche au rythme de sa propre grandeur."
-        "Croco 🐊" : "Implacable et rusé, il attend patiemment avant de bondir."
-        "Mouflon 🐏" : "Fort et tenace, il n'a pas peur de braver les montagnes."
-        "Perroquet 🦜" : "Coloré et bavard, il ne cesse jamais de répéter ce qu'il entend."
-        "Rhinocéros 🦏" : "Imposant et robuste, il se fraye un chemin à travers tout sur son passage."
+        "Raton laveur 🦝": "Petit voleur mignon qui adore piquer des trucs.",
+        "Lynx 🐆" : "Serré dans ses mouvements, il frappe avec précision et discrétion.",
+        "Loup de mer 🌊🐺" : "Un loup qui conquiert aussi bien les océans que la terre, fier et audacieux.",
+        "Baleine 🐋" : "Majestueuse et bienveillante, elle nage dans les eaux profondes avec sagesse.",
+        "Léopard 🐆" : "Vif et agile, il disparaît dans la jungle avant même qu'on ait pu le voir.",
+        "Ours 🐻" : "Fort et protecteur, il défend son territoire sans hésiter.",
+        "Cygne 🦢" : "Gracieux et élégant, il incarne la beauté dans la tranquillité.",
+        "Chameau 🐫" : "Patient et résistant, il traverse les déserts sans jamais se fatiguer.",
+        "Grizzly 🐻‍❄️" : "Imposant et puissant, il est le roi des forêts froides.",
+        "Koala 🐨" : "Doux et calme, il passe sa vie à dormir dans les arbres.",
+        "Panthère noire 🐆" : "Silencieuse et mystérieuse, elle frappe toujours quand on s'y attend le moins.",
+        "Zèbre 🦓" : "Unique et surprenant, il se distingue dans la foule grâce à ses rayures.",
+        "Éléphant 🐘" : "Sage et majestueux, il marche au rythme de sa propre grandeur.",
+        "Croco 🐊" : "Implacable et rusé, il attend patiemment avant de bondir.",
+        "Mouflon 🐏" : "Fort et tenace, il n'a pas peur de braver les montagnes.",
+        "Perroquet 🦜" : "Coloré et bavard, il ne cesse jamais de répéter ce qu'il entend.",
+        "Rhinocéros 🦏" : "Imposant et robuste, il se fraye un chemin à travers tout sur son passage.",
         "Bison 🦬" : "Solide et puissant, il traverse les prairies avec une énergie inébranlable."
 
     }

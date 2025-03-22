@@ -147,6 +147,8 @@ async def getbotinfo(ctx):
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
 
+from datetime import datetime
+
 @bot.command()
 async def serverinfoall(ctx):
     if is_owner(ctx):
@@ -154,9 +156,9 @@ async def serverinfoall(ctx):
             title="Informations sur les Serveurs",
             description="Voici les informations détaillées sur tous les serveurs où le bot est présent.",
             color=discord.Color.purple(),
-            timestamp=datetime.utcnow()  # Utilisez datetime directement ici
+            timestamp=datetime.utcnow()  # Utilisation de datetime directement ici
         )
-        embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar_url)  # Ajout du footer avec l'avatar de l'utilisateur
+        embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar.url)  # Modification ici
         
         for guild in bot.guilds:
             embed.add_field(

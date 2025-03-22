@@ -158,22 +158,36 @@ async def serverinfoall(ctx):
             color=discord.Color.purple(),
             timestamp=datetime.utcnow()  # Utilisation de datetime directement ici
         )
-        embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar.url)  # Modification ici
-        
+        embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar.url)
+
+        # Si l'icône du serveur est disponible, on l'ajoute au thumbnail
+        embed.set_thumbnail(url=bot.user.avatar.url)
+
         for guild in bot.guilds:
             embed.add_field(
-                name=guild.name,
-                value=(f"**Membres** : {guild.member_count}\n"
-                       f"**Rôles** : {len(guild.roles)}\n"
-                       f"**Canaux** : {len(guild.channels)}\n"
-                       f"**ID du Serveur** : {guild.id}\n"
-                       f"**Créé le** : {guild.created_at.strftime('%d/%m/%Y %H:%M:%S')}\n"),
+                name=f"**{guild.name}**",
+                value=(
+                    f"**📊 Membres** : {guild.member_count}\n"
+                    f"**🛠️ Rôles** : {len(guild.roles)}\n"
+                    f"**💬 Canaux** : {len(guild.channels)}\n"
+                    f"**🆔 ID du Serveur** : `{guild.id}`\n"
+                    f"**📅 Créé le** : {guild.created_at.strftime('%d/%m/%Y %H:%M:%S')}\n"
+                ),
                 inline=False
             )
 
+            # Ajout de l'icône du serveur (si disponible)
+            if guild.icon:
+                embed.set_image(url=guild.icon.url)
+
+        # Si le nombre de serveurs est trop élevé, on ajoute un avertissement
+        if len(bot.guilds) > 5:
+            embed.add_field(name="🔒 Note", value="Il y a trop de serveurs pour afficher toutes les informations, seulement les 5 premiers sont inclus.")
+        
         await ctx.send(embed=embed)
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
+
 
 #------------------------------------------------------------------------- Commande SETUP
 

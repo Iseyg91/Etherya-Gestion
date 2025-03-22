@@ -356,9 +356,15 @@ sensitive_words = [
 
 ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 
+# IDs des utilisateurs qui font le bump
+bump_ids = [302050872383242240, 528557940811104258]
+
+# Dictionnaire pour suivre les rappels
+bump_reminders = {}
+
 def get_main_guild():
     return bot.guilds[0] if bot.guilds else None
-    
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -398,6 +404,25 @@ async def on_message(message):
         view.add_item(button)
 
         await message.channel.send(embed=embed, view=view)
+
+    # Vérifie si la commande /bump a été utilisée
+    if message.content.startswith("/bump") and message.author.id in bump_ids:
+        # Envoie un message de remerciement
+        await message.channel.send(f"Merci {message.author.mention} pour ton bump !")
+
+        # Enregistre un rappel pour 2 heures plus tard
+        if message.author.id not in bump_reminders:
+            bump_reminders[message.author.id] = {}
+
+        # Fonction pour rappeler dans 2 heures
+        await asyncio.sleep(7200)  # 2 heures en secondes
+
+        # Vérifie si l'utilisateur a déjà été remercié dans les 2 dernières heures
+        if message.author.id in bump_reminders:
+            await message.channel.send(f"{message.author.mention}, c'est l'heure de bump à nouveau !")
+
+        # Supprime le rappel une fois envoyé
+        del bump_reminders[message.author.id]
 
     await bot.process_commands(message)
 

@@ -236,31 +236,32 @@ async def create_embed(self):
     start = self.page * self.servers_per_page
     end = start + self.servers_per_page
 
-    for i, guild in enumerate(self.guilds[start:end]):
-        emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Sélectionne un emoji en alternance
+for i, guild in enumerate(self.guilds[start:end]):
+    # Utiliser un emoji en fonction du nombre de serveurs
+    emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Cela va éviter d'aller au-delà du nombre d'emojis
 
-        # Dynamiser la couleur en fonction du nombre de membres
-        embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
+    # Dynamiser la couleur en fonction du nombre de membres
+    embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
 
-        # Ajouter un statut de serveur (En ligne / Hors ligne)
-        status_emoji = "💬" if guild.online else "🛑"
-        status_text = "En ligne" if guild.online else "Hors ligne"
+    # Ajouter un statut de serveur (En ligne / Hors ligne)
+    status_emoji = "💬" if guild.online else "🛑"
+    status_text = "En ligne" if guild.online else "Hors ligne"
 
-        embed.add_field(
-            name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
-            value=(
-                f"> **👑 Propriétaire** : {guild.owner.mention if guild.owner else '❓ *Inconnu*'}\n"
-                f"> **📊 Membres** : `{guild.member_count}`\n"
-                f"> **💎 Boosts** : `Niveau {guild.premium_tier if guild.premium_tier > 0 else '0'}`\n"
-                f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
-                f"> **💬 Canaux** : `{len(guild.channels)}`\n"
-                f"> **😃 Emojis** : `{len(guild.emojis)}`\n"
-                f"> **🆔 ID** : `{guild.id}`\n"
-                f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
-                f"> [🔗 Invitation]({(await guild.text_channels[0].create_invite(max_uses=1, unique=True)).url if guild.text_channels else '🔒 *Aucune invitation disponible*'})"
-            ),
-            inline=False
-        )
+    embed.add_field(
+        name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
+        value=(
+            f"> **👑 Propriétaire** : {guild.owner.mention if guild.owner else '❓ *Inconnu*'}\n"
+            f"> **📊 Membres** : `{guild.member_count}`\n"
+            f"> **💎 Boosts** : `Niveau {guild.premium_tier if guild.premium_tier > 0 else '0'}`\n"
+            f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
+            f"> **💬 Canaux** : `{len(guild.channels)}`\n"
+            f"> **😃 Emojis** : `{len(guild.emojis)}`\n"
+            f"> **🆔 ID** : `{guild.id}`\n"
+            f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
+            f"> [🔗 Invitation]({(await guild.text_channels[0].create_invite(max_uses=1, unique=True)).url if guild.text_channels else '🔒 *Aucune invitation disponible*'})"
+        ),
+        inline=False
+    )
 
     embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
     return embed
@@ -283,7 +284,31 @@ async def serverinfoall(ctx):
         await ctx.send(embed=embed, view=view)
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
+#-------------------------------------------------------------------------- Commandes /premium et /viewpremium
+# Dictionnaire pour stocker les serveurs premium
+premium_servers = {}
 
+# Code Premium valide
+valid_code = "Etherya_Iseyg=91"
+
+# Commande slash /premium
+@bot.tree.command(name="premium")
+@app_commands.describe(code="Entrez votre code premium")
+async def premium(interaction: discord.Interaction, code: str):
+    if code == valid_code:
+        premium_servers[interaction.guild.id] = interaction.guild.name  # Enregistrer le serveur comme premium
+        await interaction.response.send_message(f"Le serveur {interaction.guild.name} est maintenant premium !")
+    else:
+        await interaction.response.send_message("Code premium invalide. Veuillez vérifier votre code.")
+
+# Commande slash /viewpremium
+@bot.tree.command(name="viewpremium")
+async def viewpremium(interaction: discord.Interaction):
+    if not premium_servers:
+        await interaction.response.send_message("Aucun serveur premium n'a été activé.")
+    else:
+        premium_list = "\n".join([f"{server_name}" for server_name in premium_servers.values()])
+        await interaction.response.send_message(f"Serveurs premium activés :\n{premium_list}")
 #------------------------------------------------------------------------- Commande SETUP
 
 @bot.tree.command(name="setup", description="Configure les rôles et salons du bot.")

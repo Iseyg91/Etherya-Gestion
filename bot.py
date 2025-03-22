@@ -15,6 +15,7 @@ from datetime import datetime
 from discord.ui import View, Select
 from discord.ext import tasks
 from collections import defaultdict
+from collections import deque
 import pymongo
 from pymongo import MongoClient
 import yt_dlp
@@ -385,14 +386,17 @@ async def on_message(message):
     if message.author.bot:
         return  # Ignorer les messages des bots
 
+    # Nettoyage du message de toute ponctuation
+    clean_message = re.sub(r'[^\w\s]', '', message.content.lower())
+
     # Détection des mots sensibles
     for word in sensitive_words:
-        if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
+        if word in clean_message:
             print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
             asyncio.create_task(send_alert_to_admin(message, word))
             break  # Arrête la boucle dès qu'un mot sensible est trouvé
 
-    # Important: Assure-toi d'appeler cette ligne pour traiter les commandes après le filtrage des messages
+    # Traiter les commandes après la vérification
     await bot.process_commands(message)
 
     # Réponse automatique aux mentions du bot
@@ -420,8 +424,6 @@ async def on_message(message):
         view.add_item(button)
 
         await message.channel.send(embed=embed, view=view)
-
-    await bot.process_commands(message)
     
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 
@@ -767,6 +769,23 @@ async def send_embed(ctx, embed, view=None):
     except discord.errors.NotFound:
         temp_message = await ctx.send(embed=embed, view=view)
 
+# 🎵 Récupérer l'audio via yt-dlp
+def get_audio_source(url):
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegAudioConvertor',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+        'outtmpl': 'downloads/%(id)s.%(ext)s',
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info_dict = ydl.extract_info(url, download=False)
+        url2 = info_dict['formats'][0]['url']
+        return discord.FFmpegPCMAudio(url2)
+
 # 🎵 Jouer une musique
 @bot.command()
 async def play(ctx, *, song_name: str):
@@ -785,6 +804,8 @@ async def play(ctx, *, song_name: str):
         if voice_client.is_playing():
             embed = discord.Embed(title="✅ Musique ajoutée", description=f"**{song_name}** a été ajouté à la file d'attente.", color=discord.Color.blue())
             await ctx.send(embed=embed)
+
+        # N'appelle play_next que si la file n'est pas vide
         if len(music_queue) == 1 and not voice_client.is_playing():
             await play_next(ctx, voice_client)
     except Exception as e:
@@ -793,10 +814,12 @@ async def play(ctx, *, song_name: str):
 
 # 🎵 Jouer la prochaine musique avec paroles
 async def play_next(ctx, voice_client):
-    if music_queue:
+    if len(music_queue) > 0:
         song_name, spotify_url, thumbnail_url, duration = music_queue.popleft()
         duration_str = f"{duration // 60}:{duration % 60:02d}"
-        audio_source = discord.FFmpegPCMAudio(spotify_url, options='-vn')
+
+        # Récupérer le flux audio via yt-dlp
+        audio_source = get_audio_source(spotify_url)
 
         # Lecture de la musique
         voice_client.play(audio_source, after=lambda e: asyncio.run_coroutine_threadsafe(play_next(ctx, voice_client), bot.loop))

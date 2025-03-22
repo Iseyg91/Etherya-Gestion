@@ -73,3 +73,4 @@ aiocron
 PyNaCl
 yt-dlp
 spotipy
+lyricsgenius

@@ -168,7 +168,7 @@ async def serverinfoall(ctx):
             invite_url = invite.url
 
             embed.add_field(
-                name=f"**[{guild.name}]({invite_url})**",  # Le nom du serveur devient un lien vers une invitation spécifique
+                name=f"**[{guild.name}]({server_invite})**",  # Le nom du serveur devient un lien vers une invitation spécifique
                 value=(
                     f"**📊 Membres** : {guild.member_count} membres\n"
                     f"**🛠️ Rôles** : {len(guild.roles)} rôles\n"

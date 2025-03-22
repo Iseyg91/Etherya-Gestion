@@ -211,15 +211,27 @@ async def getbotinfo(ctx):
 
     await ctx.send(embed=embed, view=view)
 
-# Liste d'emojis qui tournent pour éviter la répétition
+# 🎭 Liste d'emojis pour varier l'affichage
 EMOJIS_SERVEURS = ["🎭", "🌍", "🏰", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]
+
+# 🏆 Liste des serveurs Premium
+premium_servers = {}
+
+# ⚜️ ID du serveur Etherya (remplace par le vrai ID)
+ETHERYA_ID = 1034007767050104892  
+
+def boost_bar(level):
+    """Affiche une barre de progression pour le niveau de boost"""
+    filled = "🟣" * level
+    empty = "⚫" * (3 - level)
+    return filled + empty
 
 class ServerInfoView(View):
     def __init__(self, ctx, bot, guilds, premium_servers):
         super().__init__()
         self.ctx = ctx
         self.bot = bot
-        self.guilds = sorted(guilds, key=lambda g: g.member_count, reverse=True)  # Tri par popularité
+        self.guilds = sorted(guilds, key=lambda g: g.member_count, reverse=True)  
         self.premium_servers = premium_servers
         self.page = 0
         self.servers_per_page = 5
@@ -227,8 +239,8 @@ class ServerInfoView(View):
         self.update_buttons()
     
     def update_buttons(self):
-        self.children[0].disabled = self.page == 0  # Désactiver "Précédent" si première page
-        self.children[1].disabled = self.page == self.max_page  # Désactiver "Suivant" si dernière page
+        self.children[0].disabled = self.page == 0  
+        self.children[1].disabled = self.page == self.max_page  
 
     async def update_embed(self, interaction):
         embed = await self.create_embed()
@@ -237,47 +249,64 @@ class ServerInfoView(View):
 
     async def create_embed(self):
         total_servers = len(self.guilds)
-        total_premium = len(self.premium_servers)  # Nombre de serveurs premium
+        total_premium = len(self.premium_servers)
+
+        # 🌟 Définition de la couleur en fonction des Premium
+        embed_color = discord.Color.purple() if ETHERYA_ID in self.premium_servers else discord.Color.gold()
 
         embed = discord.Embed(
             title=f"🌍 Serveurs du Bot (`{total_servers}` total)",
             description="🔍 Liste des serveurs où le bot est présent, triés par popularité.",
-            color=discord.Color.gold(),
+            color=embed_color,
             timestamp=datetime.utcnow()
         )
-        embed.set_footer(text=f"Page {self.page + 1}/{self.max_page + 1} • Demandé par {self.ctx.author}", icon_url=self.ctx.author.avatar.url)
+
+        embed.set_footer(
+            text=f"Page {self.page + 1}/{self.max_page + 1} • Demandé par {self.ctx.author}", 
+            icon_url=self.ctx.author.avatar.url
+        )
         embed.set_thumbnail(url=self.bot.user.avatar.url)
 
         start = self.page * self.servers_per_page
         end = start + self.servers_per_page
 
-        for i, guild in enumerate(self.guilds[start:end]):
-            emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Sélectionne un emoji en alternance
+        for rank, guild in enumerate(self.guilds[start:end], start=start + 1):
+            emoji = EMOJIS_SERVEURS[rank % len(EMOJIS_SERVEURS)]
             is_premium = "⭐ **Premium**" if guild.id in self.premium_servers else "❌ Standard"
+            vip_badge = " 👑 VIP" if guild.member_count > 10000 else ""
 
+            # 💎 Mise en avant spéciale d’Etherya
+            if guild.id == ETHERYA_ID:
+                guild_name = f"⚜️ **{guild.name}** ⚜️"
+                is_premium = "**🔥 Serveur Premium Ultime !**"
+                embed.color = discord.Color.purple()
+                embed.description = "**🎖️ Etherya est notre serveur principal ! Rejoignez-nous !**\n\n🔗 [Invitation permanente](https://discord.gg/votre-invitation)"
+            else:
+                guild_name = f"**#{rank}** {emoji} **{guild.name}**{vip_badge}"
+
+            # 🔗 Création d'un lien d'invitation si possible
             invite_url = "🔒 *Aucune invitation disponible*"
             if guild.text_channels:
                 invite = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
                 invite_url = f"[🔗 Invitation]({invite.url})"
 
             owner = guild.owner.mention if guild.owner else "❓ *Inconnu*"
-            member_display = f"**{guild.member_count}**" if guild.member_count > 1000 else f"{guild.member_count}"
-            boost_level = guild.premium_tier if guild.premium_tier > 0 else "0"
+            boost_level = boost_bar(guild.premium_tier)
             emoji_count = len(guild.emojis)
 
             embed.add_field(
-                name=f"{emoji} **{guild.name}** {'⭐' if guild.id in self.premium_servers else ''}",
+                name=guild_name,
                 value=(
                     f"> **👑 Propriétaire** : {owner}\n"
-                    f"> **📊 Membres** : `{member_display}`\n"
-                    f"> **💎 Boosts** : `Niveau {boost_level}`\n"
-                    f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
-                    f"> **💬 Canaux** : `{len(guild.channels)}`\n"
+                    f"> **📊 Membres** : `{guild.member_count}`\n"
+                    f"> **💎 Boosts** : {boost_level} *(Niveau {guild.premium_tier})*\n"
+                    f"> **🛠️ Rôles** : `{len(guild.roles)}` | **💬 Canaux** : `{len(guild.channels)}`\n"
                     f"> **😃 Emojis** : `{emoji_count}`\n"
                     f"> **🆔 ID** : `{guild.id}`\n"
                     f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
                     f"> **🏅 Statut** : {is_premium}\n"
-                    f"> {invite_url}"
+                    f"> {invite_url}\n"
+                    "━━━━━━━━━━━━━━━━━━━"
                 ),
                 inline=False
             )
@@ -303,7 +332,7 @@ class ServerInfoView(View):
 
 @bot.command()
 async def serverinfoall(ctx):
-    if is_owner(ctx):
+    if ctx.author.id == bot.owner_id:  # Assurez-vous que seul l'owner peut voir ça
         view = ServerInfoView(ctx, bot, bot.guilds, premium_servers)
         embed = await view.create_embed()
         await ctx.send(embed=embed, view=view)

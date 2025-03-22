@@ -147,7 +147,6 @@ async def getbotinfo(ctx):
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
 
-
 @bot.command()
 async def serverinfoall(ctx):
     if is_owner(ctx):
@@ -155,20 +154,18 @@ async def serverinfoall(ctx):
             title="Informations sur les Serveurs",
             description="Voici les informations détaillées sur tous les serveurs où le bot est présent.",
             color=discord.Color.purple(),
-            timestamp=datetime.datetime.utcnow()  # Ajout de la date/heure
+            timestamp=datetime.utcnow()  # Utilisez datetime directement ici
         )
         embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar_url)  # Ajout du footer avec l'avatar de l'utilisateur
         
         for guild in bot.guilds:
             embed.add_field(
                 name=guild.name,
-                value=(
-                    f"**Membres** : {guild.member_count}\n"
-                    f"**Rôles** : {len(guild.roles)}\n"
-                    f"**Canaux** : {len(guild.channels)}\n"
-                    f"**ID du Serveur** : {guild.id}\n"
-                    f"**Créé le** : {guild.created_at.strftime('%d/%m/%Y %H:%M:%S')}\n"
-                ),
+                value=(f"**Membres** : {guild.member_count}\n"
+                       f"**Rôles** : {len(guild.roles)}\n"
+                       f"**Canaux** : {len(guild.channels)}\n"
+                       f"**ID du Serveur** : {guild.id}\n"
+                       f"**Créé le** : {guild.created_at.strftime('%d/%m/%Y %H:%M:%S')}\n"),
                 inline=False
             )
 

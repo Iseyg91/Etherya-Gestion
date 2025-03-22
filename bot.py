@@ -148,68 +148,95 @@ async def setstatus(ctx, status: str):
 
 @bot.command()
 async def getbotinfo(ctx):
-    # Calcul de l'uptime du bot
-    uptime_seconds = time.time() - bot.uptime
-    uptime_days = int(uptime_seconds // 86400)
-    uptime_hours = int((uptime_seconds % 86400) // 3600)
-    uptime_minutes = int((uptime_seconds % 3600) // 60)
-    uptime_seconds = int(uptime_seconds % 60)
+    """Affiche les statistiques détaillées du bot avec un embed amélioré visuellement."""
+    try:
+        start_time = time.time()
+        
+        # Calcul de l'uptime du bot
+        uptime_seconds = int(time.time() - bot.uptime)
+        uptime_days, remainder = divmod(uptime_seconds, 86400)
+        uptime_hours, remainder = divmod(remainder, 3600)
+        uptime_minutes, uptime_seconds = divmod(remainder, 60)
 
-    # Récupération des statistiques du bot
-    total_servers = len(bot.guilds)
-    total_users = sum(g.member_count for g in bot.guilds)
-    total_text_channels = sum(len(g.text_channels) for g in bot.guilds)
-    total_voice_channels = sum(len(g.voice_channels) for g in bot.guilds)
-    latency = round(bot.latency * 1000, 2)  # Latence en ms
-    total_commands = len(bot.commands)
+        # Récupération des statistiques
+        total_servers = len(bot.guilds)
+        total_users = sum(g.member_count for g in bot.guilds if g.member_count)
+        total_text_channels = sum(len(g.text_channels) for g in bot.guilds)
+        total_voice_channels = sum(len(g.voice_channels) for g in bot.guilds)
+        latency = round(bot.latency * 1000, 2)  # Latence en ms
+        total_commands = len(bot.commands)
 
-    # Création de l'embed
-    embed = discord.Embed(
-        title="🤖 Informations du Bot",
-        description=f"✨ **Nom :** `{bot.user.name}`\n"
-                    f"🔹 **ID :** `{bot.user.id}`\n"
-                    f"📅 **Créé le :** `{bot.user.created_at.strftime('%d/%m/%Y')}`",
-        color=discord.Color.gold(),  # Changement de couleur pour un look premium
-        timestamp=datetime.utcnow()
-    )
-    
-    embed.set_thumbnail(url=bot.user.avatar.url)
-    if bot.user.banner:  # Vérifie si le bot a une bannière
-        embed.set_image(url=bot.user.banner.url)
+        # Génération d'une barre de progression pour la latence
+        latency_bar = "🟩" * min(10, int(10 - (latency / 50))) + "🟥" * max(0, int(latency / 50))
 
-    embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar.url)
+        # Création de l'embed
+        embed = discord.Embed(
+            title="✨ Informations du Bot",
+            description=f"📌 **Nom :** `{bot.user.name}`\n"
+                        f"🆔 **ID :** `{bot.user.id}`\n"
+                        f"🛠️ **Développé par :** `Iseyg`",
+            color=discord.Color.gold(),
+            timestamp=datetime.utcnow()
+        )
 
-    # Ajout des stats principales avec formatage des nombres
-    embed.add_field(
-        name="📊 **Statistiques**",
-        value=( 
-            f"> **🖥️ Serveurs :** `{total_servers:,}`\n"
-            f"> **👥 Utilisateurs :** `{total_users:,}`\n"
-            f"> **💬 Textuels :** `{total_text_channels:,}`\n"
-            f"> **🔊 Vocaux :** `{total_voice_channels:,}`\n"
-            f"> **⌨️ Commandes :** `{total_commands:,}`\n"
-            f"> **📡 Latence :** `{latency} ms`\n"
-        ),
-        inline=False
-    )
+        # Ajout de l'avatar et de la bannière si disponible
+        embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else None)
+        if bot.user.banner:
+            embed.set_image(url=bot.user.banner.url)
 
-    # Ajout de l'uptime
-    embed.add_field(
-        name="⏳ **Uptime**",
-        value=f"> `{uptime_days}j {uptime_hours}h {uptime_minutes}m {uptime_seconds}s`",
-        inline=False
-    )
+        embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar.url if ctx.author.avatar else None)
 
-    # Ajout d'un bouton d'invitation avec ton lien
-    view = discord.ui.View()
-    invite_button = discord.ui.Button(
-        label="📩 Inviter le Bot",
-        style=discord.ButtonStyle.link,
-        url="https://discord.com/oauth2/authorize?client_id=1346161481988706325&permissions=8&integration_type=0&scope=bot"
-    )
-    view.add_item(invite_button)
+        # 📊 Statistiques générales
+        embed.add_field(
+            name="📊 **Statistiques générales**",
+            value=(
+                f"📌 **Serveurs :** `{total_servers:,}`\n"
+                f"👥 **Utilisateurs :** `{total_users:,}`\n"
+                f"💬 **Salons textuels :** `{total_text_channels:,}`\n"
+                f"🔊 **Salons vocaux :** `{total_voice_channels:,}`\n"
+                f"📜 **Commandes :** `{total_commands:,}`\n"
+            ),
+            inline=False
+        )
 
-    await ctx.send(embed=embed, view=view)
+        # 🔄 Uptime
+        embed.add_field(
+            name="⏳ **Uptime**",
+            value=f"🕰️ `{uptime_days}j {uptime_hours}h {uptime_minutes}m {uptime_seconds}s`",
+            inline=True
+        )
+
+        # 📡 Latence
+        embed.add_field(
+            name="📡 **Latence**",
+            value=f"⏳ `{latency} ms`\n{latency_bar}",
+            inline=True
+        )
+
+        # 🌐 Hébergement (modifiable selon ton setup)
+        embed.add_field(
+            name="🌐 **Hébergement**",
+            value="🖥️ `Render + Uptime Robot`",  # Change ça si nécessaire
+            inline=False
+        )
+
+        # Ajout d'un bouton d'invitation
+        view = discord.ui.View()
+        invite_button = discord.ui.Button(
+            label="📩 Inviter le Bot",
+            style=discord.ButtonStyle.link,
+            url="https://discord.com/oauth2/authorize?client_id=1346161481988706325&permissions=8&integration_type=0&scope=bot"
+        )
+        view.add_item(invite_button)
+
+        await ctx.send(embed=embed, view=view)
+
+        end_time = time.time()
+        print(f"Commande `getbotinfo` exécutée en {round((end_time - start_time) * 1000, 2)}ms")
+
+    except Exception as e:
+        print(f"Erreur dans la commande `getbotinfo` : {e}")
+
 
 # 🎭 Emojis dynamiques pour chaque serveur
 EMOJIS_SERVEURS = ["🌍", "🚀", "🔥", "👾", "🏆", "🎮", "🏴‍☠️", "🏕️"]

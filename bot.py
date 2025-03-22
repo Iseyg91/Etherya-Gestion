@@ -160,34 +160,40 @@ async def serverinfoall(ctx):
         )
         embed.set_footer(text=f"Requête faite par {ctx.author}", icon_url=ctx.author.avatar.url)
 
-        # Si l'icône du serveur est disponible, on l'ajoute au thumbnail
+        # Ajouter un thumbnail pour l'avatar du bot
         embed.set_thumbnail(url=bot.user.avatar.url)
 
+        # Informations sur chaque serveur
         for guild in bot.guilds:
+            invite_url = f"https://discord.gg/{guild.id}"  # Lien d'invitation du serveur
+            
             embed.add_field(
-                name=f"**{guild.name}**",
+                name=f"**[{guild.name}]({invite_url})**",  # Le nom du serveur devient un lien cliquable
                 value=(
-                    f"**📊 Membres** : {guild.member_count}\n"
-                    f"**🛠️ Rôles** : {len(guild.roles)}\n"
-                    f"**💬 Canaux** : {len(guild.channels)}\n"
+                    f"**📊 Membres** : {guild.member_count} membres\n"
+                    f"**🛠️ Rôles** : {len(guild.roles)} rôles\n"
+                    f"**💬 Canaux** : {len(guild.channels)} canaux\n"
                     f"**🆔 ID du Serveur** : `{guild.id}`\n"
                     f"**📅 Créé le** : {guild.created_at.strftime('%d/%m/%Y %H:%M:%S')}\n"
                 ),
                 inline=False
             )
 
-            # Ajout de l'icône du serveur (si disponible)
+            # Si le serveur a une icône, l'ajouter à l'image du serveur
             if guild.icon:
                 embed.set_image(url=guild.icon.url)
 
-        # Si le nombre de serveurs est trop élevé, on ajoute un avertissement
+        # Si le nombre de serveurs est trop élevé, avertir l'utilisateur
         if len(bot.guilds) > 5:
             embed.add_field(name="🔒 Note", value="Il y a trop de serveurs pour afficher toutes les informations, seulement les 5 premiers sont inclus.")
-        
+
+        # Ajouter l'image spécifique en bas de l'embed
+        embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+
+        # Envoi de l'embed
         await ctx.send(embed=embed)
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
-
 
 #------------------------------------------------------------------------- Commande SETUP
 

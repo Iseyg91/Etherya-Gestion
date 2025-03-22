@@ -518,7 +518,7 @@ if len(premium_servers) > 10:
 
 async def update_embed(page_number):
                 # Mettre à jour l'embed avec les serveurs de la page sélectionnée
-                embed.description = f"Page {page_number + 1}/{len(pages)}\n\n{'\n'.join(pages[page_number])}"
+                embed.description = f"Page {page_number + 1}/{len(pages)}\n\n{('\n'.join(pages[page_number]))}"
                 await interaction.edit_original_response(embed=embed)
 
             # Fonction pour gérer le bouton "Suivant"

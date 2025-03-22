@@ -147,25 +147,20 @@ async def getbotinfo(ctx):
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
 
-import discord
-from discord.ext import commands
-from discord.ui import View, Button
-from datetime import datetime
-
 class ServerInfoView(View):
     def __init__(self, ctx, bot, guilds):
         super().__init__()
         self.ctx = ctx
         self.bot = bot
-        self.guilds = sorted(guilds, key=lambda g: g.member_count, reverse=True)  # Tri décroissant
+        self.guilds = sorted(guilds, key=lambda g: g.member_count, reverse=True)  # Tri par popularité
         self.page = 0
         self.servers_per_page = 5
         self.max_page = (len(self.guilds) - 1) // self.servers_per_page
         self.update_buttons()
     
     def update_buttons(self):
-        self.children[0].disabled = self.page == 0  # Désactive "Précédent" si on est sur la première page
-        self.children[1].disabled = self.page == self.max_page  # Désactive "Suivant" si on est sur la dernière page
+        self.children[0].disabled = self.page == 0  # Précédent désactivé sur la première page
+        self.children[1].disabled = self.page == self.max_page  # Suivant désactivé sur la dernière page
 
     async def update_embed(self, interaction):
         embed = await self.create_embed()
@@ -173,33 +168,45 @@ class ServerInfoView(View):
         await interaction.response.edit_message(embed=embed, view=self)
 
     async def create_embed(self):
+        total_servers = len(self.guilds)
+
         embed = discord.Embed(
-            title="Informations sur les Serveurs",
-            description="Voici les informations détaillées sur tous les serveurs où le bot est présent.",
-            color=discord.Color.purple(),
+            title=f"🌍 Serveurs du Bot (`{total_servers}` total)",
+            description="🔍 Liste des serveurs où le bot est présent, triés par popularité.",
+            color=discord.Color.gold(),
             timestamp=datetime.utcnow()
         )
-        embed.set_footer(text=f"Requête faite par {self.ctx.author}", icon_url=self.ctx.author.avatar.url)
+        embed.set_footer(text=f"Page {self.page + 1}/{self.max_page + 1} • Demandé par {self.ctx.author}", icon_url=self.ctx.author.avatar.url)
         embed.set_thumbnail(url=self.bot.user.avatar.url)
 
         start = self.page * self.servers_per_page
         end = start + self.servers_per_page
 
         for guild in self.guilds[start:end]:
-            invite_url = "Aucun canal disponible"
+            invite_url = "🔒 *Aucune invitation disponible*"
             if guild.text_channels:
                 invite = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
-                invite_url = invite.url
+                invite_url = f"[🔗 Invitation]({invite.url})"
+
+            owner = guild.owner.mention if guild.owner else "❓ *Inconnu*"
+            member_display = f"**{guild.member_count}**" if guild.member_count > 1000 else f"{guild.member_count}"
+            
+            # Ajout du niveau de boost et des emojis
+            boost_level = guild.premium_tier if guild.premium_tier > 0 else "0"
+            emoji_count = len(guild.emojis)
 
             embed.add_field(
-                name=f"**{guild.name}**",
+                name=f"🎭 **{guild.name}**",
                 value=(
-                    f"**📊 Membres** : {guild.member_count}\n"
-                    f"**🛠️ Rôles** : {len(guild.roles)}\n"
-                    f"**💬 Canaux** : {len(guild.channels)}\n"
-                    f"**🆔 ID du Serveur** : `{guild.id}`\n"
-                    f"**📅 Créé le** : {guild.created_at.strftime('%d/%m/%Y %H:%M:%S')}\n"
-                    f"🔗 **[Lien d'invitation]({invite_url})**"
+                    f"> **👑 Propriétaire** : {owner}\n"
+                    f"> **📊 Membres** : `{member_display}`\n"
+                    f"> **💎 Boosts** : `Niveau {boost_level}`\n"
+                    f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
+                    f"> **💬 Canaux** : `{len(guild.channels)}`\n"
+                    f"> **😃 Emojis** : `{emoji_count}`\n"
+                    f"> **🆔 ID** : `{guild.id}`\n"
+                    f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
+                    f"> {invite_url}"
                 ),
                 inline=False
             )
@@ -207,12 +214,12 @@ class ServerInfoView(View):
         embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
         return embed
 
-    @discord.ui.button(label="⬅️ Précédent", style=discord.ButtonStyle.primary, disabled=True)
+    @discord.ui.button(label="⬅️ Précédent", style=discord.ButtonStyle.green, disabled=True)
     async def previous(self, interaction: discord.Interaction, button: Button):
         self.page -= 1
         await self.update_embed(interaction)
 
-    @discord.ui.button(label="➡️ Suivant", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="➡️ Suivant", style=discord.ButtonStyle.green)
     async def next(self, interaction: discord.Interaction, button: Button):
         self.page += 1
         await self.update_embed(interaction)

@@ -236,32 +236,35 @@ async def create_embed(self):
     start = self.page * self.servers_per_page
     end = start + self.servers_per_page
 
-for i, guild in enumerate(self.guilds[start:end]):
-    # Utiliser un emoji en fonction du nombre de serveurs
-    emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Cela va éviter d'aller au-delà du nombre d'emojis
+    for i, guild in enumerate(self.guilds[start:end]):
+        # Utiliser un emoji en fonction du nombre de serveurs
+        emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)]  # Cela va éviter d'aller au-delà du nombre d'emojis
 
-    # Dynamiser la couleur en fonction du nombre de membres
-    embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
+        # Dynamiser la couleur en fonction du nombre de membres
+        embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
 
-    # Ajouter un statut de serveur (En ligne / Hors ligne)
-    status_emoji = "💬" if guild.online else "🛑"
-    status_text = "En ligne" if guild.online else "Hors ligne"
+        # Ajouter un statut de serveur (En ligne / Hors ligne)
+        status_emoji = "💬" if guild.online else "🛑"
+        status_text = "En ligne" if guild.online else "Hors ligne"
 
-    embed.add_field(
-        name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
-        value=(
-            f"> **👑 Propriétaire** : {guild.owner.mention if guild.owner else '❓ *Inconnu*'}\n"
-            f"> **📊 Membres** : `{guild.member_count}`\n"
-            f"> **💎 Boosts** : `Niveau {guild.premium_tier if guild.premium_tier > 0 else '0'}`\n"
-            f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
-            f"> **💬 Canaux** : `{len(guild.channels)}`\n"
-            f"> **😃 Emojis** : `{len(guild.emojis)}`\n"
-            f"> **🆔 ID** : `{guild.id}`\n"
-            f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
-            f"> [🔗 Invitation]({(await guild.text_channels[0].create_invite(max_uses=1, unique=True)).url if guild.text_channels else '🔒 *Aucune invitation disponible*'})"
-        ),
-        inline=False
-    )
+        invite_url = await guild.text_channels[0].create_invite(max_uses=1, unique=True) if guild.text_channels else None
+        invitation = invite_url.url if invite_url else '🔒 *Aucune invitation disponible*'
+
+        embed.add_field(
+            name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
+            value=(
+                f"> **👑 Propriétaire** : {guild.owner.mention if guild.owner else '❓ *Inconnu*'}\n"
+                f"> **📊 Membres** : `{guild.member_count}`\n"
+                f"> **💎 Boosts** : `Niveau {guild.premium_tier if guild.premium_tier > 0 else '0'}`\n"
+                f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
+                f"> **💬 Canaux** : `{len(guild.channels)}`\n"
+                f"> **😃 Emojis** : `{len(guild.emojis)}`\n"
+                f"> **🆔 ID** : `{guild.id}`\n"
+                f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
+                f"> [🔗 Invitation]({invitation})"
+            ),
+            inline=False
+        )
 
     embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
     return embed

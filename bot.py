@@ -250,39 +250,40 @@ async def create_embed(self):
     start = self.page * self.servers_per_page
     end = start + self.servers_per_page
 
-for i, guild in enumerate(self.guilds[start:end]):
-    # Utiliser un emoji en fonction du nombre de serveurs, en évitant d'aller au-delà du nombre d'emojis
-    emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)] if len(EMOJIS_SERVEURS) > 0 else "🔴"  # Emoji par défaut si la liste est vide
+    for i, guild in enumerate(self.guilds[start:end]):
+        emoji = EMOJIS_SERVEURS[i % len(EMOJIS_SERVEURS)] if len(EMOJIS_SERVEURS) > 0 else "🔴"
 
-    # Dynamiser la couleur en fonction du nombre de membres
-    embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
+        embed_color = discord.Color.green() if guild.member_count > 1000 else discord.Color.red()
 
-    # Ajouter un statut de serveur (En ligne / Hors ligne)
-    status_emoji = "💬" if guild.online else "🛑"
-    status_text = "En ligne" if guild.online else "Hors ligne"
+        status_emoji = "💬" if guild.online else "🛑"
+        status_text = "En ligne" if guild.online else "Hors ligne"
 
-    # Vérification si des canaux texte sont présents avant d'en créer une invitation
-    if guild.text_channels:
-        invite_url = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
-        invitation = invite_url.url
-    else:
+        # Vérification si des canaux texte sont présents avant d'en créer une invitation
         invitation = '🔒 *Aucune invitation disponible*'
+        if guild.text_channels:
+            try:
+                invite_url = await guild.text_channels[0].create_invite(max_uses=1, unique=True)
+                invitation = invite_url.url
+            except discord.Forbidden:
+                invitation = '🔒 *Permission refusée*'
+            except discord.HTTPException:
+                invitation = '⚠️ *Erreur lors de la création du lien*'
 
-    embed.add_field(
-        name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
-        value=(
-            f"> **👑 Propriétaire** : {guild.owner.mention if guild.owner else '❓ *Inconnu*'}\n"
-            f"> **📊 Membres** : `{guild.member_count}`\n"
-            f"> **💎 Boosts** : `Niveau {guild.premium_tier if guild.premium_tier > 0 else '0'}`\n"
-            f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
-            f"> **💬 Canaux** : `{len(guild.channels)}`\n"
-            f"> **😃 Emojis** : `{len(guild.emojis)}`\n"
-            f"> **🆔 ID** : `{guild.id}`\n"
-            f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
-            f"> [🔗 Invitation]({invitation})"
-        ),
-        inline=False
-    )
+        embed.add_field(
+            name=f"{emoji} **{guild.name}** - {status_emoji} {status_text}",
+            value=(
+                f"> **👑 Propriétaire** : {guild.owner.mention if guild.owner else '❓ *Inconnu*'}\n"
+                f"> **📊 Membres** : `{guild.member_count}`\n"
+                f"> **💎 Boosts** : `Niveau {guild.premium_tier if guild.premium_tier > 0 else '0'}`\n"
+                f"> **🛠️ Rôles** : `{len(guild.roles)}`\n"
+                f"> **💬 Canaux** : `{len(guild.channels)}`\n"
+                f"> **😃 Emojis** : `{len(guild.emojis)}`\n"
+                f"> **🆔 ID** : `{guild.id}`\n"
+                f"> **📅 Créé le** : `{guild.created_at.strftime('%d/%m/%Y')}`\n"
+                f"> [🔗 Invitation]({invitation})"
+            ),
+            inline=False
+        )
 
     embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
     return embed

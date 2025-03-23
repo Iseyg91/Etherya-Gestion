@@ -541,6 +541,34 @@ async def premium(interaction: discord.Interaction, code: str):
             f"Une erreur est survenue lors de la vérification du code premium : {str(e)}"
         )
 
+# Commande /setstatut pour définir un statut et le rôle associé
+@bot.tree.command(name="setstatut")
+@app_commands.describe(status="Entrez le statut à détecter", role="Mentionnez le rôle à attribuer")
+async def setstatut(interaction: discord.Interaction, status: str, role: discord.Role):
+    if interaction.guild.id not in premium_servers:
+        await interaction.response.send_message("Cette commande est uniquement disponible sur les serveurs premium.", ephemeral=True)
+        return
+
+    # Enregistrer le statut et le rôle dans le dictionnaire
+    status_roles[status] = role.id
+    await interaction.response.send_message(
+        f"Le statut '{status}' est maintenant associé au rôle {role.mention}.", ephemeral=True
+    )
+
+
+# Vérification des statuts des membres sur le serveur
+@bot.event
+async def on_member_update(before: discord.Member, after: discord.Member):
+    if after.guild.id not in premium_servers:
+        return  # Ignorer les serveurs non premium
+
+    # Vérifier si le statut de l'utilisateur correspond à l'un des statuts définis
+    for status, role_id in status_roles.items():
+        if status in after.activities and role_id:
+            role = after.guild.get_role(role_id)
+            if role:
+                await after.add_roles(role)
+                print(f"Rôle {role.name} attribué à {after.name} pour le statut {status}.")
 
 # Commande slash /viewpremium
 @bot.tree.command(name="viewpremium")

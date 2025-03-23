@@ -2591,22 +2591,26 @@ async def vc(ctx):
         else:
             print("Message ignoré car l'auteur est un bot.")
 
+        # Ajouter les informations détaillées dans l'embed avant d'envoyer
+        embed.add_field(name=f"👑 Propriétaire", value=f"<@{owner_member.id}>", inline=True)  # Mention dynamique pour le Owner
+        embed.add_field(name="🔒 Niveau de vérification", value=f"**{verification_level}**", inline=True)
+        embed.add_field(name="📝 Canaux textuels", value=f"**{text_channels}**", inline=True)
+        embed.add_field(name="🔊 Canaux vocaux", value=f"**{voice_channels}**", inline=True)
+        embed.add_field(name="📅 Créé le", value=f"**{server_created_at}**", inline=False)
+        
+        embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
+        
+        embed.set_footer(text="📈 Statistiques mises à jour en temps réel | ♥️ by Iseyg")
+
     except Exception as e:
         print(f"Erreur lors de l'exécution de la commande 'vc': {e}")
         await ctx.send("Une erreur est survenue lors de l'exécution de la commande.")
     
-    # Informations détaillées
-    embed.add_field(name=f"👑 Propriétaire", value=f"<@{owner_member.id}>", inline=True)  # Mention dynamique pour le Owner
-    embed.add_field(name="🔒 Niveau de vérification", value=f"**{verification_level}**", inline=True)
-    embed.add_field(name="📝 Canaux textuels", value=f"**{text_channels}**", inline=True)
-    embed.add_field(name="🔊 Canaux vocaux", value=f"**{voice_channels}**", inline=True)
-    embed.add_field(name="📅 Créé le", value=f"**{server_created_at}**", inline=False)
-    
-    embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
-    
-    embed.set_footer(text="📈 Statistiques mises à jour en temps réel | ♥️ by Iseyg")
-    
-    await ctx.send(embed=embed)
+    # Ne pas renvoyer l'embed deux fois, tout envoyer à la fin
+    if not ctx.message.author.bot:
+        await ctx.send(embed=embed)
+        print("Embed envoyé une deuxième fois avec les informations détaillées.")
+
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(ctx.message)
 

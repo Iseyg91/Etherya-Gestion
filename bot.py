@@ -2551,9 +2551,16 @@ async def alerte(ctx, member: discord.Member, *, reason: str):
     # Envoi de l'embed dans le même salon
     await channel.send(embed=embed)
 
+sent_embed_channels = {}
+
 @bot.command()
 async def vc(ctx):
     print("Commande 'vc' appelée.")
+    
+    # Si un embed a déjà été envoyé dans ce canal, ne rien faire
+    if ctx.channel.id in sent_embed_channels:
+        print("Embed déjà envoyé dans ce canal.")
+        return
 
     try:
         guild = ctx.guild
@@ -2583,21 +2590,29 @@ async def vc(ctx):
         embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
 
         print("Embed créé avec succès.")
+
+        # Informations détaillées
+        embed.add_field(name=f"👑 Propriétaire", value=f"<@{owner_member.id}>", inline=True)  # Mention dynamique pour le Owner
+        embed.add_field(name="🔒 Niveau de vérification", value=f"**{verification_level}**", inline=True)
+        embed.add_field(name="📝 Canaux textuels", value=f"**{text_channels}**", inline=True)
+        embed.add_field(name="🔊 Canaux vocaux", value=f"**{voice_channels}**", inline=True)
+        embed.add_field(name="📅 Créé le", value=f"**{server_created_at}**", inline=False)
+        
+        embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
+        
+        embed.set_footer(text="📈 Statistiques mises à jour en temps réel | ♥️ by Iseyg")
+        
+        # Envoi de l'embed
+        await ctx.send(embed=embed)
+
+        # Marquer que l'embed a été envoyé dans ce canal
+        sent_embed_channels[ctx.channel.id] = True
+
+        # IMPORTANT : Permet au bot de continuer à traiter les commandes
+        await bot.process_commands(ctx.message)
     
-    # Informations détaillées
-    embed.add_field(name=f"👑 Propriétaire", value=f"<@{owner_member.id}>", inline=True)  # Mention dynamique pour le Owner
-    embed.add_field(name="🔒 Niveau de vérification", value=f"**{verification_level}**", inline=True)
-    embed.add_field(name="📝 Canaux textuels", value=f"**{text_channels}**", inline=True)
-    embed.add_field(name="🔊 Canaux vocaux", value=f"**{voice_channels}**", inline=True)
-    embed.add_field(name="📅 Créé le", value=f"**{server_created_at}**", inline=False)
-    
-    embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
-    
-    embed.set_footer(text="📈 Statistiques mises à jour en temps réel | ♥️ by Iseyg")
-    
-    await ctx.send(embed=embed)
-    # IMPORTANT : Permet au bot de continuer à traiter les commandes
-    await bot.process_commands(ctx.message)
+    except Exception as e:
+        print(f"Erreur: {e}")
 
 
 @bot.command()

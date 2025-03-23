@@ -2556,63 +2556,48 @@ sent_embed_channels = {}
 @bot.command()
 async def vc(ctx):
     print("Commande 'vc' appelée.")
-    
-    # Si un embed a déjà été envoyé dans ce canal, ne rien faire
-    if ctx.channel.id in sent_embed_channels:
-        print("Embed déjà envoyé dans ce canal.")
-        return
 
     try:
         guild = ctx.guild
         print(f"Guild récupérée: {guild.name} (ID: {guild.id})")
 
         total_members = guild.member_count
-        online_members = guild.approximate_presence_count if guild.approximate_presence_count else "N/A"
+        online_members = sum(1 for member in guild.members if member.status != discord.Status.offline)
         voice_members = sum(len(voice_channel.members) for voice_channel in guild.voice_channels)
-        boosts = guild.premium_subscription_count
+        boosts = guild.premium_subscription_count or 0
         owner_member = guild.owner
-        server_invite = "https://discord.gg/X4dZAt3BME"  # Lien du serveur
+        server_invite = "https://discord.gg/X4dZAt3BME"
         verification_level = guild.verification_level.name
         text_channels = len(guild.text_channels)
         voice_channels = len(guild.voice_channels)
         server_created_at = guild.created_at.strftime('%d %B %Y')
 
-        print(f"Membres: {total_members}, Membres en ligne: {online_members}, Membres en vocal: {voice_members}")
-        print(f"Boosts: {boosts}, Propriétaire: {owner_member}, Serveur créé le: {server_created_at}")
-
         embed = discord.Embed(title=f"📊 Statistiques de {guild.name}", color=discord.Color.purple())
-        embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
 
-        # Ajouter les informations générales du serveur
-        embed.add_field(name=f"{EMOJIS['members']} Membres", value=f"**{total_members}**", inline=True)
-        embed.add_field(name=f"{EMOJIS['online']} Membres en ligne", value=f"**{online_members}**", inline=True)
-        embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
-        embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon.url)
 
-        print("Embed créé avec succès.")
+        embed.add_field(name="👥 Membres", value=f"**{total_members}**", inline=True)
+        embed.add_field(name="🟢 Membres en ligne", value=f"**{online_members}**", inline=True)
+        embed.add_field(name="🎙️ En vocal", value=f"**{voice_members}**", inline=True)
+        embed.add_field(name="💎 Boosts", value=f"**{boosts}**", inline=True)
 
-        # Informations détaillées
-        embed.add_field(name=f"👑 Propriétaire", value=f"<@{owner_member.id}>", inline=True)  # Mention dynamique pour le Owner
+        embed.add_field(name="👑 Propriétaire", value=f"<@{owner_member.id}>", inline=True)
         embed.add_field(name="🔒 Niveau de vérification", value=f"**{verification_level}**", inline=True)
         embed.add_field(name="📝 Canaux textuels", value=f"**{text_channels}**", inline=True)
         embed.add_field(name="🔊 Canaux vocaux", value=f"**{voice_channels}**", inline=True)
         embed.add_field(name="📅 Créé le", value=f"**{server_created_at}**", inline=False)
-        
         embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
-        
+
         embed.set_footer(text="📈 Statistiques mises à jour en temps réel | ♥️ by Iseyg")
-        
-        # Envoi de l'embed
+
         await ctx.send(embed=embed)
+        print("Embed envoyé avec succès.")
 
-        # Marquer que l'embed a été envoyé dans ce canal
-        sent_embed_channels[ctx.channel.id] = True
-
-        # IMPORTANT : Permet au bot de continuer à traiter les commandes
-        await bot.process_commands(ctx.message)
-    
     except Exception as e:
-        print(f"Erreur: {e}")
+        print(f"Erreur lors de l'exécution de la commande 'vc': {e}")
+        await ctx.send("Une erreur est survenue lors de l'exécution de la commande.")
+        return  # Empêche l'exécution du reste du code après une erreur
 
 
 @bot.command()

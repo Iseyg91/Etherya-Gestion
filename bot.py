@@ -2348,9 +2348,11 @@ async def send_dm(member, action, reason, duration=None):
     except discord.Forbidden:
         print(f"Impossible d'envoyer un DM à {member.display_name}.")
 
-# 🔨 Commandes de modération
 @bot.command()
-async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+async def ban(ctx, member: discord.Member = None, *, reason="Aucune raison spécifiée"):
+    if member is None:
+        return await ctx.send("❌ Il manque un argument : vous devez mentionner un membre à bannir.")
+
     if ctx.author == member:
         return await ctx.send("🚫 Vous ne pouvez pas vous bannir vous-même.")
     if is_higher_or_equal(ctx, member):
@@ -2362,18 +2364,31 @@ async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"
         await send_log(ctx, member, "Ban", reason)
         await send_dm(member, "Ban", reason)
 
-@bot.command()
-async def unban(ctx, user_id: int):
-    if has_permission(ctx, "ban_members"):
-        user = await bot.fetch_user(user_id)
-        await ctx.guild.unban(user)
-        embed = create_embed("🔓 Unban", f"{user.mention} a été débanni.", discord.Color.green(), ctx, user, "Unban", "Réintégration")
-        await ctx.send(embed=embed)
-        await send_log(ctx, user, "Unban", "Réintégration")
-        await send_dm(user, "Unban", "Réintégration")
 
 @bot.command()
-async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+async def unban(ctx, user_id: int = None):
+    if user_id is None:
+        return await ctx.send("❌ Il manque un argument : vous devez spécifier l'ID d'un utilisateur à débannir.")
+
+    if has_permission(ctx, "ban_members"):
+        try:
+            user = await bot.fetch_user(user_id)
+            await ctx.guild.unban(user)
+            embed = create_embed("🔓 Unban", f"{user.mention} a été débanni.", discord.Color.green(), ctx, user, "Unban", "Réintégration")
+            await ctx.send(embed=embed)
+            await send_log(ctx, user, "Unban", "Réintégration")
+            await send_dm(user, "Unban", "Réintégration")
+        except discord.NotFound:
+            return await ctx.send("❌ Aucun utilisateur trouvé avec cet ID.")
+        except discord.Forbidden:
+            return await ctx.send("❌ Je n'ai pas les permissions nécessaires pour débannir cet utilisateur.")
+
+
+@bot.command()
+async def kick(ctx, member: discord.Member = None, *, reason="Aucune raison spécifiée"):
+    if member is None:
+        return await ctx.send("❌ Il manque un argument : vous devez mentionner un membre à expulser.")
+
     if ctx.author == member:
         return await ctx.send("🚫 Vous ne pouvez pas vous expulser vous-même.")
     if is_higher_or_equal(ctx, member):
@@ -2385,8 +2400,15 @@ async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée
         await send_log(ctx, member, "Kick", reason)
         await send_dm(member, "Kick", reason)
 
+
 @bot.command()
-async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="Aucune raison spécifiée"):
+async def mute(ctx, member: discord.Member = None, duration_with_unit: str = None, *, reason="Aucune raison spécifiée"):
+    if member is None:
+        return await ctx.send("❌ Il manque un argument : vous devez mentionner un membre à mute.")
+
+    if duration_with_unit is None:
+        return await ctx.send("❌ Il manque un argument : vous devez préciser une durée (ex: `10m`, `1h`, `2j`).")
+
     if ctx.author == member:
         return await ctx.send("🚫 Vous ne pouvez pas vous mute vous-même.")
     if is_higher_or_equal(ctx, member):
@@ -2401,7 +2423,7 @@ async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="
         if unit not in time_units:
             raise ValueError
     except ValueError:
-        return await ctx.send("❌ Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours).")
+        return await ctx.send("❌ Format invalide ! Utilisez un nombre suivi de `m` (minutes), `h` (heures) ou `j` (jours).")
 
     time_deltas = {"m": timedelta(minutes=duration), "h": timedelta(hours=duration), "j": timedelta(days=duration)}
     duration_time = time_deltas[unit]
@@ -2413,14 +2435,19 @@ async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="
     await send_log(ctx, member, "Mute", reason, duration_str)
     await send_dm(member, "Mute", reason, duration_str)
 
+
 @bot.command()
-async def unmute(ctx, member: discord.Member):
+async def unmute(ctx, member: discord.Member = None):
+    if member is None:
+        return await ctx.send("❌ Il manque un argument : vous devez mentionner un membre à démuter.")
+
     if has_permission(ctx, "moderate_members"):
         await member.timeout(None)
         embed = create_embed("🔊 Unmute", f"{member.mention} a été démuté.", discord.Color.green(), ctx, member, "Unmute", "Fin du mute")
         await ctx.send(embed=embed)
         await send_log(ctx, member, "Unmute", "Fin du mute")
         await send_dm(member, "Unmute", "Fin du mute")
+
 
 #------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte, +uptime, +ping, +roleinfo
 

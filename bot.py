@@ -2582,28 +2582,20 @@ async def vc(ctx):
         embed.add_field(name=f"{EMOJIS['voice']} En vocal", value=f"**{voice_members}**", inline=True)
         embed.add_field(name=f"{EMOJIS['boosts']} Boosts", value=f"**{boosts}**", inline=True)
 
-        # Ajouter les informations détaillées du serveur
-        embed.add_field(name=f"👑 Propriétaire", value=f"<@{owner_member.id}>", inline=True)  # Mention dynamique pour le Owner
-        embed.add_field(name="🔒 Niveau de vérification", value=f"**{verification_level}**", inline=True)
-        embed.add_field(name="📝 Canaux textuels", value=f"**{text_channels}**", inline=True)
-        embed.add_field(name="🔊 Canaux vocaux", value=f"**{voice_channels}**", inline=True)
-        embed.add_field(name="📅 Créé le", value=f"**{server_created_at}**", inline=False)
-        
-        embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
-        
-        embed.set_footer(text="📈 Statistiques mises à jour en temps réel | ♥️ by Iseyg")
-        
-        # Vérification pour éviter l'envoi en boucle
-        if not ctx.message.author.bot:
-            await ctx.send(embed=embed)
-            print("Embed envoyé avec succès.")
-        else:
-            print("Message ignoré car l'auteur est un bot.")
-
-    except Exception as e:
-        print(f"Erreur lors de l'exécution de la commande 'vc': {e}")
-        await ctx.send("Une erreur est survenue lors de l'exécution de la commande.")
+        print("Embed créé avec succès.")
     
+    # Informations détaillées
+    embed.add_field(name=f"👑 Propriétaire", value=f"<@{owner_member.id}>", inline=True)  # Mention dynamique pour le Owner
+    embed.add_field(name="🔒 Niveau de vérification", value=f"**{verification_level}**", inline=True)
+    embed.add_field(name="📝 Canaux textuels", value=f"**{text_channels}**", inline=True)
+    embed.add_field(name="🔊 Canaux vocaux", value=f"**{voice_channels}**", inline=True)
+    embed.add_field(name="📅 Créé le", value=f"**{server_created_at}**", inline=False)
+    
+    embed.add_field(name="🔗 Lien du serveur", value=f"[{guild.name}]({server_invite})", inline=False)
+    
+    embed.set_footer(text="📈 Statistiques mises à jour en temps réel | ♥️ by Iseyg")
+    
+    await ctx.send(embed=embed)
     # IMPORTANT : Permet au bot de continuer à traiter les commandes
     await bot.process_commands(ctx.message)
 

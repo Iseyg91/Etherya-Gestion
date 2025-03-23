@@ -2414,7 +2414,7 @@ async def mute(ctx, member: discord.Member = None, duration_with_unit: str = Non
     if is_higher_or_equal(ctx, member):
         return await ctx.send("🚫 Vous ne pouvez pas sanctionner quelqu'un de votre niveau ou supérieur.")
     if not has_permission(ctx, "moderate_members"):
-        return await ctx.send("🚫 Vous n'avez pas la permission d'utiliser cette commande.")
+        return await ctx.send("❌ Vous n'avez pas la permission de mute des membres.")
 
     time_units = {"m": "minutes", "h": "heures", "j": "jours"}
     try:
@@ -2428,12 +2428,18 @@ async def mute(ctx, member: discord.Member = None, duration_with_unit: str = Non
     time_deltas = {"m": timedelta(minutes=duration), "h": timedelta(hours=duration), "j": timedelta(days=duration)}
     duration_time = time_deltas[unit]
 
-    await member.timeout(duration_time, reason=reason)
-    duration_str = f"{duration} {time_units[unit]}"
-    embed = create_embed("⏳ Mute", f"{member.mention} a été muté pour {duration_str}.", discord.Color.blue(), ctx, member, "Mute", reason, duration_str)
-    await ctx.send(embed=embed)
-    await send_log(ctx, member, "Mute", reason, duration_str)
-    await send_dm(member, "Mute", reason, duration_str)
+    try:
+        await member.timeout(duration_time, reason=reason)
+        duration_str = f"{duration} {time_units[unit]}"
+        embed = create_embed("⏳ Mute", f"{member.mention} a été muté pour {duration_str}.", discord.Color.blue(), ctx, member, "Mute", reason, duration_str)
+        await ctx.send(embed=embed)
+        await send_log(ctx, member, "Mute", reason, duration_str)
+        await send_dm(member, "Mute", reason, duration_str)
+    except discord.Forbidden:
+        await ctx.send("❌ Je n'ai pas la permission de mute ce membre.")
+    except Exception as e:
+        await ctx.send(f"❌ Une erreur s'est produite : {str(e)}")
+
 
 
 @bot.command()
@@ -2448,6 +2454,61 @@ async def unmute(ctx, member: discord.Member = None):
         await send_log(ctx, member, "Unmute", "Fin du mute")
         await send_dm(member, "Unmute", "Fin du mute")
 
+import discord
+from discord.ext import commands
+
+# Fonction de vérification des permissions
+async def check_permissions(ctx):
+    # Vérifier si l'utilisateur a la permission "Manage Messages"
+    return ctx.author.guild_permissions.manage_messages or ctx.author.id == 1166334752186433567
+
+# Fonction pour vérifier si le membre est immunisé
+async def is_immune(member):
+    # Exemple de logique d'immunité (peut être ajustée)
+    # Vérifie si le membre a un rôle spécifique ou une permission
+    return any(role.name == "Immunité" for role in member.roles)
+
+# Fonction pour envoyer un message de log
+async def send_log(ctx, member, action, reason):
+    log_channel = discord.utils.get(ctx.guild.text_channels, name="logs")  # Remplacer par le salon de log approprié
+    if log_channel:
+        embed = discord.Embed(
+            title="Avertissement",
+            description=f"**Membre :** {member.mention}\n**Action :** {action}\n**Raison :** {reason}",
+            color=discord.Color.orange()
+        )
+        embed.set_footer(text=f"Avertissement donné par {ctx.author}", icon_url=ctx.author.avatar.url)
+        await log_channel.send(embed=embed)
+
+# Fonction pour envoyer un message en DM au membre
+async def send_dm(member, action, reason):
+    try:
+        embed = discord.Embed(
+            title="⚠️ Avertissement",
+            description=f"**Action :** {action}\n**Raison :** {reason}",
+            color=discord.Color.red()
+        )
+        embed.set_footer(text="N'oublie pas de respecter les règles !")
+        await member.send(embed=embed)
+    except discord.Forbidden:
+        print(f"Impossible d'envoyer un message privé à {member.name}")
+
+# Commande de warning
+@bot.command()
+async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if await check_permissions(ctx) and not await is_immune(member):
+        # Envoi du message de confirmation
+        embed = discord.Embed(
+            title="⚠️ Avertissement donné",
+            description=f"{member.mention} a reçu un avertissement pour la raison suivante :\n**{reason}**",
+            color=discord.Color.orange()
+        )
+        embed.set_footer(text=f"Avertissement donné par {ctx.author}", icon_url=ctx.author.avatar.url)
+        await ctx.send(embed=embed)
+
+        # Envoi du log et du message privé
+        await send_log(ctx, member, "Warn", reason)
+        await send_dm(member, "Warn", reason)
 
 #------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte, +uptime, +ping, +roleinfo
 

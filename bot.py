@@ -2584,8 +2584,13 @@ async def vc(ctx):
 
         print("Embed créé avec succès.")
 
-        await ctx.send(embed=embed)
-        print("Embed envoyé avec succès.")
+        # Vérification pour éviter l'envoi en boucle
+        if not ctx.message.author.bot:
+            await ctx.send(embed=embed)
+            print("Embed envoyé avec succès.")
+        else:
+            print("Message ignoré car l'auteur est un bot.")
+
     except Exception as e:
         print(f"Erreur lors de l'exécution de la commande 'vc': {e}")
         await ctx.send("Une erreur est survenue lors de l'exécution de la commande.")

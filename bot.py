@@ -4074,36 +4074,29 @@ async def suggestions_command(interaction: discord.Interaction):
 SUGGESTION_CHANNEL_ID = 1245440480850870344  # ID du salon des suggestions
 NEW_USER_ID = 1166334631784759307  # Nouvel ID à mentionner
 
-# Stockage des suggestions
-suggestions = []
+# Stockage des sondages
+polls = []
 
 # Dictionnaire pour gérer le cooldown des utilisateurs
 user_cooldown = {}
 
-class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
+class PollModal(discord.ui.Modal, title="📊 Nouveau Sondage"):
     def __init__(self):
         super().__init__()
 
         self.add_item(discord.ui.TextInput(
-            label="💬 Votre suggestion",
+            label="❓ Question du sondage",
             style=discord.TextStyle.long,
-            placeholder="Décrivez votre suggestion ici...",
+            placeholder="Tapez la question du sondage ici...",
             required=True,
             max_length=500
         ))
 
         self.add_item(discord.ui.TextInput(
-            label="🎯 Cela concerne Etherya ou le Bot ?",
+            label="🗳️ Options du sondage (séparées par des virgules)",
             style=discord.TextStyle.short,
-            placeholder="Tapez 'Etherya' ou 'Bot'",
+            placeholder="Option 1, Option 2, Option 3...",
             required=True
-        ))
-
-        self.add_item(discord.ui.TextInput(
-            label="❔ Pourquoi cette suggestion ?",
-            style=discord.TextStyle.paragraph,
-            placeholder="Expliquez pourquoi cette idée est utile...",
-            required=False
         ))
 
     async def on_submit(self, interaction: discord.Interaction):
@@ -4111,121 +4104,106 @@ class SuggestionModal(discord.ui.Modal, title="💡 Nouvelle Suggestion"):
         # Anti-spam: vérifier cooldown
         if user_id in user_cooldown and time.time() - user_cooldown[user_id] < 60:
             return await interaction.response.send_message(
-                "❌ Tu dois attendre avant de soumettre une nouvelle suggestion. Patiente un peu !", ephemeral=True
+                "❌ Tu dois attendre avant de soumettre un nouveau sondage. Patiente un peu !", ephemeral=True
             )
 
         user_cooldown[user_id] = time.time()  # Enregistrer le temps du dernier envoi
 
-        suggestion = self.children[0].value.strip()  # Texte de la suggestion
-        choice = self.children[1].value.strip().lower()  # Sujet (etherya ou bot)
-        reason = self.children[2].value.strip() if self.children[2].value else "Non précisé"
+        question = self.children[0].value.strip()  # Question du sondage
+        options = self.children[1].value.strip().split(",")  # Options du sondage
 
-        # Vérification du choix
-        if choice in ["etherya", "eth", "e"]:
-            choice = "Etherya"
-            color = discord.Color.gold()
-        elif choice in ["bot", "b"]:
-            choice = "Le Bot"
-            color = discord.Color.blue()
-        else:
+        if len(options) < 2:
             return await interaction.response.send_message(
-                "❌ Merci de spécifier un sujet valide : 'Etherya' ou 'Bot'.", ephemeral=True
+                "❌ Tu dois fournir au moins deux options pour le sondage.", ephemeral=True
             )
 
-        # Vérification des doublons de suggestions
-        for suggestion_data in suggestions:
-            if suggestion.strip().lower() == suggestion_data['suggestion'].strip().lower():
-                return await interaction.response.send_message(
-                    "❌ Cette suggestion est déjà présente dans la base. Merci de proposer une nouvelle idée.", ephemeral=True
-                )
-
-        channel = interaction.client.get_channel(SUGGESTION_CHANNEL_ID)
+        # Vérification du salon des sondages
+        channel = interaction.client.get_channel(POLL_CHANNEL_ID)
         if not channel:
-            return await interaction.response.send_message("❌ Je n'ai pas pu trouver le salon des suggestions.", ephemeral=True)
+            return await interaction.response.send_message("❌ Je n'ai pas pu trouver le salon des sondages.", ephemeral=True)
 
         new_user_mention = f"<@&{NEW_USER_ID}>"
 
         # Envoie un message de notification à l'utilisateur spécifique
-        await channel.send(f"{new_user_mention} 🔔 **Nouvelle suggestion concernant {choice} !**")
+        await channel.send(f"{new_user_mention} 🔔 **Nouveau sondage à répondre !**")
 
-        # Création de l'embed
+        # Création de l'embed pour le sondage
         embed = discord.Embed(
-            title="💡 Nouvelle Suggestion !",
-            description=f"📝 **Proposée par** {interaction.user.mention}\n\n>>> {suggestion}",
-            color=color,
+            title="📊 Nouveau Sondage !",
+            description=f"📝 **Proposé par** {interaction.user.mention}\n\n>>> {question}",
+            color=discord.Color.blue(),
             timestamp=discord.utils.utcnow()
         )
 
-        embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/3039/3039569.png")  # Icône idée
-        embed.add_field(name="📌 Sujet", value=f"**{choice}**", inline=True)
-        embed.add_field(name="❔ Pourquoi ?", value=reason, inline=False)
+        embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/3001/3001265.png")  # Icône sondage
+        embed.add_field(name="🔘 Options", value="\n".join([f"{idx + 1}. {option.strip()}" for idx, option in enumerate(options)]), inline=False)
         embed.set_footer(
-            text=f"Envoyée par {interaction.user.display_name}",
+            text=f"Envoyé par {interaction.user.display_name}",
             icon_url=interaction.user.avatar.url if interaction.user.avatar else None
         )
 
         # Envoi de l'embed
         message = await channel.send(embed=embed)
 
-        # Ajouter les réactions
-        await message.add_reaction("❤️")  # Aimer l'idée
-        await message.add_reaction("🔄")  # Idée à améliorer
-        await message.add_reaction("✅")  # Pour
-        await message.add_reaction("❌")  # Contre
+        # Ajouter les réactions pour chaque option
+        for idx in range(len(options)):
+            await message.add_reaction(f"{chr(127462 + idx)}")  # Émojis de lettres pour les options
 
-        # Sauvegarde de la suggestion pour afficher avec la commande /suggestions
-        suggestions.append({
+        # Sauvegarde du sondage pour afficher avec la commande /sondages
+        polls.append({
             "message_id": message.id,
             "author": interaction.user,
-            "suggestion": suggestion,
+            "question": question,
+            "options": options,
             "timestamp": time.time()
         })
 
         # Confirme l'envoi avec un message sympathique
         await interaction.response.send_message(
-            f"✅ **Ta suggestion a été envoyée avec succès !**\nNous attendons les votes des autres membres... 🕒",
+            f"✅ **Ton sondage a été envoyé avec succès !**\nLes membres peuvent maintenant répondre en choisissant leurs options. 🕒",
             ephemeral=True
         )
 
         # Envoi d'un message privé à l'auteur
         try:
             dm_embed = discord.Embed(
-                title="📩 Suggestion envoyée !",
-                description=f"Merci pour ta suggestion ! Voici les détails :\n\n**🔹 Sujet** : {choice}\n**💡 Suggestion** : {suggestion}",
+                title="📩 Sondage envoyé !",
+                description=f"Merci pour ton sondage ! Voici les détails :\n\n**❓ Question** : {question}\n**🔘 Options** : {', '.join(options)}",
                 color=discord.Color.green(),
                 timestamp=discord.utils.utcnow()
             )
-            dm_embed.set_footer(text="Nous te remercions pour ton aide et tes idées ! 🙌")
+            dm_embed.set_footer(text="Merci pour ta participation et tes idées ! 🙌")
             await interaction.user.send(embed=dm_embed)
         except discord.Forbidden:
             print(f"[ERREUR] Impossible d'envoyer un MP à {interaction.user.display_name}.")
-            # Avertir l'utilisateur dans le salon de suggestions si DM est bloqué
+            # Avertir l'utilisateur dans le salon des sondages si DM est bloqué
             await channel.send(f"❗ **{interaction.user.display_name}**, il semble que je ne puisse pas t'envoyer un message privé. Vérifie tes paramètres de confidentialité pour autoriser les MPs.")
-            
-@bot.tree.command(name="suggestion", description="💡 Envoie une suggestion pour Etherya ou le Bot")
-async def suggest(interaction: discord.Interaction):
-    """Commande pour envoyer une suggestion"""
-    await interaction.response.send_modal(SuggestionModal())
 
-# Commande pour afficher les dernières suggestions
-@bot.tree.command(name="suggestions", description="📢 Affiche les dernières suggestions")
-async def suggestions_command(interaction: discord.Interaction):
-    """Commande pour afficher les dernières suggestions"""
-    if not suggestions:
-        return await interaction.response.send_message("❌ Aucune suggestion en cours. Sois le premier à proposer une idée !", ephemeral=True)
+@bot.tree.command(name="sondage", description="📊 Crée un sondage pour la communauté")
+async def poll(interaction: discord.Interaction):
+    """Commande pour créer un sondage"""
+    await interaction.response.send_modal(PollModal())
 
-    # Récupérer les 5 dernières suggestions
-    recent_suggestions = suggestions[-5:]
+# Commande pour afficher les derniers sondages
+@bot.tree.command(name="sondages", description="📢 Affiche les derniers sondages")
+async def polls_command(interaction: discord.Interaction):
+    """Commande pour afficher les derniers sondages"""
+    if not polls:
+        return await interaction.response.send_message("❌ Aucun sondage en cours. Sois le premier à en créer un !", ephemeral=True)
+
+    # Récupérer les 5 derniers sondages
+    recent_polls = polls[-5:]
 
     embeds = []
-    for suggestion_data in recent_suggestions:
+    for poll_data in recent_polls:
         embed = discord.Embed(
-            title="💡 Suggestion",
-            description=f"📝 **Proposée par** {suggestion_data['author'].mention}\n\n>>> {suggestion_data['suggestion']}",
-            color=discord.Color.green(),
+            title="📊 Sondage",
+            description=f"📝 **Proposé par** {poll_data['author'].mention}\n\n>>> {poll_data['question']}",
+            color=discord.Color.blue(),
             timestamp=discord.utils.utcnow()
         )
-        embed.set_footer(text=f"Envoyée le {discord.utils.format_dt(discord.utils.snowflake_time(suggestion_data['message_id']), 'F')}")
+        embed.add_field(name="🔘 Options", value="\n".join([f"{idx + 1}. {option.strip()}" for idx, option in enumerate(poll_data['options'])]), inline=False)
+        embed.set_footer(text=f"Envoyé le {discord.utils.format_dt(discord.utils.snowflake_time(poll_data['message_id']), 'F')}")
         embeds.append(embed)
 
     # Envoi des embeds

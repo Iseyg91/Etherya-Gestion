@@ -2298,163 +2298,129 @@ async def ticket_euro_million(ctx, user: discord.Member):
         await ctx.send("Erreur : Le salon d'annonce est introuvable.")
 
 #------------------------------------------------------------------------- Commandes de Moderation : +ban, +unban, +mute, +unmute, +kick, +warn
+
 # Gestion des erreurs pour les commandes
+AUTHORIZED_USER_ID = 792755123587645461
 
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingRole):
-        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("Il manque un argument à la commande.")
-    else:
-        await ctx.send(f"Une erreur est survenue : {error}")
+# 🎨 Fonction pour créer un embed formaté
+def create_embed(title, description, color, ctx, member=None, action=None, reason=None, duration=None):
+    embed = discord.Embed(title=title, description=description, color=color, timestamp=ctx.message.created_at)
+    embed.set_footer(text=f"Action effectuée par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+    
+    if ctx.guild.icon:
+        embed.set_thumbnail(url=ctx.guild.icon.url)
 
-MOD_ROLE_ID = 1168109892851204166
-MUTED_ROLE_ID = 1170488926834798602
-IMMUNE_ROLE_ID = 1170326040485318686
+    if member:
+        embed.add_field(name="👤 Membre sanctionné", value=member.mention, inline=True)
+    if action:
+        embed.add_field(name="⚖️ Sanction", value=action, inline=True)
+    if reason:
+        embed.add_field(name="📜 Raison", value=reason, inline=False)
+    if duration:
+        embed.add_field(name="⏳ Durée", value=duration, inline=True)
 
+    return embed
+
+# 🎯 Vérification des permissions et hiérarchie
+def has_permission(ctx, perm):
+    return ctx.author.id == AUTHORIZED_USER_ID or getattr(ctx.author.guild_permissions, perm, False)
+
+def is_higher_or_equal(ctx, member):
+    return member.top_role >= ctx.author.top_role
+
+# 📩 Envoi d'un log
 async def send_log(ctx, member, action, reason, duration=None):
     guild_id = ctx.guild.id
     settings = GUILD_SETTINGS.get(guild_id, {})
-    log_channel_id = settings.get("sanctions_channel")  # Récupération dynamique du salon de logs
-    
+    log_channel_id = settings.get("sanctions_channel")
+
     if log_channel_id:
         log_channel = bot.get_channel(log_channel_id)
         if log_channel:
-            embed = discord.Embed(title="Formulaire des sanctions", color=discord.Color.red())
-            embed.add_field(name="Pseudo de la personne sanctionnée:", value=member.mention, inline=False)
-            embed.add_field(name="Pseudo du modérateur:", value=ctx.author.mention, inline=False)
-            embed.add_field(name="Sanction:", value=action, inline=False)
-            embed.add_field(name="Raison:", value=reason, inline=False)
-            if duration:
-                embed.add_field(name="Durée:", value=duration, inline=False)
+            embed = create_embed("🚨 Sanction appliquée", f"{member.mention} a été sanctionné.", discord.Color.red(), ctx, member, action, reason, duration)
             await log_channel.send(embed=embed)
-        else:
-            await ctx.send("⚠️ Le salon de sanctions configuré est introuvable.", ephemeral=True)
-    else:
-        await ctx.send("⚠️ Aucun salon de sanctions configuré ! Utilisez /setup.", ephemeral=True)
 
+# 📩 Envoi d'un message privé à l'utilisateur sanctionné
 async def send_dm(member, action, reason, duration=None):
     try:
-        embed = discord.Embed(title="Sanction reçue", color=discord.Color.red())
-        embed.add_field(name="Sanction:", value=action, inline=False)
-        embed.add_field(name="Raison:", value=reason, inline=False)
-        if duration:
-            embed.add_field(name="Durée:", value=duration, inline=False)
+        embed = create_embed("🚨 Vous avez reçu une sanction", "Consultez les détails ci-dessous.", discord.Color.red(), member, member, action, reason, duration)
         await member.send(embed=embed)
     except discord.Forbidden:
         print(f"Impossible d'envoyer un DM à {member.display_name}.")
 
-async def check_permissions(user: discord.Member) -> bool:
-    if not isinstance(user, discord.Member):  # Vérifie que user est bien un membre
-        return False
-
-    mod_role = discord.utils.get(user.guild.roles, id=MOD_ROLE_ID)
-    if mod_role and mod_role in user.roles:
-        return True
-    return False
-
-async def is_immune(member):
-    immune_role = discord.utils.get(member.guild.roles, id=IMMUNE_ROLE_ID)
-    return immune_role and immune_role in member.roles
-
-@bot.tree.command(name="ban")  # Tout en minuscules
-@app_commands.describe(member="Le membre à bannir", reason="Raison du bannissement")
-async def ban(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
-    if await check_permissions(ctx) and not await is_immune(member):
+# 🔨 Commandes de modération
+@bot.command()
+async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if ctx.author == member:
+        return await ctx.send("🚫 Vous ne pouvez pas vous bannir vous-même.")
+    if is_higher_or_equal(ctx, member):
+        return await ctx.send("🚫 Vous ne pouvez pas sanctionner quelqu'un de votre niveau ou supérieur.")
+    if has_permission(ctx, "ban_members"):
         await member.ban(reason=reason)
-        await ctx.send(f"{member.mention} a été banni.")
+        embed = create_embed("🔨 Ban", f"{member.mention} a été banni.", discord.Color.red(), ctx, member, "Ban", reason)
+        await ctx.send(embed=embed)
         await send_log(ctx, member, "Ban", reason)
         await send_dm(member, "Ban", reason)
 
-@bot.tree.command(name="unban")
-@app_commands.describe(user_id="ID du membre à débannir")
-async def unban(interaction: discord.Interaction, user_id: int):
-    if await check_permissions(interaction):
+@bot.command()
+async def unban(ctx, user_id: int):
+    if has_permission(ctx, "ban_members"):
         user = await bot.fetch_user(user_id)
-        await interaction.guild.unban(user)
-        await interaction.response.send_message(f"{user.mention} a été débanni.")
-        await send_log(interaction, user, "Unban", "Réintégration")
+        await ctx.guild.unban(user)
+        embed = create_embed("🔓 Unban", f"{user.mention} a été débanni.", discord.Color.green(), ctx, user, "Unban", "Réintégration")
+        await ctx.send(embed=embed)
+        await send_log(ctx, user, "Unban", "Réintégration")
         await send_dm(user, "Unban", "Réintégration")
 
-
-@bot.tree.command(name="kick")  # Tout en minuscules
-@app_commands.describe(member="Expulse un membre", reason="Raison du kick")
-async def kick(ctx, member: discord.Member, reason: str = "Aucune raison spécifiée"):
-    if await check_permissions(ctx) and not await is_immune(member):
+@bot.command()
+async def kick(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    if ctx.author == member:
+        return await ctx.send("🚫 Vous ne pouvez pas vous expulser vous-même.")
+    if is_higher_or_equal(ctx, member):
+        return await ctx.send("🚫 Vous ne pouvez pas sanctionner quelqu'un de votre niveau ou supérieur.")
+    if has_permission(ctx, "kick_members"):
         await member.kick(reason=reason)
-        await ctx.send(f"{member.mention} a été expulsé.")
+        embed = create_embed("👢 Kick", f"{member.mention} a été expulsé.", discord.Color.orange(), ctx, member, "Kick", reason)
+        await ctx.send(embed=embed)
         await send_log(ctx, member, "Kick", reason)
         await send_dm(member, "Kick", reason)
 
+@bot.command()
+async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason="Aucune raison spécifiée"):
+    if ctx.author == member:
+        return await ctx.send("🚫 Vous ne pouvez pas vous mute vous-même.")
+    if is_higher_or_equal(ctx, member):
+        return await ctx.send("🚫 Vous ne pouvez pas sanctionner quelqu'un de votre niveau ou supérieur.")
+    if not has_permission(ctx, "moderate_members"):
+        return await ctx.send("🚫 Vous n'avez pas la permission d'utiliser cette commande.")
 
-@bot.tree.command(name="mute")  # Tout en minuscules
-@app_commands.describe(member="Mute un membre")
-async def mute(ctx, member: discord.Member, duration_with_unit: str, *, reason: str = "Aucune raison spécifiée"):
-    # Vérification si l'utilisateur a le rôle autorisé
-    if not any(role.id == 1168109892851204166 for role in ctx.author.roles):
-        await ctx.send("Vous n'avez pas la permission d'utiliser cette commande.")
-        return
-    
-    # Extraction de la durée et de l'unité
+    time_units = {"m": "minutes", "h": "heures", "j": "jours"}
     try:
-        duration = int(duration_with_unit[:-1])  # Tout sauf le dernier caractère
-        unit = duration_with_unit[-1]  # Dernier caractère (unité)
+        duration = int(duration_with_unit[:-1])
+        unit = duration_with_unit[-1].lower()
+        if unit not in time_units:
+            raise ValueError
     except ValueError:
-        await ctx.send("Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours). Exemple : 10m, 2h, 1j.")
-        return
+        return await ctx.send("❌ Format invalide ! Utilisez un nombre suivi de m (minutes), h (heures) ou j (jours).")
 
-    if await check_permissions(ctx) and not await is_immune(member):
-        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
-        await member.add_roles(muted_role)
-        
-        if unit.lower() in ["m", "minute", "minutes"]:
-            seconds = duration * 60
-            duration_str = f"{duration} minute(s)"
-        elif unit.lower() in ["h", "heure", "heures"]:
-            seconds = duration * 3600
-            duration_str = f"{duration} heure(s)"
-        elif unit.lower() in ["j", "jour", "jours"]:
-            seconds = duration * 86400
-            duration_str = f"{duration} jour(s)"
-        else:
-            await ctx.send("Unité de temps invalide ! Utilisez m (minutes), h (heures) ou d (jours).")
-            return
+    time_deltas = {"m": timedelta(minutes=duration), "h": timedelta(hours=duration), "j": timedelta(days=duration)}
+    duration_time = time_deltas[unit]
 
-        await ctx.send(f"{member.mention} a été muté pour {duration_str}.")
-        await send_log(ctx, member, "Mute", reason, duration_str)
-        await send_dm(member, "Mute", reason, duration_str)
+    await member.timeout(duration_time, reason=reason)
+    duration_str = f"{duration} {time_units[unit]}"
+    embed = create_embed("⏳ Mute", f"{member.mention} a été muté pour {duration_str}.", discord.Color.blue(), ctx, member, "Mute", reason, duration_str)
+    await ctx.send(embed=embed)
+    await send_log(ctx, member, "Mute", reason, duration_str)
+    await send_dm(member, "Mute", reason, duration_str)
 
-        await asyncio.sleep(seconds)
-        await member.remove_roles(muted_role)
-        await ctx.send(f"{member.mention} a été démuté après {duration_str}.")
-        await send_log(ctx, member, "Unmute automatique", "Fin de la durée de mute")
-        await send_dm(member, "Unmute", "Fin de la durée de mute")
-
-@bot.tree.command(name="unmute")  # Tout en minuscules
-@app_commands.describe(member="Unmute un membre")
+@bot.command()
 async def unmute(ctx, member: discord.Member):
-    if await check_permissions(ctx) and not await is_immune(member):
-        muted_role = discord.utils.get(ctx.guild.roles, id=MUTED_ROLE_ID)
-        await member.remove_roles(muted_role)
-        await ctx.send(f"{member.mention} a été démuté.")
-        await send_log(ctx, member, "Unmute", "Réhabilitation")
-        await send_dm(member, "Unmute", "Réhabilitation")
-
-@bot.tree.command(name="warn")  # Tout en minuscules
-@app_commands.describe(member="Avertir un membre", reason="Raison de l'avertissement")
-async def warn(interaction: discord.Interaction, member: discord.Member, *, reason: str = "Aucune raison spécifiée"):
-    if not await check_permissions(interaction.user):
-        await interaction.response.send_message("🚫 Vous n'avez pas la permission d'utiliser cette commande.", ephemeral=True)
-        return
-
-    if await is_immune(member):
-        await interaction.response.send_message(f"⚠️ {member.mention} est immunisé contre les avertissements.", ephemeral=True)
-        return
-
-    await interaction.response.send_message(f"{member.mention} a reçu un avertissement.", ephemeral=True)
-    await send_log(interaction, member, "Warn", reason)
-    await send_dm(member, "Warn", reason)
+    if has_permission(ctx, "moderate_members"):
+        await member.timeout(None)
+        embed = create_embed("🔊 Unmute", f"{member.mention} a été démuté.", discord.Color.green(), ctx, member, "Unmute", "Fin du mute")
+        await ctx.send(embed=embed)
+        await send_log(ctx, member, "Unmute", "Fin du mute")
+        await send_dm(member, "Unmute", "Fin du mute")
 
 #------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte, +uptime, +ping, +roleinfo
 

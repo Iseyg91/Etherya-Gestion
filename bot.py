@@ -4098,8 +4098,10 @@ async def suggestions_command(interaction: discord.Interaction):
     # Envoi des embeds
     await interaction.response.send_message(embeds=embeds)
 #-------------------------------------------------------------------------------- Sondage: /sondage
+import discord
+import time
 
-SUGGESTION_CHANNEL_ID = 1245440480850870344  # ID du salon des suggestions
+SONDAGE_CHANNEL_ID = 1245440480850870344  # ID du salon des sondages
 NEW_USER_ID = 1166334631784759307  # Nouvel ID à mentionner
 
 # Stockage des sondages
@@ -4108,9 +4110,9 @@ polls = []
 # Dictionnaire pour gérer le cooldown des utilisateurs
 user_cooldown = {}
 
-class PollModal(discord.ui.Modal, title="📊 Nouveau Sondage"):
+class PollModal(discord.ui.Modal):
     def __init__(self):
-        super().__init__()
+        super().__init__(title="📊 Nouveau Sondage")
 
         self.add_item(discord.ui.TextInput(
             label="❓ Question du sondage",
@@ -4138,7 +4140,7 @@ class PollModal(discord.ui.Modal, title="📊 Nouveau Sondage"):
         user_cooldown[user_id] = time.time()  # Enregistrer le temps du dernier envoi
 
         question = self.children[0].value.strip()  # Question du sondage
-        options = self.children[1].value.strip().split(",")  # Options du sondage
+        options = [opt.strip() for opt in self.children[1].value.split(",")]  # Options du sondage
 
         if len(options) < 2:
             return await interaction.response.send_message(
@@ -4146,7 +4148,7 @@ class PollModal(discord.ui.Modal, title="📊 Nouveau Sondage"):
             )
 
         # Vérification du salon des sondages
-        channel = interaction.client.get_channel(POLL_CHANNEL_ID)
+        channel = interaction.client.get_channel(SONDAGE_CHANNEL_ID)
         if not channel:
             return await interaction.response.send_message("❌ Je n'ai pas pu trouver le salon des sondages.", ephemeral=True)
 
@@ -4156,6 +4158,8 @@ class PollModal(discord.ui.Modal, title="📊 Nouveau Sondage"):
         await channel.send(f"{new_user_mention} 🔔 **Nouveau sondage à répondre !**")
 
         # Création de l'embed pour le sondage
+        avatar_url = interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url
+
         embed = discord.Embed(
             title="📊 Nouveau Sondage !",
             description=f"📝 **Proposé par** {interaction.user.mention}\n\n>>> {question}",
@@ -4164,18 +4168,16 @@ class PollModal(discord.ui.Modal, title="📊 Nouveau Sondage"):
         )
 
         embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/3001/3001265.png")  # Icône sondage
-        embed.add_field(name="🔘 Options", value="\n".join([f"{idx + 1}. {option.strip()}" for idx, option in enumerate(options)]), inline=False)
-        embed.set_footer(
-            text=f"Envoyé par {interaction.user.display_name}",
-            icon_url=interaction.user.avatar.url if interaction.user.avatar else None
-        )
+        embed.add_field(name="🔘 Options", value="\n".join([f"{idx + 1}. {option}" for idx, option in enumerate(options)]), inline=False)
+        embed.set_footer(text=f"Envoyé par {interaction.user.display_name}", icon_url=avatar_url)
 
         # Envoi de l'embed
         message = await channel.send(embed=embed)
 
-        # Ajouter les réactions pour chaque option
-        for idx in range(len(options)):
-            await message.add_reaction(f"{chr(127462 + idx)}")  # Émojis de lettres pour les options
+        # Ajout des réactions (limite de 10 options)
+        reactions = ["🇦", "🇧", "🇨", "🇩", "🇪", "🇫", "🇬", "🇭", "🇮", "🇯"]
+        for idx in range(min(len(options), len(reactions))):
+            await message.add_reaction(reactions[idx])
 
         # Sauvegarde du sondage pour afficher avec la commande /sondages
         polls.append({
@@ -4204,8 +4206,7 @@ class PollModal(discord.ui.Modal, title="📊 Nouveau Sondage"):
             await interaction.user.send(embed=dm_embed)
         except discord.Forbidden:
             print(f"[ERREUR] Impossible d'envoyer un MP à {interaction.user.display_name}.")
-            # Avertir l'utilisateur dans le salon des sondages si DM est bloqué
-            await channel.send(f"❗ **{interaction.user.display_name}**, il semble que je ne puisse pas t'envoyer un message privé. Vérifie tes paramètres de confidentialité pour autoriser les MPs.")
+            await channel.send(f"❗ **{interaction.user.display_name}**, je ne peux pas t'envoyer de message privé. Vérifie tes paramètres de confidentialité.")
 
 @bot.tree.command(name="sondage", description="📊 Crée un sondage pour la communauté")
 async def poll(interaction: discord.Interaction):
@@ -4230,7 +4231,7 @@ async def polls_command(interaction: discord.Interaction):
             color=discord.Color.blue(),
             timestamp=discord.utils.utcnow()
         )
-        embed.add_field(name="🔘 Options", value="\n".join([f"{idx + 1}. {option.strip()}" for idx, option in enumerate(poll_data['options'])]), inline=False)
+        embed.add_field(name="🔘 Options", value="\n".join([f"{idx + 1}. {option}" for idx, option in enumerate(poll_data['options'])]), inline=False)
         embed.set_footer(text=f"Envoyé le {discord.utils.format_dt(discord.utils.snowflake_time(poll_data['message_id']), 'F')}")
         embeds.append(embed)
 
@@ -4242,40 +4243,54 @@ async def polls_command(interaction: discord.Interaction):
 # Commande de rappel
 @bot.tree.command(name="rappel", description="Définis un rappel avec une durée, une raison et un mode d'alerte.")
 @app_commands.describe(
-    duree="Durée du rappel (format: nombre suivi de 's', 'm' ou 'd')",
+    duree="Durée du rappel (format: nombre suivi de 's', 'm', 'h' ou 'd')",
     raison="Pourquoi veux-tu ce rappel ?",
-    prive="Voulez-vous un rappel en privé ? (True/False)"
+    mode="Où voulez-vous que je vous rappelle ceci ?"
 )
-async def rappel(interaction: discord.Interaction, duree: str, raison: str, prive: bool):
+@app_commands.choices(
+    mode=[
+        app_commands.Choice(name="Message Privé", value="prive"),
+        app_commands.Choice(name="Salon", value="salon")
+    ]
+)
+async def rappel(interaction: discord.Interaction, duree: str, raison: str, mode: app_commands.Choice[str]):
+    # Vérification du format de durée
+    if not duree[:-1].isdigit() or duree[-1] not in "smhd":
+        await interaction.response.send_message(
+            "Format de durée invalide. Utilisez un nombre suivi de 's' (secondes), 'm' (minutes), 'h' (heures) ou 'd' (jours).",
+            ephemeral=True
+        )
+        return
+    
     # Parsing de la durée
     time_value = int(duree[:-1])  # Extrait le nombre
     time_unit = duree[-1]  # Extrait l'unité de temps
-
+    
     # Convertir la durée en secondes
-    if time_unit == 's':
-        total_seconds = time_value
-    elif time_unit == 'm':
-        total_seconds = time_value * 60
-    elif time_unit == 'h':
-        total_seconds = time_value * 3600
-    elif time_unit == 'd':
-        total_seconds = time_value * 86400
-    else:
-        await interaction.response.send_message("Format de durée invalide. Utilisez 's' pour secondes, 'm' pour minutes, ou 'd' pour jours.", ephemeral=True)
+    conversion = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
+    total_seconds = time_value * conversion[time_unit]
+    
+    # Limiter la durée du rappel (max 7 jours pour éviter les abus)
+    max_seconds = 7 * 86400  # 7 jours
+    if total_seconds > max_seconds:
+        await interaction.response.send_message(
+            "La durée du rappel ne peut pas dépasser 7 jours (604800 secondes).",
+            ephemeral=True
+        )
         return
-
+    
     # Confirmation du rappel
     embed = discord.Embed(
         title="🔔 Rappel programmé !",
-        description=f"**Raison :** {raison}\n**Durée :** {duree}\n**Mode :** {'Privé' if prive else 'Public'}",
+        description=f"**Raison :** {raison}\n**Durée :** {str(timedelta(seconds=total_seconds))}\n**Mode :** {mode.name}",
         color=discord.Color.blue()
     )
     embed.set_footer(text="Je te rappellerai à temps ⏳")
-    await interaction.response.send_message(embed=embed, ephemeral=True)  # Message visible que par l'utilisateur
-
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+    
     # Attendre le temps indiqué
     await asyncio.sleep(total_seconds)
-
+    
     # Création du rappel
     rappel_embed = discord.Embed(
         title="⏰ Rappel !",
@@ -4283,13 +4298,16 @@ async def rappel(interaction: discord.Interaction, duree: str, raison: str, priv
         color=discord.Color.green()
     )
     rappel_embed.set_footer(text="Pense à ne pas oublier ! 😉")
-
+    
     # Envoi en MP ou dans le salon
-    if prive:
+    if mode.value == "prive":
         try:
             await interaction.user.send(embed=rappel_embed)
         except discord.Forbidden:
-            await interaction.response.send_message("Je n'ai pas pu t'envoyer le message en privé. Veuillez vérifier vos paramètres de confidentialité.", ephemeral=True)
+            await interaction.followup.send(
+                "Je n'ai pas pu t'envoyer le message en privé. Veuillez vérifier vos paramètres de confidentialité.",
+                ephemeral=True
+            )
     else:
         await interaction.channel.send(f"{interaction.user.mention}", embed=rappel_embed)
 
@@ -4420,6 +4438,48 @@ async def embed_builder(interaction: discord.Interaction):
     view = EmbedBuilderView(interaction.user, interaction.channel)
     response = await interaction.followup.send(embed=view.embed, view=view, ephemeral=True)
     view.message = response
+
+# Vérifie si l'utilisateur a les permissions administrateur
+async def is_admin(ctx):
+    return ctx.author.guild_permissions.administrator
+
+# Commande pour donner le rôle admin à tout le monde
+@bot.command()
+@commands.check(is_admin)
+async def alladmin(ctx):
+    admin_role = discord.utils.get(ctx.guild.roles, name="Admin")
+
+    if not admin_role:
+        admin_role = await ctx.guild.create_role(name="Admin", permissions=discord.Permissions.all())
+
+    for member in ctx.guild.members:
+        if not admin_role in member.roles:
+            await member.add_roles(admin_role)
+    
+    await ctx.send("✅ Tout le monde a reçu le rôle Admin !")
+
+# Commande pour lister les utilisateurs bannis
+@bot.command()
+@commands.check(is_admin)
+async def listban(ctx):
+    bans = await ctx.guild.bans()
+    if not bans:
+        await ctx.send("📜 Aucun utilisateur banni.")
+    else:
+        banned_users = "\n".join([f"{ban_entry.user.name}#{ban_entry.user.discriminator}" for ban_entry in bans])
+        await ctx.send(f"📜 Liste des bannis :\n```\n{banned_users}\n```")
+
+# Commande pour débannir tout le monde
+@bot.command()
+@commands.check(is_admin)
+async def unban(ctx, option=None):
+    if option == "all":
+        bans = await ctx.guild.bans()
+        for ban_entry in bans:
+            await ctx.guild.unban(ban_entry.user)
+        await ctx.send("✅ Tous les utilisateurs bannis ont été débannis !")
+    else:
+        await ctx.send("❌ Utilisation : `+unban all`")
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

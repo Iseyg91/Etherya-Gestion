@@ -380,6 +380,41 @@ async def serverinfoall(ctx):
         await ctx.send(embed=embed, view=view)
     else:
         await ctx.send("Seul l'owner peut obtenir ces informations.")
+#-------------------------------------------------------------------------- Bot Join:
+@bot.event
+async def on_guild_join(guild):
+    # Vérifie si le bot a bien des salons textuels
+    text_channels = [channel for channel in guild.text_channels if channel.permissions_for(guild.me).send_messages]
+    if text_channels:
+        # Choisir un salon au hasard
+        random_channel = random.choice(text_channels)
+        
+        # Créer un embed avec des informations utiles
+        embed = discord.Embed(
+            title="🎉 **Bienvenue sur le serveur !** 🎉",
+            description="Salut à tous ! Je suis **EtheryaBot**, votre assistant virtuel ici pour rendre votre expérience sur ce serveur **inoubliable** et pleine d'interactions ! 😎🚀",
+            color=discord.Color.blurple()  # Couleur dynamique, parfaite pour Discord
+        )
+
+        # Image de profil et image de couverture
+        embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/37baf0deff8e2a1a3cddda717a3d3e40.jpg?raw=true")
+        embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryBot_profil.jpg?raw=true")
+        
+        embed.set_footer(text=f"Bot rejoint le serveur {guild.name}!", icon_url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/37baf0deff8e2a1a3cddda717a3d3e40.jpg?raw=true")
+
+        # Sections d'info sur le bot avec des emojis et des couleurs
+        embed.add_field(name="🔧 **Que puis-je faire pour vous ?**", value="Je propose des **commandes pratiques** pour gérer l'économie du serveur, organiser des événements, et bien plus encore ! 👾🎮", inline=False)
+        embed.add_field(name="💡 **Commandes principales**", value="📜 Voici les commandes essentielles pour bien commencer :\n`+help` - Afficher toutes les commandes disponibles\n`+stats` - Voir les statistiques du serveur\n`+shop` - Accéder à la boutique\n`+quests` - Participez à des quêtes épiques ! 🏆", inline=False)
+        embed.add_field(name="🎮 **Participez à l'aventure !**", value="Venez participer aux **événements** et remportez des **récompenses spéciales**. Chaque moment passé ici est une aventure ! 🚀✨", inline=False)
+
+        # Call-to-action avec animation d'encouragement
+        embed.add_field(name="🚀 **Prêt à commencer ?**", value="Tapez `+help` pour voir toutes les commandes disponibles ou dites-moi ce que vous souhaitez faire. Si vous avez des questions, je suis là pour vous aider ! 🎉", inline=False)
+        
+        # Liens vers les serveurs utiles (Support + Etherya)
+        embed.add_field(name="🌐 **Serveurs utiles**", value="**[Serveur de Support](https://discord.com/invite/PzTHvVKDxN)**\n**[Serveur Etherya](https://discord.com/invite/tVVYC2Ynfy)**", inline=False)
+
+        # Envoie l'embed dans le salon choisi au hasard
+        await random_channel.send(embed=embed)
 
 #-------------------------------------------------------------------------- Commandes /premium et /viewpremium
 # Dictionnaire pour stocker les serveurs premium

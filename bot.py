@@ -4516,6 +4516,127 @@ async def unban(ctx, option=None):
     else:
         await ctx.send("❌ Utilisation : `+unban all`")
 
+giveaways = {}  # Stocke les participants
+
+
+class GiveawayView(discord.ui.View):
+    def __init__(self, ctx):
+        super().__init__(timeout=180)
+        self.ctx = ctx
+        self.prize = "🎁 Un cadeau mystère"
+        self.duration = 60
+        self.emoji = "🎉"
+        self.winners = 1
+        self.channel = ctx.channel
+
+    @discord.ui.button(label="🎁 Modifier le gain", style=discord.ButtonStyle.primary)
+    async def edit_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Quel est le gain du giveaway ?", ephemeral=True)
+        msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
+        self.prize = msg.content
+        await interaction.followup.send(f"Gain mis à jour : **{self.prize}**", ephemeral=True)
+
+    @discord.ui.button(label="⏳ Modifier la durée", style=discord.ButtonStyle.primary)
+    async def edit_duration(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Durée du giveaway en secondes ?", ephemeral=True)
+        msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
+        self.duration = int(msg.content)
+        await interaction.followup.send(f"Durée mise à jour : **{self.duration} secondes**", ephemeral=True)
+
+    @discord.ui.button(label="🏆 Modifier le nombre de gagnants", style=discord.ButtonStyle.primary)
+    async def edit_winners(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Combien de gagnants ?", ephemeral=True)
+        msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
+        self.winners = int(msg.content)
+        await interaction.followup.send(f"Nombre de gagnants mis à jour : **{self.winners}**", ephemeral=True)
+
+    @discord.ui.button(label="💬 Modifier le salon", style=discord.ButtonStyle.primary)
+    async def edit_channel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Mentionne le salon du giveaway.", ephemeral=True)
+        msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
+        if msg.channel_mentions:
+            self.channel = msg.channel_mentions[0]
+            await interaction.followup.send(f"Salon mis à jour : {self.channel.mention}", ephemeral=True)
+        else:
+            await interaction.followup.send("Aucun salon mentionné.", ephemeral=True)
+
+    @discord.ui.button(label="🚀 Envoyer le giveaway", style=discord.ButtonStyle.success)
+    async def send_giveaway(self, interaction: discord.Interaction, button: discord.ui.Button):
+        embed = discord.Embed(
+            title="🎉 Giveaway !",
+            description=f"🎁 **Gain:** {self.prize}\n"
+                        f"⏳ **Durée:** {self.duration} sec\n"
+                        f"🏆 **Gagnants:** {self.winners}\n"
+                        f"📍 **Salon:** {self.channel.mention}\n\n"
+                        f"Réagis avec {self.emoji} pour participer !",
+            color=discord.Color.gold()
+        )
+        message = await self.channel.send(embed=embed)
+        await message.add_reaction(self.emoji)
+
+        giveaways[message.id] = {
+            "prize": self.prize,
+            "winners": self.winners,
+            "emoji": self.emoji,
+            "participants": []
+        }
+
+        await interaction.response.send_message(f"🎉 Giveaway envoyé dans {self.channel.mention} !", ephemeral=True)
+
+        await asyncio.sleep(self.duration)
+        await self.end_giveaway(message)
+
+    async def end_giveaway(self, message):
+        data = giveaways.get(message.id)
+        if not data:
+            return
+
+        participants = data["participants"]
+        if len(participants) < 1:
+            await message.channel.send("🚫 Pas assez de participants, giveaway annulé.")
+            return
+
+        winners = random.sample(participants, min(data["winners"], len(participants)))
+        winners_mentions = ", ".join(winner.mention for winner in winners)
+
+        embed = discord.Embed(
+            title="🏆 Giveaway Terminé !",
+            description=f"🎁 **Gain:** {data['prize']}\n"
+                        f"🏆 **Gagnants:** {winners_mentions}\n\n"
+                        f"Merci d'avoir participé !",
+            color=discord.Color.green()
+        )
+        await message.channel.send(embed=embed)
+        del giveaways[message.id]
+
+
+@bot.event
+async def on_ready():
+    print(f"✅ {bot.user} est en ligne !")
+
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    if user.bot:
+        return
+
+    message_id = reaction.message.id
+    if message_id in giveaways and str(reaction.emoji) == giveaways[message_id]["emoji"]:
+        if user not in giveaways[message_id]["participants"]:
+            giveaways[message_id]["participants"].append(user)
+
+
+@bot.command()
+async def gcreate(ctx):
+    view = GiveawayView(ctx)
+    embed = discord.Embed(
+        title="🎉 Création d'un Giveaway",
+        description="Utilise les boutons ci-dessous pour configurer ton giveaway.",
+        color=discord.Color.blue()
+    )
+    await ctx.send(embed=embed, view=view)
+
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

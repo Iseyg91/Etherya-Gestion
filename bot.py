@@ -402,38 +402,35 @@ async def iseyg(ctx):
 #-------------------------------------------------------------------------- Bot Join:
 @bot.event
 async def on_guild_join(guild):
-    # Vérifie si le bot a bien des salons textuels
+    # Vérifie si le bot a bien des salons textuels où il peut écrire
     text_channels = [channel for channel in guild.text_channels if channel.permissions_for(guild.me).send_messages]
+    
     if text_channels:
-        # Choisir un salon au hasard
-        random_channel = random.choice(text_channels)
-        
+        # Trier les salons par position et prendre le plus haut
+        top_channel = sorted(text_channels, key=lambda x: x.position)[0]
+
         # Créer un embed avec des informations utiles
         embed = discord.Embed(
             title="🎉 **Bienvenue sur le serveur !** 🎉",
             description="Salut à tous ! Je suis **EtheryaBot**, votre assistant virtuel ici pour rendre votre expérience sur ce serveur **inoubliable** et pleine d'interactions ! 😎🚀",
-            color=discord.Color.blurple()  # Couleur dynamique, parfaite pour Discord
+            color=discord.Color.blurple()
         )
 
         # Image de profil et image de couverture
         embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/37baf0deff8e2a1a3cddda717a3d3e40.jpg?raw=true")
-        embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryBot_profil.jpg?raw=true")
-        
+        embed.set_image(url="https://github.com/Cass64/EtheryaBot/blob/main/images_etherya/etheryaBot_banniere.png?raw=true")
+
         embed.set_footer(text=f"Bot rejoint le serveur {guild.name}!", icon_url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/37baf0deff8e2a1a3cddda717a3d3e40.jpg?raw=true")
 
-        # Sections d'info sur le bot avec des emojis et des couleurs
+        # Sections d'info sur le bot
         embed.add_field(name="🔧 **Que puis-je faire pour vous ?**", value="Je propose des **commandes pratiques** pour gérer l'économie du serveur, organiser des événements, et bien plus encore ! 👾🎮", inline=False)
         embed.add_field(name="💡 **Commandes principales**", value="📜 Voici les commandes essentielles pour bien commencer :\n`+help` - Afficher toutes les commandes disponibles\n`+stats` - Voir les statistiques du serveur\n`+shop` - Accéder à la boutique\n`+quests` - Participez à des quêtes épiques ! 🏆", inline=False)
         embed.add_field(name="🎮 **Participez à l'aventure !**", value="Venez participer aux **événements** et remportez des **récompenses spéciales**. Chaque moment passé ici est une aventure ! 🚀✨", inline=False)
-
-        # Call-to-action avec animation d'encouragement
         embed.add_field(name="🚀 **Prêt à commencer ?**", value="Tapez `+help` pour voir toutes les commandes disponibles ou dites-moi ce que vous souhaitez faire. Si vous avez des questions, je suis là pour vous aider ! 🎉", inline=False)
-        
-        # Liens vers les serveurs utiles (Support + Etherya)
         embed.add_field(name="🌐 **Serveurs utiles**", value="**[Serveur de Support](https://discord.com/invite/PzTHvVKDxN)**\n**[Serveur Etherya](https://discord.com/invite/tVVYC2Ynfy)**", inline=False)
 
-        # Envoie l'embed dans le salon choisi au hasard
-        await random_channel.send(embed=embed)
+        # Envoie l'embed dans le salon le plus haut
+        await top_channel.send(embed=embed)
 
 #-------------------------------------------------------------------------- Commandes /premium et /viewpremium
 # Dictionnaire pour stocker les serveurs premium
@@ -4485,8 +4482,8 @@ class EmbedSecondImageModal(discord.ui.Modal):
 @bot.tree.command(name="embed", description="Créer un embed personnalisé")
 async def embed_builder(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
-    role_id = 1170326040485318686  # ID du rôle requis
-    if not any(role.id == role_id for role in interaction.user.roles):
+    admin_role_id = 792755123587645461  # ID du rôle admin
+    if not any(role.id == admin_role_id or role.permissions.administrator for role in interaction.user.roles):
         return await interaction.response.send_message("❌ Vous n'avez pas la permission d'utiliser cette commande.", ephemeral=True)
 
     view = EmbedBuilderView(interaction.user, interaction.channel)
@@ -4525,7 +4522,7 @@ class GiveawayView(discord.ui.View):
         self.ctx = ctx
         self.prize = "🎁 Un cadeau mystère"
         self.duration = 60  # En secondes
-        self.duration_text = "60 secondes"  # Affichage clair
+        self.duration_text = "60 secondes"
         self.emoji = "🎉"
         self.winners = 1
         self.channel = ctx.channel
@@ -4534,14 +4531,16 @@ class GiveawayView(discord.ui.View):
     async def update_embed(self):
         """ Met à jour l'embed avec les nouvelles informations. """
         embed = discord.Embed(
-            title="🎉 Création d'un Giveaway",
-            description="Utilise les boutons ci-dessous pour configurer ton giveaway.\n\n"
-                        f"🎁 **Gain:** {self.prize}\n"
+            title="🎉 **Création d'un Giveaway**",
+            description=f"🎁 **Gain:** {self.prize}\n"
                         f"⏳ **Durée:** {self.duration_text}\n"
                         f"🏆 **Gagnants:** {self.winners}\n"
                         f"📍 **Salon:** {self.channel.mention}",
-            color=discord.Color.blue()
+            color=discord.Color.blurple()  # Utilisation d'une couleur bleue sympathique
         )
+        embed.set_footer(text="Choisissez les options dans le menu déroulant ci-dessous.")
+        embed.set_thumbnail(url="https://i.imgur.com/zZ13jxI.png")  # Logo ou icône du giveaway
+
         if self.message:
             await self.message.edit(embed=embed, view=self)
 
@@ -4551,7 +4550,7 @@ class GiveawayView(discord.ui.View):
         match = re.findall(r"(\d+)\s*(s|sec|m|min|h|hr|heure|d|jour|jours)", text, re.IGNORECASE)
 
         if not match:
-            return None, None  # Erreur de format
+            return None, None
 
         duration_text = []
         for value, unit in match:
@@ -4581,66 +4580,70 @@ class GiveawayView(discord.ui.View):
             await interaction.followup.send("⏳ Temps écoulé. Réessayez.", ephemeral=True)
             return None
 
-    @discord.ui.button(label="🎁 Modifier le gain", style=discord.ButtonStyle.primary)
-    async def edit_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
-        response = await self.wait_for_response(interaction, "Quel est le gain du giveaway ?", str)
-        if response:
-            self.prize = response
-            await self.update_embed()
-
-    @discord.ui.button(label="⏳ Modifier la durée", style=discord.ButtonStyle.primary)
-    async def edit_duration(self, interaction: discord.Interaction, button: discord.ui.Button):
-        response = await self.wait_for_response(interaction, 
-            "Durée du giveaway ? (ex: `10min`, `2h`, `1jour`)", self.parse_duration)
+    @discord.ui.select(
+        placeholder="Choisir un paramètre",
+        options=[
+            discord.SelectOption(label="🎁 Modifier le gain", value="edit_prize"),
+            discord.SelectOption(label="⏳ Modifier la durée", value="edit_duration"),
+            discord.SelectOption(label="🏆 Modifier le nombre de gagnants", value="edit_winners"),
+            discord.SelectOption(label="💬 Modifier le salon", value="edit_channel"),
+            discord.SelectOption(label="🚀 Envoyer le giveaway", value="send_giveaway"),
+        ]
+    )
+    async def select_action(self, interaction: discord.Interaction, select: discord.ui.Select):
+        value = select.values[0]
         
-        if response and response[0] > 0:
-            self.duration, self.duration_text = response
-            await self.update_embed()
-        else:
-            await interaction.followup.send("⛔ Format invalide. Exemples: `10min`, `2h`, `1jour`.", ephemeral=True)
+        if value == "edit_prize":
+            response = await self.wait_for_response(interaction, "Quel est le gain du giveaway ?", str)
+            if response:
+                self.prize = response
+                await self.update_embed()
+        elif value == "edit_duration":
+            response = await self.wait_for_response(interaction, 
+                "Durée du giveaway ? (ex: `10min`, `2h`, `1jour`)", self.parse_duration)
+            if response and response[0] > 0:
+                self.duration, self.duration_text = response
+                await self.update_embed()
+        elif value == "edit_winners":
+            response = await self.wait_for_response(interaction, "Combien de gagnants ?", lambda x: int(x))
+            if response and response > 0:
+                self.winners = response
+                await self.update_embed()
+        elif value == "edit_channel":
+            await interaction.response.send_message("Mentionne le salon du giveaway.", ephemeral=True)
+            msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
+            if msg.channel_mentions:
+                self.channel = msg.channel_mentions[0]
+                await self.update_embed()
+            else:
+                await interaction.followup.send("Aucun salon mentionné.", ephemeral=True)
+        elif value == "send_giveaway":
+            embed = discord.Embed(
+                title="🎉 Giveaway !",
+                description=f"🎁 **Gain:** {self.prize}\n"
+                            f"⏳ **Durée:** {self.duration_text}\n"
+                            f"🏆 **Gagnants:** {self.winners}\n"
+                            f"📍 **Salon:** {self.channel.mention}\n\n"
+                            f"Réagis avec {self.emoji} pour participer !",
+                color=discord.Color.green()  # Utilisation d'une couleur de succès pour l'envoi
+            )
+            embed.set_footer(text="Bonne chance à tous les participants ! 🎉")
+            embed.set_thumbnail(url="https://i.imgur.com/C7kpmD0.png")  # Logo ou icône du giveaway
 
-    @discord.ui.button(label="🏆 Modifier le nombre de gagnants", style=discord.ButtonStyle.primary)
-    async def edit_winners(self, interaction: discord.Interaction, button: discord.ui.Button):
-        response = await self.wait_for_response(interaction, "Combien de gagnants ?", lambda x: int(x))
-        if response and response > 0:
-            self.winners = response
-            await self.update_embed()
+            message = await self.channel.send(embed=embed)
+            await message.add_reaction(self.emoji)
 
-    @discord.ui.button(label="💬 Modifier le salon", style=discord.ButtonStyle.primary)
-    async def edit_channel(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Mentionne le salon du giveaway.", ephemeral=True)
-        msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
-        if msg.channel_mentions:
-            self.channel = msg.channel_mentions[0]
-            await self.update_embed()
-        else:
-            await interaction.followup.send("Aucun salon mentionné.", ephemeral=True)
+            giveaways[message.id] = {
+                "prize": self.prize,
+                "winners": self.winners,
+                "emoji": self.emoji,
+                "participants": []
+            }
 
-    @discord.ui.button(label="🚀 Envoyer le giveaway", style=discord.ButtonStyle.success)
-    async def send_giveaway(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embed = discord.Embed(
-            title="🎉 Giveaway !",
-            description=f"🎁 **Gain:** {self.prize}\n"
-                        f"⏳ **Durée:** {self.duration_text}\n"
-                        f"🏆 **Gagnants:** {self.winners}\n"
-                        f"📍 **Salon:** {self.channel.mention}\n\n"
-                        f"Réagis avec {self.emoji} pour participer !",
-            color=discord.Color.gold()
-        )
-        message = await self.channel.send(embed=embed)
-        await message.add_reaction(self.emoji)
+            await interaction.response.send_message(f"🎉 Giveaway envoyé dans {self.channel.mention} !", ephemeral=True)
 
-        giveaways[message.id] = {
-            "prize": self.prize,
-            "winners": self.winners,
-            "emoji": self.emoji,
-            "participants": []
-        }
-
-        await interaction.response.send_message(f"🎉 Giveaway envoyé dans {self.channel.mention} !", ephemeral=True)
-
-        await asyncio.sleep(self.duration)
-        await self.end_giveaway(message)
+            await asyncio.sleep(self.duration)
+            await self.end_giveaway(message)
 
     async def end_giveaway(self, message):
         data = giveaways.get(message.id)
@@ -4662,6 +4665,9 @@ class GiveawayView(discord.ui.View):
                         f"Merci d'avoir participé !",
             color=discord.Color.green()
         )
+        embed.set_footer(text="Merci à tous ! 🎉")
+        embed.set_thumbnail(url="https://i.imgur.com/C7kpmD0.png")  # Icône ou logo de fin de giveaway
+
         await message.channel.send(embed=embed)
         del giveaways[message.id]
 
@@ -4681,14 +4687,17 @@ async def on_reaction_add(reaction, user):
 async def gcreate(ctx):
     view = GiveawayView(ctx)
     embed = discord.Embed(
-        title="🎉 Création d'un Giveaway",
-        description="Utilise les boutons ci-dessous pour configurer ton giveaway.\n\n"
+        title="🎉 **Création d'un Giveaway**",
+        description="Utilise le menu déroulant ci-dessous pour configurer ton giveaway.\n\n"
                     "🎁 **Gain:** Un cadeau mystère\n"
                     "⏳ **Durée:** 60 secondes\n"
                     "🏆 **Gagnants:** 1\n"
                     f"📍 **Salon:** {ctx.channel.mention}",
-        color=discord.Color.blue()
+        color=discord.Color.blurple()  # Couleur de l'embed plus attractive
     )
+    embed.set_footer(text="Choisis les options dans le menu déroulant ci-dessous.")
+    embed.set_thumbnail(url="https://i.imgur.com/zZ13jxI.png")  # Icône ou logo du giveaway
+
     view.message = await ctx.send(embed=embed, view=view)
 
 @bot.command()

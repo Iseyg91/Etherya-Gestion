@@ -4505,16 +4505,13 @@ async def listban(ctx):
         await ctx.send(f"📜 Liste des bannis :\n```\n{banned_users}\n```")
 
 # Commande pour débannir tout le monde
-@bot.command()
+@bot.command(name="unbanall")  # Changement du nom de la commande
 @commands.check(is_admin)
-async def unban(ctx, option=None):
-    if option == "all":
-        bans = await ctx.guild.bans()
-        for ban_entry in bans:
-            await ctx.guild.unban(ban_entry.user)
-        await ctx.send("✅ Tous les utilisateurs bannis ont été débannis !")
-    else:
-        await ctx.send("❌ Utilisation : `+unban all`")
+async def unbanall(ctx):  # Suppression du paramètre option
+    bans = await ctx.guild.bans()
+    for ban_entry in bans:
+        await ctx.guild.unban(ban_entry.user)
+    await ctx.send("✅ Tous les utilisateurs bannis ont été débannis !")
 
 giveaways = {}  # Stocke les participants
 

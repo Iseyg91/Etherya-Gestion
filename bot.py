@@ -661,12 +661,7 @@ async def viewpremium(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed)
 
 #------------------------------------------------------------------------- Commande SETUP
-import discord
-from discord.ext import commands
-from discord.ui import Select, View
-from discord import Embed
-import asyncio
-
+# Définir un décorateur pour l'interaction de la commande
 @bot.tree.command(name="setup", description="Configure les rôles et salons nécessaires pour le bot.")
 @app_commands.checks.has_permissions(administrator=True)
 async def setup(interaction: discord.Interaction):

@@ -665,6 +665,7 @@ import discord
 from discord.ext import commands
 from discord.ui import Select, View
 from discord import Embed
+import asyncio
 
 @bot.tree.command(name="setup", description="Configure les rôles et salons nécessaires pour le bot.")
 @app_commands.checks.has_permissions(administrator=True)
@@ -701,18 +702,18 @@ async def setup(interaction: discord.Interaction):
             options=[discord.SelectOption(label=option, value=option) for option in available_options]
         )
 
+        # Callback de la sélection
         async def select_callback(interaction: discord.Interaction):
-            new_value = await get_input_from_user(f"Quel {item_type} voulez-vous choisir pour `{item_name}` ?")
-            if new_value:
-                # Confirmer le changement
-                await interaction.response.send_message(f"Le {item_name} a été modifié en `{new_value}` !", ephemeral=True)
-                return new_value
+            # Après la sélection, demander à l'utilisateur ce qu'il souhaite faire avec l'élément choisi.
+            selected_option = select.values[0]
+            await interaction.response.send_message(f"Vous avez sélectionné `{selected_option}` pour `{item_name}`. Voulez-vous le confirmer ?", ephemeral=True)
+            return selected_option
 
         select.callback = select_callback
         view = View()
         view.add_item(select)
 
-        # Envoyer le message avec l'embed et la vue
+        # Envoyer le message avec l'embed et la vue (liste déroulante)
         await interaction.followup.send(embed=embed, view=view)
 
     # Récupérer les paramètres existants dans MongoDB ou initialiser les valeurs par défaut

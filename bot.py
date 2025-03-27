@@ -4539,7 +4539,7 @@ class GiveawayView(discord.ui.View):
             color=discord.Color.blurple()  # Utilisation d'une couleur bleue sympathique
         )
         embed.set_footer(text="Choisissez les options dans le menu déroulant ci-dessous.")
-        embed.set_thumbnail(url="https://i.imgur.com/zZ13jxI.png")  # Logo ou icône du giveaway
+        embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(9).png?raw=true")  # Logo ou icône du giveaway
 
         if self.message:
             await self.message.edit(embed=embed, view=self)
@@ -4628,7 +4628,7 @@ class GiveawayView(discord.ui.View):
                 color=discord.Color.green()  # Utilisation d'une couleur de succès pour l'envoi
             )
             embed.set_footer(text="Bonne chance à tous les participants ! 🎉")
-            embed.set_thumbnail(url="https://i.imgur.com/C7kpmD0.png")  # Logo ou icône du giveaway
+            embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(8).png?raw=true")  # Logo ou icône du giveaway
 
             message = await self.channel.send(embed=embed)
             await message.add_reaction(self.emoji)
@@ -4666,7 +4666,7 @@ class GiveawayView(discord.ui.View):
             color=discord.Color.green()
         )
         embed.set_footer(text="Merci à tous ! 🎉")
-        embed.set_thumbnail(url="https://i.imgur.com/C7kpmD0.png")  # Icône ou logo de fin de giveaway
+        embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(7).png?raw=true")  # Icône ou logo de fin de giveaway
 
         await message.channel.send(embed=embed)
         del giveaways[message.id]

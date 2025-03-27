@@ -134,19 +134,6 @@ async def restart(ctx):
         await ctx.send("Seul l'owner peut redémarrer le bot.")
 
 @bot.command()
-async def setstatus(ctx, status: str):
-    if is_owner(ctx):
-        await bot.change_presence(activity=discord.Game(name=status))
-        embed = discord.Embed(
-            title="Changement de Statut",
-            description=f"Le statut du bot a été changé en : {status}",
-            color=discord.Color.green()
-        )
-        await ctx.send(embed=embed)
-    else:
-        await ctx.send("Seul l'owner peut changer le statut du bot.")
-
-@bot.command()
 async def getbotinfo(ctx):
     """Affiche les statistiques détaillées du bot avec un embed amélioré visuellement."""
     try:
@@ -4515,7 +4502,6 @@ async def unbanall(ctx):  # Suppression du paramètre option
 
 giveaways = {}  # Stocke les participants
 
-
 class GiveawayView(discord.ui.View):
     def __init__(self, ctx):
         super().__init__(timeout=180)
@@ -4608,11 +4594,6 @@ class GiveawayView(discord.ui.View):
 
 
 @bot.event
-async def on_ready():
-    print(f"✅ {bot.user} est en ligne !")
-
-
-@bot.event
 async def on_reaction_add(reaction, user):
     if user.bot:
         return
@@ -4632,7 +4613,6 @@ async def gcreate(ctx):
         color=discord.Color.blue()
     )
     await ctx.send(embed=embed, view=view)
-
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

@@ -751,7 +751,6 @@ async def setup(interaction: discord.Interaction):
 def load_guild_settings(guild_id):
     setup_data = collection.find_one({"guild_id": guild_id}) or {}
     return setup_data
-
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

@@ -661,117 +661,123 @@ async def viewpremium(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed)
 
 #------------------------------------------------------------------------- Commande SETUP
-import asyncio
 import discord
 from discord.ext import commands
+from discord.ui import Select, View
 from discord import Embed
 
 @bot.tree.command(name="setup", description="Configure les rôles et salons nécessaires pour le bot.")
 @app_commands.checks.has_permissions(administrator=True)
 async def setup(interaction: discord.Interaction):
-    try:
-        guild_id = interaction.guild.id
-        roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
-        channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
+    guild_id = interaction.guild.id
+    roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
+    channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
 
-        # Filtrer les rôles et salons disponibles
-        available_roles = [role.name for role in roles if role.name != "@everyone"]
-        available_channels = [channel.name for channel in channels]
+    # Créer une liste des rôles et salons disponibles
+    available_roles = [role.name for role in roles if role.name != "@everyone"]
+    available_channels = [channel.name for channel in channels]
 
-        # Fonction pour demander à l'utilisateur un rôle ou un salon
-        async def ask_for_input(prompt: str, options: list, question: str):
-            embed = Embed(
-                title=f"**{question}**",
-                description=prompt,
-                color=discord.Color.blurple()
-            )
-            await interaction.response.send_message(embed=embed)
-
-            def check(message):
-                return message.author == interaction.user and message.content in options
-            
-            try:
-                message = await bot.wait_for('message', check=check, timeout=60.0)
-                return message.content
-            except asyncio.TimeoutError:
-                await interaction.followup.send("⏳ **Temps écoulé !** Vous n'avez pas répondu à temps. Veuillez réessayer.")
-                return None
-
-        # Demander le rôle administrateur
-        admin_role = await ask_for_input(
-            "Veuillez saisir le rôle administrateur (parmi les rôles suivants): " + ", ".join(available_roles),
-            available_roles,
-            "🔧 Configuration - Rôle Administrateur"
+    # Fonction pour afficher un embed de configuration avec les éléments actuels
+    async def show_config(embed_title, embed_description, items):
+        embed = Embed(
+            title=embed_title,
+            description=embed_description,
+            color=discord.Color.blurple()
         )
-        if not admin_role:
-            return  # Annuler si aucune réponse valide
+        # Ajouter les éléments actuellement configurés dans le message
+        for item, value in items.items():
+            embed.add_field(name=item, value=value, inline=False)
+        await interaction.response.send_message(embed=embed)
 
-        # Demander le rôle staff
-        staff_role = await ask_for_input(
-            "Veuillez saisir le rôle staff (parmi les rôles suivants): " + ", ".join(available_roles),
-            available_roles,
-            "🔧 Configuration - Rôle Staff"
-        )
-        if not staff_role:
-            return  # Annuler si aucune réponse valide
-
-        # Demander le salon de sanctions
-        sanctions_channel = await ask_for_input(
-            "Veuillez saisir le salon de sanctions (parmi les salons suivants): " + ", ".join(available_channels),
-            available_channels,
-            "🔧 Configuration - Salon de Sanctions"
-        )
-        if not sanctions_channel:
-            return  # Annuler si aucune réponse valide
-
-        # Demander le salon de rapports
-        reports_channel = await ask_for_input(
-            "Veuillez saisir le salon de rapports (parmi les salons suivants): " + ", ".join(available_channels),
-            available_channels,
-            "🔧 Configuration - Salon de Rapports"
-        )
-        if not reports_channel:
-            return  # Annuler si aucune réponse valide
-
-        # Trouver les objets correspondants pour les rôles et salons
-        selected_admin_role = discord.utils.get(roles, name=admin_role)
-        selected_staff_role = discord.utils.get(roles, name=staff_role)
-        selected_sanctions_channel = discord.utils.get(channels, name=sanctions_channel)
-        selected_reports_channel = discord.utils.get(channels, name=reports_channel)
-
-        # Créer un embed de confirmation avec un résumé
-        confirmation_embed = Embed(
-            title="✅ **Configuration réussie !**",
-            description=f"Voici les informations que vous avez configurées :\n\n"
-                        f"**Rôle Administrateur** : {selected_admin_role.name}\n"
-                        f"**Rôle Staff** : {selected_staff_role.name}\n"
-                        f"**Salon de Sanctions** : {selected_sanctions_channel.name}\n"
-                        f"**Salon de Rapports** : {selected_reports_channel.name}",
+    # Fonction pour gérer la modification de chaque élément
+    async def modify_item(embed_title, item_name, available_options, item_type):
+        embed = Embed(
+            title=embed_title,
+            description=f"Choisissez l'option à changer pour `{item_name}`. Vous pouvez saisir un nouveau nom.",
             color=discord.Color.green()
         )
-
-        # Enregistrer les rôles et salons dans MongoDB
-        collection.update_one(
-            {"guild_id": guild_id},
-            {
-                "$set": {
-                    "admin_role": str(selected_admin_role.id),
-                    "staff_role": str(selected_staff_role.id),
-                    "owner": str(interaction.user.id),
-                    "sanctions_channel": str(selected_sanctions_channel.id),
-                    "reports_channel": str(selected_reports_channel.id)
-                }
-            },
-            upsert=True
+        select = Select(
+            placeholder=f"Choisissez un {item_type} à modifier...",
+            options=[discord.SelectOption(label=option, value=option) for option in available_options]
         )
 
-        # Confirmer la configuration
-        await interaction.followup.send(embed=confirmation_embed)
+        async def select_callback(interaction: discord.Interaction):
+            new_value = await get_input_from_user(f"Quel {item_type} voulez-vous choisir pour `{item_name}` ?")
+            if new_value:
+                # Confirmer le changement
+                await interaction.response.send_message(f"Le {item_name} a été modifié en `{new_value}` !", ephemeral=True)
+                return new_value
 
-    except Exception as e:
-        # Capturer et afficher l'erreur
-        await interaction.followup.send(f"Une erreur est survenue : {str(e)}")
-        print(f"Erreur dans la commande setup: {e}")
+        select.callback = select_callback
+        view = View()
+        view.add_item(select)
+
+        # Envoyer le message avec l'embed et la vue
+        await interaction.followup.send(embed=embed, view=view)
+
+    # Récupérer les paramètres existants dans MongoDB ou initialiser les valeurs par défaut
+    existing_config = load_guild_settings(guild_id)
+    current_config = {
+        "admin_role": existing_config.get("admin_role", "Aucun rôle admin configuré"),
+        "staff_role": existing_config.get("staff_role", "Aucun rôle staff configuré"),
+        "sanctions_channel": existing_config.get("sanctions_channel", "Aucun salon de sanctions configuré"),
+        "reports_channel": existing_config.get("reports_channel", "Aucun salon de rapports configuré"),
+    }
+
+    # Afficher la configuration actuelle
+    await show_config("Configuration Actuelle", "Voici la configuration actuelle des rôles et salons :", current_config)
+
+    # Demander à l'utilisateur quel paramètre il souhaite changer
+    await modify_item(
+        "Modification des paramètres",
+        "Rôle Administrateur",
+        available_roles,
+        "rôle"
+    )
+
+    # Ajouter des fonctions pour chaque paramètre que l'utilisateur peut changer
+    await modify_item(
+        "Modification des paramètres",
+        "Rôle Staff",
+        available_roles,
+        "rôle"
+    )
+
+    await modify_item(
+        "Modification des paramètres",
+        "Salon de Sanctions",
+        available_channels,
+        "salon"
+    )
+
+    await modify_item(
+        "Modification des paramètres",
+        "Salon de Rapports",
+        available_channels,
+        "salon"
+    )
+
+
+# Fonction pour récupérer les paramètres actuels du serveur dans MongoDB
+def load_guild_settings(guild_id):
+    setup_data = collection.find_one({"guild_id": guild_id}) or {}
+    return setup_data
+
+
+# Fonction pour demander une saisie à l'utilisateur
+async def get_input_from_user(prompt):
+    await interaction.followup.send(prompt)
+    
+    def check(message):
+        return message.author == interaction.user
+    
+    try:
+        message = await bot.wait_for('message', check=check, timeout=60.0)
+        return message.content
+    except asyncio.TimeoutError:
+        await interaction.followup.send("⏳ **Temps écoulé !** Vous n'avez pas répondu à temps. Veuillez réessayer.")
+        return None
+
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

@@ -689,13 +689,13 @@ async def setup(interaction: discord.Interaction):
         for item, value in items.items():
             embed.add_field(name=item, value=value, inline=False)
         # Répondre à l'interaction initiale avec l'embed
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed)
 
     # Fonction pour gérer la modification de chaque élément avec un select menu
     async def modify_item(embed_title, item_name, available_options, item_type):
         embed = Embed(
             title=embed_title,
-            description=f"Choisissez l'option à changer pour `{item_name}`. Vous pouvez saisir un nouveau nom.",
+            description=f"Choisissez l'option à changer pour `{item_name}`.",
             color=discord.Color.green()
         )
 
@@ -708,7 +708,7 @@ async def setup(interaction: discord.Interaction):
         # Callback du select menu
         async def select_callback(interaction: discord.Interaction):
             selected_option = select.values[0]  # Récupérer l'option choisie
-            await interaction.response.send_message(f"Vous avez sélectionné `{selected_option}` pour `{item_name}`. Voulez-vous le confirmer ?", ephemeral=True)
+            await interaction.response.send_message(f"Vous avez sélectionné `{selected_option}` pour `{item_name}`. Voulez-vous le confirmer ?", ephemeral=False)
 
         select.callback = select_callback
         view = View()

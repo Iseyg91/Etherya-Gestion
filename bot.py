@@ -4696,7 +4696,7 @@ async def gcreate(ctx):
         color=discord.Color.blurple()  # Couleur de l'embed plus attractive
     )
     embed.set_footer(text="Choisis les options dans le menu déroulant ci-dessous.")
-    embed.set_thumbnail(url="https://i.imgur.com/zZ13jxI.png")  # Icône ou logo du giveaway
+    embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(6).png?raw=true")  # Icône ou logo du giveaway
 
     view.message = await ctx.send(embed=embed, view=view)
 

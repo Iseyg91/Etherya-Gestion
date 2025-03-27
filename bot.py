@@ -1493,6 +1493,24 @@ async def racist(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command()
+async def sucre(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("Vous n'avez ciblé personne !")
+        return
+    
+    percentage = random.randint(0, 100)
+    
+    embed = discord.Embed(
+        title=f"Analyse de l'indice glycémique 🍬", 
+        description=f"L'indice glycémique de {member.mention} est de **{percentage}%** !\n\n*Le pourcentage varie en fonction des habitudes alimentaires de la personne.*", 
+        color=discord.Color.green()
+    )
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.set_footer(text=f"Commandé par {ctx.author.name} 🍏by Iseyg", icon_url=ctx.author.avatar.url)
+    
+    await ctx.send(embed=embed)
+
+@bot.command()
 async def love(ctx, member: discord.Member = None):
     if not member:
         await ctx.send("Tu n'as pas mentionné de membre ! Utilise +love @membre.")

@@ -1098,8 +1098,8 @@ async def etherya(interaction: discord.Interaction):
 
 @bot.command()
 async def clear(ctx, amount: int = None):
-    # Vérifie si l'utilisateur a la permission de gérer les messages
-    if ctx.author.id != 792755123587645461 and not ctx.author.guild_permissions.manage_messages:
+    # Vérifie si l'utilisateur a la permission de gérer les messages ou s'il est l'ID autorisé
+    if ctx.author.id == 792755123587645461 or ctx.author.guild_permissions.manage_messages:
         if amount is None:
             await ctx.send("Merci de préciser un chiffre entre 2 et 100.")
             return
@@ -4524,31 +4524,87 @@ class GiveawayView(discord.ui.View):
         super().__init__(timeout=180)
         self.ctx = ctx
         self.prize = "🎁 Un cadeau mystère"
-        self.duration = 60
+        self.duration = 60  # En secondes
+        self.duration_text = "60 secondes"  # Affichage clair
         self.emoji = "🎉"
         self.winners = 1
         self.channel = ctx.channel
+        self.message = None  # Pour stocker l'embed message
+
+    async def update_embed(self):
+        """ Met à jour l'embed avec les nouvelles informations. """
+        embed = discord.Embed(
+            title="🎉 Création d'un Giveaway",
+            description="Utilise les boutons ci-dessous pour configurer ton giveaway.\n\n"
+                        f"🎁 **Gain:** {self.prize}\n"
+                        f"⏳ **Durée:** {self.duration_text}\n"
+                        f"🏆 **Gagnants:** {self.winners}\n"
+                        f"📍 **Salon:** {self.channel.mention}",
+            color=discord.Color.blue()
+        )
+        if self.message:
+            await self.message.edit(embed=embed, view=self)
+
+    async def parse_duration(self, text):
+        """ Convertit un texte en secondes et retourne un affichage formaté. """
+        duration_seconds = 0
+        match = re.findall(r"(\d+)\s*(s|sec|m|min|h|hr|heure|d|jour|jours)", text, re.IGNORECASE)
+
+        if not match:
+            return None, None  # Erreur de format
+
+        duration_text = []
+        for value, unit in match:
+            value = int(value)
+            if unit in ["s", "sec"]:
+                duration_seconds += value
+                duration_text.append(f"{value} seconde{'s' if value > 1 else ''}")
+            elif unit in ["m", "min"]:
+                duration_seconds += value * 60
+                duration_text.append(f"{value} minute{'s' if value > 1 else ''}")
+            elif unit in ["h", "hr", "heure"]:
+                duration_seconds += value * 3600
+                duration_text.append(f"{value} heure{'s' if value > 1 else ''}")
+            elif unit in ["d", "jour", "jours"]:
+                duration_seconds += value * 86400
+                duration_text.append(f"{value} jour{'s' if value > 1 else ''}")
+
+        return duration_seconds, " ".join(duration_text)
+
+    async def wait_for_response(self, interaction, prompt, parse_func=None):
+        """ Attend une réponse utilisateur avec une conversion de type si nécessaire. """
+        await interaction.response.send_message(prompt, ephemeral=True)
+        try:
+            msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
+            return await parse_func(msg.content) if parse_func else msg.content
+        except asyncio.TimeoutError:
+            await interaction.followup.send("⏳ Temps écoulé. Réessayez.", ephemeral=True)
+            return None
 
     @discord.ui.button(label="🎁 Modifier le gain", style=discord.ButtonStyle.primary)
     async def edit_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Quel est le gain du giveaway ?", ephemeral=True)
-        msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
-        self.prize = msg.content
-        await interaction.followup.send(f"Gain mis à jour : **{self.prize}**", ephemeral=True)
+        response = await self.wait_for_response(interaction, "Quel est le gain du giveaway ?", str)
+        if response:
+            self.prize = response
+            await self.update_embed()
 
     @discord.ui.button(label="⏳ Modifier la durée", style=discord.ButtonStyle.primary)
     async def edit_duration(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Durée du giveaway en secondes ?", ephemeral=True)
-        msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
-        self.duration = int(msg.content)
-        await interaction.followup.send(f"Durée mise à jour : **{self.duration} secondes**", ephemeral=True)
+        response = await self.wait_for_response(interaction, 
+            "Durée du giveaway ? (ex: `10min`, `2h`, `1jour`)", self.parse_duration)
+        
+        if response and response[0] > 0:
+            self.duration, self.duration_text = response
+            await self.update_embed()
+        else:
+            await interaction.followup.send("⛔ Format invalide. Exemples: `10min`, `2h`, `1jour`.", ephemeral=True)
 
     @discord.ui.button(label="🏆 Modifier le nombre de gagnants", style=discord.ButtonStyle.primary)
     async def edit_winners(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Combien de gagnants ?", ephemeral=True)
-        msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
-        self.winners = int(msg.content)
-        await interaction.followup.send(f"Nombre de gagnants mis à jour : **{self.winners}**", ephemeral=True)
+        response = await self.wait_for_response(interaction, "Combien de gagnants ?", lambda x: int(x))
+        if response and response > 0:
+            self.winners = response
+            await self.update_embed()
 
     @discord.ui.button(label="💬 Modifier le salon", style=discord.ButtonStyle.primary)
     async def edit_channel(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -4556,7 +4612,7 @@ class GiveawayView(discord.ui.View):
         msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
         if msg.channel_mentions:
             self.channel = msg.channel_mentions[0]
-            await interaction.followup.send(f"Salon mis à jour : {self.channel.mention}", ephemeral=True)
+            await self.update_embed()
         else:
             await interaction.followup.send("Aucun salon mentionné.", ephemeral=True)
 
@@ -4565,7 +4621,7 @@ class GiveawayView(discord.ui.View):
         embed = discord.Embed(
             title="🎉 Giveaway !",
             description=f"🎁 **Gain:** {self.prize}\n"
-                        f"⏳ **Durée:** {self.duration} sec\n"
+                        f"⏳ **Durée:** {self.duration_text}\n"
                         f"🏆 **Gagnants:** {self.winners}\n"
                         f"📍 **Salon:** {self.channel.mention}\n\n"
                         f"Réagis avec {self.emoji} pour participer !",
@@ -4626,10 +4682,14 @@ async def gcreate(ctx):
     view = GiveawayView(ctx)
     embed = discord.Embed(
         title="🎉 Création d'un Giveaway",
-        description="Utilise les boutons ci-dessous pour configurer ton giveaway.",
+        description="Utilise les boutons ci-dessous pour configurer ton giveaway.\n\n"
+                    "🎁 **Gain:** Un cadeau mystère\n"
+                    "⏳ **Durée:** 60 secondes\n"
+                    "🏆 **Gagnants:** 1\n"
+                    f"📍 **Salon:** {ctx.channel.mention}",
         color=discord.Color.blue()
     )
-    await ctx.send(embed=embed, view=view)
+    view.message = await ctx.send(embed=embed, view=view)
 
 @bot.command()
 async def alladmin(ctx):

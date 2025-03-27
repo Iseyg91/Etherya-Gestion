@@ -4465,21 +4465,6 @@ async def embed_builder(interaction: discord.Interaction):
 async def is_admin(ctx):
     return ctx.author.guild_permissions.administrator
 
-# Commande pour donner le rôle admin à tout le monde
-@bot.command()
-@commands.check(is_admin)
-async def alladmin(ctx):
-    admin_role = discord.utils.get(ctx.guild.roles, name="Admin")
-
-    if not admin_role:
-        admin_role = await ctx.guild.create_role(name="Admin", permissions=discord.Permissions.all())
-
-    for member in ctx.guild.members:
-        if not admin_role in member.roles:
-            await member.add_roles(admin_role)
-    
-    await ctx.send("✅ Tout le monde a reçu le rôle Admin !")
-
 # Commande pour lister les utilisateurs bannis
 @bot.command()
 @commands.check(is_admin)

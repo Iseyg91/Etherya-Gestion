@@ -669,13 +669,19 @@ async def setup(interaction: discord.Interaction):
     roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
     channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
 
-    # Limiter à 25 options maximum pour les rôles
+    # Limiter à 25 options maximum pour les rôles et salons
     role_options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in roles if role.name != "@everyone"][:25]
-
-    # Limiter à 25 options maximum pour les salons
     channel_options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels][:25]
 
-    # Créer un menu déroulant pour le rôle admin
+    if not role_options:
+        await interaction.response.send_message("Aucun rôle disponible pour la configuration.", ephemeral=True)
+        return
+
+    if not channel_options:
+        await interaction.response.send_message("Aucun salon disponible pour la configuration.", ephemeral=True)
+        return
+
+    # Créer un menu déroulant pour chaque option
     select_admin_role = discord.ui.Select(
         placeholder="Choisissez le rôle administrateur...",
         options=role_options,
@@ -683,7 +689,6 @@ async def setup(interaction: discord.Interaction):
         max_values=1
     )
 
-    # Créer un menu déroulant pour le rôle staff
     select_staff_role = discord.ui.Select(
         placeholder="Choisissez le rôle staff...",
         options=role_options,
@@ -691,7 +696,6 @@ async def setup(interaction: discord.Interaction):
         max_values=1
     )
 
-    # Créer un menu déroulant pour le salon de sanctions
     select_sanctions_channel = discord.ui.Select(
         placeholder="Choisissez le salon de sanctions...",
         options=channel_options,
@@ -699,7 +703,6 @@ async def setup(interaction: discord.Interaction):
         max_values=1
     )
 
-    # Créer un menu déroulant pour le salon de rapports
     select_reports_channel = discord.ui.Select(
         placeholder="Choisissez le salon de rapports...",
         options=channel_options,
@@ -710,7 +713,7 @@ async def setup(interaction: discord.Interaction):
     # Créer un embed pour expliquer la commande
     embed = discord.Embed(
         title="Configuration des Rôles et Salons",
-        description="Sélectionnez les rôles et salons nécessaires pour le bot.",
+        description="Sélectionnez les rôles et salons nécessaires pour le bot. \nVous pouvez sélectionner jusqu'à 25 rôles et salons.",
         color=discord.Color.blue()
     )
 
@@ -718,6 +721,11 @@ async def setup(interaction: discord.Interaction):
     class SetupView(discord.ui.View):
         @discord.ui.button(label="Confirmer", style=discord.ButtonStyle.green)
         async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+            # Vérifier que l'utilisateur a fait toutes les sélections
+            if not select_admin_role.values or not select_staff_role.values or not select_sanctions_channel.values or not select_reports_channel.values:
+                await interaction.response.send_message("Veuillez sélectionner tous les rôles et salons requis.", ephemeral=True)
+                return
+
             selected_admin_role = interaction.guild.get_role(int(select_admin_role.values[0]))
             selected_staff_role = interaction.guild.get_role(int(select_staff_role.values[0]))
             selected_sanctions_channel = interaction.guild.get_channel(int(select_sanctions_channel.values[0]))
@@ -728,11 +736,11 @@ async def setup(interaction: discord.Interaction):
                 {"guild_id": guild_id},
                 {
                     "$set": {
-                        "admin_role": str(selected_admin_role.id),  # SROLE_ADMIN
-                        "staff_role": str(selected_staff_role.id),  # SROLE_STAFF
-                        "owner": str(interaction.user.id),  # SOWNER_ID
-                        "sanctions_channel": str(selected_sanctions_channel.id),  # SCHANNEL_SANCTIONS
-                        "reports_channel": str(selected_reports_channel.id)  # SCHANNEL_REPORT
+                        "admin_role": str(selected_admin_role.id),
+                        "staff_role": str(selected_staff_role.id),
+                        "owner": str(interaction.user.id),
+                        "sanctions_channel": str(selected_sanctions_channel.id),
+                        "reports_channel": str(selected_reports_channel.id)
                     }
                 },
                 upsert=True
@@ -746,6 +754,7 @@ async def setup(interaction: discord.Interaction):
     view.add_item(select_sanctions_channel)
     view.add_item(select_reports_channel)
 
+    # Envoyer le message avec les options de configuration
     await interaction.response.send_message(embed=embed, view=view)
 
 # Fonction pour récupérer les rôles et salons définis

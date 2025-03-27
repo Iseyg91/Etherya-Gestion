@@ -669,11 +669,11 @@ async def setup(interaction: discord.Interaction):
     roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
     channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
 
-    # Créer une liste de choix pour les rôles
-    role_options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in roles if role.name != "@everyone"]
+    # Limiter à 25 options maximum pour les rôles
+    role_options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in roles if role.name != "@everyone"][:25]
 
-    # Créer une liste de choix pour les salons
-    channel_options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
+    # Limiter à 25 options maximum pour les salons
+    channel_options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels][:25]
 
     # Créer un menu déroulant pour le rôle admin
     select_admin_role = discord.ui.Select(

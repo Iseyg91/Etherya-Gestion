@@ -717,10 +717,10 @@ async def setup(interaction: discord.Interaction):
     class SetupView(discord.ui.View):
         @discord.ui.button(label="Confirmer", style=discord.ButtonStyle.green)
         async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
-            selected_admin_role = interaction.guild.get_role(int(select_admin_role.value[0]))
-            selected_staff_role = interaction.guild.get_role(int(select_staff_role.value[0]))
-            selected_sanctions_channel = interaction.guild.get_channel(int(select_sanctions_channel.value[0]))
-            selected_reports_channel = interaction.guild.get_channel(int(select_reports_channel.value[0]))
+            selected_admin_role = interaction.guild.get_role(int(select_admin_role.values[0]))
+            selected_staff_role = interaction.guild.get_role(int(select_staff_role.values[0]))
+            selected_sanctions_channel = interaction.guild.get_channel(int(select_sanctions_channel.values[0]))
+            selected_reports_channel = interaction.guild.get_channel(int(select_reports_channel.values[0]))
 
             # Enregistrer les rôles et salons dans MongoDB
             collection.update_one(
@@ -752,6 +752,20 @@ def load_guild_settings(guild_id):
     setup_data = collection.find_one({"guild_id": guild_id}) or {}
     return setup_data
 
+# Exemple d'utilisation dans une autre commande
+@bot.command()
+async def example_command(ctx):
+    settings = load_guild_settings(ctx.guild.id)
+    staff_role_id = settings.get("staff_role")
+    admin_role_id = settings.get("admin_role")
+    sanctions_channel_id = settings.get("sanctions_channel")
+    reports_channel_id = settings.get("reports_channel")
+
+    # Vérifie si l'utilisateur a le rôle staff
+    if staff_role_id and ctx.guild.get_role(int(staff_role_id)) in ctx.author.roles:
+        await ctx.send("Vous avez accès à cette commande !")
+    else:
+        await ctx.send("Vous n'avez pas le rôle requis
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

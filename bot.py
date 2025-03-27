@@ -661,107 +661,117 @@ async def viewpremium(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed)
 
 #------------------------------------------------------------------------- Commande SETUP
+import asyncio
+import discord
+from discord.ext import commands
+from discord import Embed
 
 @bot.tree.command(name="setup", description="Configure les rôles et salons nécessaires pour le bot.")
 @app_commands.checks.has_permissions(administrator=True)
 async def setup(interaction: discord.Interaction):
-    guild_id = interaction.guild.id
-    roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
-    channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
+    try:
+        guild_id = interaction.guild.id
+        roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
+        channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
 
-    # Filtrer les rôles et salons disponibles
-    available_roles = [role.name for role in roles if role.name != "@everyone"]
-    available_channels = [channel.name for channel in channels]
+        # Filtrer les rôles et salons disponibles
+        available_roles = [role.name for role in roles if role.name != "@everyone"]
+        available_channels = [channel.name for channel in channels]
 
-    # Fonction pour demander à l'utilisateur un rôle ou un salon
-    async def ask_for_input(prompt: str, options: list, question: str):
-        embed = Embed(
-            title=f"**{question}**",
-            description=prompt,
-            color=discord.Color.blurple()
+        # Fonction pour demander à l'utilisateur un rôle ou un salon
+        async def ask_for_input(prompt: str, options: list, question: str):
+            embed = Embed(
+                title=f"**{question}**",
+                description=prompt,
+                color=discord.Color.blurple()
+            )
+            await interaction.response.send_message(embed=embed)
+
+            def check(message):
+                return message.author == interaction.user and message.content in options
+            
+            try:
+                message = await bot.wait_for('message', check=check, timeout=60.0)
+                return message.content
+            except asyncio.TimeoutError:
+                await interaction.followup.send("⏳ **Temps écoulé !** Vous n'avez pas répondu à temps. Veuillez réessayer.")
+                return None
+
+        # Demander le rôle administrateur
+        admin_role = await ask_for_input(
+            "Veuillez saisir le rôle administrateur (parmi les rôles suivants): " + ", ".join(available_roles),
+            available_roles,
+            "🔧 Configuration - Rôle Administrateur"
         )
-        await interaction.response.send_message(embed=embed)
+        if not admin_role:
+            return  # Annuler si aucune réponse valide
 
-        def check(message):
-            return message.author == interaction.user and message.content in options
-        
-        try:
-            message = await bot.wait_for('message', check=check, timeout=60.0)
-            return message.content
-        except asyncio.TimeoutError:
-            await interaction.followup.send("⏳ **Temps écoulé !** Vous n'avez pas répondu à temps. Veuillez réessayer.")
-            return None
+        # Demander le rôle staff
+        staff_role = await ask_for_input(
+            "Veuillez saisir le rôle staff (parmi les rôles suivants): " + ", ".join(available_roles),
+            available_roles,
+            "🔧 Configuration - Rôle Staff"
+        )
+        if not staff_role:
+            return  # Annuler si aucune réponse valide
 
-    # Demander le rôle administrateur
-    admin_role = await ask_for_input(
-        "Veuillez saisir le rôle administrateur (parmi les rôles suivants): " + ", ".join(available_roles),
-        available_roles,
-        "🔧 Configuration - Rôle Administrateur"
-    )
-    if not admin_role:
-        return  # Annuler si aucune réponse valide
+        # Demander le salon de sanctions
+        sanctions_channel = await ask_for_input(
+            "Veuillez saisir le salon de sanctions (parmi les salons suivants): " + ", ".join(available_channels),
+            available_channels,
+            "🔧 Configuration - Salon de Sanctions"
+        )
+        if not sanctions_channel:
+            return  # Annuler si aucune réponse valide
 
-    # Demander le rôle staff
-    staff_role = await ask_for_input(
-        "Veuillez saisir le rôle staff (parmi les rôles suivants): " + ", ".join(available_roles),
-        available_roles,
-        "🔧 Configuration - Rôle Staff"
-    )
-    if not staff_role:
-        return  # Annuler si aucune réponse valide
+        # Demander le salon de rapports
+        reports_channel = await ask_for_input(
+            "Veuillez saisir le salon de rapports (parmi les salons suivants): " + ", ".join(available_channels),
+            available_channels,
+            "🔧 Configuration - Salon de Rapports"
+        )
+        if not reports_channel:
+            return  # Annuler si aucune réponse valide
 
-    # Demander le salon de sanctions
-    sanctions_channel = await ask_for_input(
-        "Veuillez saisir le salon de sanctions (parmi les salons suivants): " + ", ".join(available_channels),
-        available_channels,
-        "🔧 Configuration - Salon de Sanctions"
-    )
-    if not sanctions_channel:
-        return  # Annuler si aucune réponse valide
+        # Trouver les objets correspondants pour les rôles et salons
+        selected_admin_role = discord.utils.get(roles, name=admin_role)
+        selected_staff_role = discord.utils.get(roles, name=staff_role)
+        selected_sanctions_channel = discord.utils.get(channels, name=sanctions_channel)
+        selected_reports_channel = discord.utils.get(channels, name=reports_channel)
 
-    # Demander le salon de rapports
-    reports_channel = await ask_for_input(
-        "Veuillez saisir le salon de rapports (parmi les salons suivants): " + ", ".join(available_channels),
-        available_channels,
-        "🔧 Configuration - Salon de Rapports"
-    )
-    if not reports_channel:
-        return  # Annuler si aucune réponse valide
+        # Créer un embed de confirmation avec un résumé
+        confirmation_embed = Embed(
+            title="✅ **Configuration réussie !**",
+            description=f"Voici les informations que vous avez configurées :\n\n"
+                        f"**Rôle Administrateur** : {selected_admin_role.name}\n"
+                        f"**Rôle Staff** : {selected_staff_role.name}\n"
+                        f"**Salon de Sanctions** : {selected_sanctions_channel.name}\n"
+                        f"**Salon de Rapports** : {selected_reports_channel.name}",
+            color=discord.Color.green()
+        )
 
-    # Trouver les objets correspondants pour les rôles et salons
-    selected_admin_role = discord.utils.get(roles, name=admin_role)
-    selected_staff_role = discord.utils.get(roles, name=staff_role)
-    selected_sanctions_channel = discord.utils.get(channels, name=sanctions_channel)
-    selected_reports_channel = discord.utils.get(channels, name=reports_channel)
+        # Enregistrer les rôles et salons dans MongoDB
+        collection.update_one(
+            {"guild_id": guild_id},
+            {
+                "$set": {
+                    "admin_role": str(selected_admin_role.id),
+                    "staff_role": str(selected_staff_role.id),
+                    "owner": str(interaction.user.id),
+                    "sanctions_channel": str(selected_sanctions_channel.id),
+                    "reports_channel": str(selected_reports_channel.id)
+                }
+            },
+            upsert=True
+        )
 
-    # Créer un embed de confirmation avec un résumé
-    confirmation_embed = Embed(
-        title="✅ **Configuration réussie !**",
-        description=f"Voici les informations que vous avez configurées :\n\n"
-                    f"**Rôle Administrateur** : {selected_admin_role.name}\n"
-                    f"**Rôle Staff** : {selected_staff_role.name}\n"
-                    f"**Salon de Sanctions** : {selected_sanctions_channel.name}\n"
-                    f"**Salon de Rapports** : {selected_reports_channel.name}",
-        color=discord.Color.green()
-    )
+        # Confirmer la configuration
+        await interaction.followup.send(embed=confirmation_embed)
 
-    # Enregistrer les rôles et salons dans MongoDB
-    collection.update_one(
-        {"guild_id": guild_id},
-        {
-            "$set": {
-                "admin_role": str(selected_admin_role.id),
-                "staff_role": str(selected_staff_role.id),
-                "owner": str(interaction.user.id),
-                "sanctions_channel": str(selected_sanctions_channel.id),
-                "reports_channel": str(selected_reports_channel.id)
-            }
-        },
-        upsert=True
-    )
-
-    # Confirmer la configuration
-    await interaction.followup.send(embed=confirmation_embed)
+    except Exception as e:
+        # Capturer et afficher l'erreur
+        await interaction.followup.send(f"Une erreur est survenue : {str(e)}")
+        print(f"Erreur dans la commande setup: {e}")
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

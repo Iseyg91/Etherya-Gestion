@@ -669,98 +669,99 @@ async def setup(interaction: discord.Interaction):
     roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
     channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
 
-    # Limiter à 25 options maximum pour les rôles et salons
-    role_options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in roles if role.name != "@everyone"][:25]
-    channel_options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels][:25]
+    # Filtrer les rôles et salons disponibles
+    available_roles = [role.name for role in roles if role.name != "@everyone"]
+    available_channels = [channel.name for channel in channels]
 
-    if not role_options:
-        await interaction.response.send_message("Aucun rôle disponible pour la configuration.", ephemeral=True)
-        return
+    # Fonction pour demander à l'utilisateur un rôle ou un salon
+    async def ask_for_input(prompt: str, options: list, question: str):
+        embed = Embed(
+            title=f"**{question}**",
+            description=prompt,
+            color=discord.Color.blurple()
+        )
+        await interaction.response.send_message(embed=embed)
 
-    if not channel_options:
-        await interaction.response.send_message("Aucun salon disponible pour la configuration.", ephemeral=True)
-        return
+        def check(message):
+            return message.author == interaction.user and message.content in options
+        
+        try:
+            message = await bot.wait_for('message', check=check, timeout=60.0)
+            return message.content
+        except asyncio.TimeoutError:
+            await interaction.followup.send("⏳ **Temps écoulé !** Vous n'avez pas répondu à temps. Veuillez réessayer.")
+            return None
 
-    # Créer un menu déroulant pour chaque option
-    select_admin_role = discord.ui.Select(
-        placeholder="Choisissez le rôle administrateur...",
-        options=role_options,
-        min_values=1,
-        max_values=1
+    # Demander le rôle administrateur
+    admin_role = await ask_for_input(
+        "Veuillez saisir le rôle administrateur (parmi les rôles suivants): " + ", ".join(available_roles),
+        available_roles,
+        "🔧 Configuration - Rôle Administrateur"
+    )
+    if not admin_role:
+        return  # Annuler si aucune réponse valide
+
+    # Demander le rôle staff
+    staff_role = await ask_for_input(
+        "Veuillez saisir le rôle staff (parmi les rôles suivants): " + ", ".join(available_roles),
+        available_roles,
+        "🔧 Configuration - Rôle Staff"
+    )
+    if not staff_role:
+        return  # Annuler si aucune réponse valide
+
+    # Demander le salon de sanctions
+    sanctions_channel = await ask_for_input(
+        "Veuillez saisir le salon de sanctions (parmi les salons suivants): " + ", ".join(available_channels),
+        available_channels,
+        "🔧 Configuration - Salon de Sanctions"
+    )
+    if not sanctions_channel:
+        return  # Annuler si aucune réponse valide
+
+    # Demander le salon de rapports
+    reports_channel = await ask_for_input(
+        "Veuillez saisir le salon de rapports (parmi les salons suivants): " + ", ".join(available_channels),
+        available_channels,
+        "🔧 Configuration - Salon de Rapports"
+    )
+    if not reports_channel:
+        return  # Annuler si aucune réponse valide
+
+    # Trouver les objets correspondants pour les rôles et salons
+    selected_admin_role = discord.utils.get(roles, name=admin_role)
+    selected_staff_role = discord.utils.get(roles, name=staff_role)
+    selected_sanctions_channel = discord.utils.get(channels, name=sanctions_channel)
+    selected_reports_channel = discord.utils.get(channels, name=reports_channel)
+
+    # Créer un embed de confirmation avec un résumé
+    confirmation_embed = Embed(
+        title="✅ **Configuration réussie !**",
+        description=f"Voici les informations que vous avez configurées :\n\n"
+                    f"**Rôle Administrateur** : {selected_admin_role.name}\n"
+                    f"**Rôle Staff** : {selected_staff_role.name}\n"
+                    f"**Salon de Sanctions** : {selected_sanctions_channel.name}\n"
+                    f"**Salon de Rapports** : {selected_reports_channel.name}",
+        color=discord.Color.green()
     )
 
-    select_staff_role = discord.ui.Select(
-        placeholder="Choisissez le rôle staff...",
-        options=role_options,
-        min_values=1,
-        max_values=1
+    # Enregistrer les rôles et salons dans MongoDB
+    collection.update_one(
+        {"guild_id": guild_id},
+        {
+            "$set": {
+                "admin_role": str(selected_admin_role.id),
+                "staff_role": str(selected_staff_role.id),
+                "owner": str(interaction.user.id),
+                "sanctions_channel": str(selected_sanctions_channel.id),
+                "reports_channel": str(selected_reports_channel.id)
+            }
+        },
+        upsert=True
     )
 
-    select_sanctions_channel = discord.ui.Select(
-        placeholder="Choisissez le salon de sanctions...",
-        options=channel_options,
-        min_values=1,
-        max_values=1
-    )
-
-    select_reports_channel = discord.ui.Select(
-        placeholder="Choisissez le salon de rapports...",
-        options=channel_options,
-        min_values=1,
-        max_values=1
-    )
-
-    # Créer un embed pour expliquer la commande
-    embed = discord.Embed(
-        title="Configuration des Rôles et Salons",
-        description="Sélectionnez les rôles et salons nécessaires pour le bot. \nVous pouvez sélectionner jusqu'à 25 rôles et salons.",
-        color=discord.Color.blue()
-    )
-
-    # Créer une vue pour le menu déroulant
-    class SetupView(discord.ui.View):
-        @discord.ui.button(label="Confirmer", style=discord.ButtonStyle.green)
-        async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
-            # Vérifier que l'utilisateur a fait toutes les sélections
-            if not select_admin_role.values or not select_staff_role.values or not select_sanctions_channel.values or not select_reports_channel.values:
-                await interaction.response.send_message("Veuillez sélectionner tous les rôles et salons requis.", ephemeral=True)
-                return
-
-            selected_admin_role = interaction.guild.get_role(int(select_admin_role.values[0]))
-            selected_staff_role = interaction.guild.get_role(int(select_staff_role.values[0]))
-            selected_sanctions_channel = interaction.guild.get_channel(int(select_sanctions_channel.values[0]))
-            selected_reports_channel = interaction.guild.get_channel(int(select_reports_channel.values[0]))
-
-            # Enregistrer les rôles et salons dans MongoDB
-            collection.update_one(
-                {"guild_id": guild_id},
-                {
-                    "$set": {
-                        "admin_role": str(selected_admin_role.id),
-                        "staff_role": str(selected_staff_role.id),
-                        "owner": str(interaction.user.id),
-                        "sanctions_channel": str(selected_sanctions_channel.id),
-                        "reports_channel": str(selected_reports_channel.id)
-                    }
-                },
-                upsert=True
-            )
-            await interaction.response.send_message("Les rôles et salons ont été configurés avec succès !", ephemeral=True)
-
-    # Ajouter les menus déroulants à la vue
-    view = SetupView()
-    view.add_item(select_admin_role)
-    view.add_item(select_staff_role)
-    view.add_item(select_sanctions_channel)
-    view.add_item(select_reports_channel)
-
-    # Envoyer le message avec les options de configuration
-    await interaction.response.send_message(embed=embed, view=view)
-
-# Fonction pour récupérer les rôles et salons définis
-def load_guild_settings(guild_id):
-    setup_data = collection.find_one({"guild_id": guild_id}) or {}
-    return setup_data
+    # Confirmer la configuration
+    await interaction.followup.send(embed=confirmation_embed)
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

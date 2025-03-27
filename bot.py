@@ -752,20 +752,6 @@ def load_guild_settings(guild_id):
     setup_data = collection.find_one({"guild_id": guild_id}) or {}
     return setup_data
 
-# Exemple d'utilisation dans une autre commande
-@bot.command()
-async def example_command(ctx):
-    settings = load_guild_settings(ctx.guild.id)
-    staff_role_id = settings.get("staff_role")
-    admin_role_id = settings.get("admin_role")
-    sanctions_channel_id = settings.get("sanctions_channel")
-    reports_channel_id = settings.get("reports_channel")
-
-    # Vérifie si l'utilisateur a le rôle staff
-    if staff_role_id and ctx.guild.get_role(int(staff_role_id)) in ctx.author.roles:
-        await ctx.send("Vous avez accès à cette commande !")
-    else:
-        await ctx.send("Vous n'avez pas le rôle requis
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

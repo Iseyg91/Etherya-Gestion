@@ -688,32 +688,33 @@ async def setup(interaction: discord.Interaction):
         # Ajouter les éléments actuellement configurés dans le message
         for item, value in items.items():
             embed.add_field(name=item, value=value, inline=False)
-        await interaction.response.send_message(embed=embed)
+        # Répondre à l'interaction initiale avec l'embed
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    # Fonction pour gérer la modification de chaque élément
+    # Fonction pour gérer la modification de chaque élément avec un select menu
     async def modify_item(embed_title, item_name, available_options, item_type):
         embed = Embed(
             title=embed_title,
             description=f"Choisissez l'option à changer pour `{item_name}`. Vous pouvez saisir un nouveau nom.",
             color=discord.Color.green()
         )
+
+        # Créer le select menu avec les options
         select = Select(
             placeholder=f"Choisissez un {item_type} à modifier...",
             options=[discord.SelectOption(label=option, value=option) for option in available_options]
         )
 
-        # Callback de la sélection
+        # Callback du select menu
         async def select_callback(interaction: discord.Interaction):
-            # Après la sélection, demander à l'utilisateur ce qu'il souhaite faire avec l'élément choisi.
-            selected_option = select.values[0]
+            selected_option = select.values[0]  # Récupérer l'option choisie
             await interaction.response.send_message(f"Vous avez sélectionné `{selected_option}` pour `{item_name}`. Voulez-vous le confirmer ?", ephemeral=True)
-            return selected_option
 
         select.callback = select_callback
         view = View()
         view.add_item(select)
 
-        # Envoyer le message avec l'embed et la vue (liste déroulante)
+        # Envoyer l'embed et la vue avec le select menu
         await interaction.followup.send(embed=embed, view=view)
 
     # Récupérer les paramètres existants dans MongoDB ou initialiser les valeurs par défaut

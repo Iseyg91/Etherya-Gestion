@@ -4584,59 +4584,57 @@ async def unbanall(ctx):  # Suppression du paramètre option
         await ctx.guild.unban(ban_entry.user)
     await ctx.send("✅ Tous les utilisateurs bannis ont été débannis !")
 
-giveaways = {}  # Stocke les giveaways actifs
+giveaways = {}  # Stocke les participants
 
 class GiveawayView(discord.ui.View):
     def __init__(self, ctx):
-        super().__init__(timeout=None)  # Pas de timeout pour éviter l'arrêt du menu
+        super().__init__(timeout=180)
         self.ctx = ctx
         self.prize = "🎁 Un cadeau mystère"
         self.duration = 60  # En secondes
-        self.remaining_time = self.duration
+        self.remaining_time = self.duration  # Temps restant
         self.duration_text = "60 secondes"
         self.emoji = "🎉"
         self.winners = 1
         self.channel = ctx.channel
-        self.message = None  # Stocke le message du giveaway
-        self.participants = set()  # Liste des participants
-        
+        self.message = None  # Pour stocker l'embed message
+        self.update_task = None  # Tâche d'actualisation
+
     async def update_embed(self):
-        """ Met à jour l'embed en affichant le temps restant et le nombre de participants. """
-        minutes, seconds = divmod(self.remaining_time, 60)
-        time_display = f"{minutes}m {seconds}s" if minutes else f"{seconds}s"
+        """ Met à jour l'embed avec le temps restant et le nombre de participants. """
+        participants_count = len(giveaways.get(self.message.id, {}).get("participants", []))
 
         embed = discord.Embed(
-            title="🎉 **Création d'un Giveaway**",
+            title="🎉 **Giveaway en cours !**",
             description=f"🎁 **Gain:** {self.prize}\n"
-                        f"⏳ **Temps restant:** {time_display}\n"
+                        f"⏳ **Temps restant:** {self.format_time(self.remaining_time)}\n"
                         f"🏆 **Gagnants:** {self.winners}\n"
                         f"📍 **Salon:** {self.channel.mention}\n"
-                        f"👥 **Participants:** {len(self.participants)}",
+                        f"👥 **Participants:** {participants_count}",
             color=discord.Color.blurple()
         )
-        embed.set_footer(text="Utilisez le menu pour configurer.")
+        embed.set_footer(text="Réagis avec 🎉 pour participer !")
         embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(9).png?raw=true")
 
         if self.message:
             await self.message.edit(embed=embed, view=self)
 
-    async def countdown(self):
-        """ Met à jour l'embed toutes les secondes pour afficher le temps restant. """
+    async def start_timer(self):
+        """ Démarre la mise à jour du temps restant. """
         while self.remaining_time > 0:
-            await asyncio.sleep(1)
-            self.remaining_time -= 1
+            await asyncio.sleep(10)  # Met à jour toutes les 10 secondes
+            self.remaining_time -= 10
             await self.update_embed()
-        await self.end_giveaway()
+        await self.end_giveaway(self.message)
 
-    async def wait_for_response(self, interaction, prompt, parse_func=None):
-        """ Attend une réponse utilisateur avec une conversion de type si nécessaire. """
-        await interaction.response.send_message(prompt, ephemeral=True)
-        try:
-            msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
-            return await parse_func(msg.content) if parse_func else msg.content
-        except asyncio.TimeoutError:
-            await interaction.followup.send("⏳ Temps écoulé. Réessayez.", ephemeral=True)
-            return None
+    def format_time(self, seconds):
+        """ Formate le temps restant en texte lisible. """
+        if seconds >= 3600:
+            return f"{seconds // 3600}h {seconds % 3600 // 60}m"
+        elif seconds >= 60:
+            return f"{seconds // 60}m {seconds % 60}s"
+        else:
+            return f"{seconds}s"
 
     @discord.ui.select(
         placeholder="Choisir un paramètre",
@@ -4651,70 +4649,52 @@ class GiveawayView(discord.ui.View):
     async def select_action(self, interaction: discord.Interaction, select: discord.ui.Select):
         value = select.values[0]
 
-        if value == "edit_prize":
-            response = await self.wait_for_response(interaction, "Quel est le gain du giveaway ?", str)
-            if response:
-                self.prize = response
-                await self.update_embed()
+        if value == "send_giveaway":
+            embed = discord.Embed(
+                title="🎉 Giveaway !",
+                description=f"🎁 **Gain:** {self.prize}\n"
+                            f"⏳ **Durée:** {self.duration_text}\n"
+                            f"🏆 **Gagnants:** {self.winners}\n"
+                            f"📍 **Salon:** {self.channel.mention}\n\n"
+                            f"Réagis avec {self.emoji} pour participer !",
+                color=discord.Color.green()
+            )
+            embed.set_footer(text="Bonne chance à tous les participants ! 🎉")
+            embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(8).png?raw=true")
 
-        elif value == "edit_duration":
-            response = await self.wait_for_response(interaction, "Durée du giveaway ? (ex: `10min`, `2h`, `1jour`)", self.parse_duration)
-            if response and response[0] > 0:
-                self.duration, self.duration_text = response
-                self.remaining_time = self.duration
-                await self.update_embed()
+            message = await self.channel.send(embed=embed)
+            await message.add_reaction(self.emoji)
 
-        elif value == "edit_winners":
-            response = await self.wait_for_response(interaction, "Combien de gagnants ?", lambda x: int(x))
-            if response and response > 0:
-                self.winners = response
-                await self.update_embed()
+            giveaways[message.id] = {
+                "prize": self.prize,
+                "winners": self.winners,
+                "emoji": self.emoji,
+                "participants": []
+            }
 
-        elif value == "edit_channel":
-            await interaction.response.send_message("Mentionne le salon du giveaway.", ephemeral=True)
-            msg = await bot.wait_for("message", check=lambda m: m.author == interaction.user, timeout=30)
-            if msg.channel_mentions:
-                self.channel = msg.channel_mentions[0]
-                await self.update_embed()
-            else:
-                await interaction.followup.send("Aucun salon mentionné.", ephemeral=True)
+            self.message = message
+            self.remaining_time = self.duration
+            self.update_task = asyncio.create_task(self.start_timer())  # Lancer le timer
 
-        elif value == "send_giveaway":
-            await self.start_giveaway()
-            await interaction.response.send_message(f"🎉 Giveaway lancé dans {self.channel.mention} !", ephemeral=True)
+            await interaction.response.send_message(f"🎉 Giveaway envoyé dans {self.channel.mention} !", ephemeral=True)
 
-    async def start_giveaway(self):
-        """ Lance le giveaway et démarre le compte à rebours. """
-        embed = discord.Embed(
-            title="🎉 Giveaway !",
-            description=f"🎁 **Gain:** {self.prize}\n"
-                        f"⏳ **Durée:** {self.duration_text}\n"
-                        f"🏆 **Gagnants:** {self.winners}\n"
-                        f"📍 **Salon:** {self.channel.mention}\n\n"
-                        f"Réagis avec {self.emoji} pour participer !",
-            color=discord.Color.green()
-        )
-        embed.set_footer(text="Bonne chance à tous les participants ! 🎉")
-        embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(8).png?raw=true")
-
-        self.message = await self.channel.send(embed=embed)
-        await self.message.add_reaction(self.emoji)
-        giveaways[self.message.id] = self
-
-        asyncio.create_task(self.countdown())  # Démarre le compte à rebours
-
-    async def end_giveaway(self):
-        """ Termine le giveaway et sélectionne les gagnants. """
-        if not self.participants:
-            await self.channel.send("🚫 Pas assez de participants, giveaway annulé.")
+    async def end_giveaway(self, message):
+        """ Termine le giveaway et annonce les gagnants. """
+        data = giveaways.get(message.id)
+        if not data:
             return
 
-        winners = random.sample(self.participants, min(self.winners, len(self.participants)))
+        participants = data["participants"]
+        if len(participants) < 1:
+            await message.channel.send("🚫 Pas assez de participants, giveaway annulé.")
+            return
+
+        winners = random.sample(participants, min(data["winners"], len(participants)))
         winners_mentions = ", ".join(winner.mention for winner in winners)
 
         embed = discord.Embed(
             title="🏆 Giveaway Terminé !",
-            description=f"🎁 **Gain:** {self.prize}\n"
+            description=f"🎁 **Gain:** {data['prize']}\n"
                         f"🏆 **Gagnants:** {winners_mentions}\n\n"
                         f"Merci d'avoir participé !",
             color=discord.Color.green()
@@ -4722,25 +4702,25 @@ class GiveawayView(discord.ui.View):
         embed.set_footer(text="Merci à tous ! 🎉")
         embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(7).png?raw=true")
 
-        await self.channel.send(embed=embed)
-        del giveaways[self.message.id]
-
+        await message.channel.send(embed=embed)
+        del giveaways[message.id]
 
 @bot.event
 async def on_reaction_add(reaction, user):
-    """ Ajoute un participant lorsqu'il réagit avec l'emoji du giveaway. """
     if user.bot:
         return
 
     message_id = reaction.message.id
-    if message_id in giveaways and str(reaction.emoji) == giveaways[message_id].emoji:
-        giveaways[message_id].participants.add(user)
-        await giveaways[message_id].update_embed()
+    if message_id in giveaways and str(reaction.emoji) == giveaways[message_id]["emoji"]:
+        if user not in giveaways[message_id]["participants"]:
+            giveaways[message_id]["participants"].append(user)
 
+        view = discord.utils.get(bot.cached_messages, id=message_id)
+        if isinstance(view, GiveawayView):
+            await view.update_embed()
 
 @bot.command()
 async def gcreate(ctx):
-    """ Commande pour créer un giveaway. """
     view = GiveawayView(ctx)
     embed = discord.Embed(
         title="🎉 **Création d'un Giveaway**",
@@ -4752,6 +4732,7 @@ async def gcreate(ctx):
         color=discord.Color.blurple()
     )
     embed.set_footer(text="Choisis les options dans le menu déroulant ci-dessous.")
+    embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(6).png?raw=true")
 
     view.message = await ctx.send(embed=embed, view=view)
 
@@ -4785,10 +4766,6 @@ async def alladmin(ctx):
 
 # Dictionnaire pour stocker les messages supprimés {channel_id: deque[(timestamp, auteur, contenu)]}
 sniped_messages = {}
-
-@bot.event
-async def on_ready():
-    print(f"Connecté en tant que {bot.user}")
 
 @bot.event
 async def on_message_delete(message):

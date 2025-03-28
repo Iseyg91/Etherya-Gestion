@@ -668,11 +668,16 @@ async def setup(interaction: discord.Interaction):
     roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
     channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
 
-    # Créer une liste de choix pour les rôles
-    role_options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in roles if role.name != "@everyone"]
+    # Limiter le nombre d'options (max 25)
+    role_options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in roles if role.name != "@everyone"][:25]
+    channel_options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels][:25]
 
-    # Créer une liste de choix pour les salons
-    channel_options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
+    # Vérifier si le nombre d'options dépasse 25 et prévenir l'utilisateur
+    if len(role_options) == 25:
+        await interaction.response.send_message("⚠️ Attention : Vous avez plus de 25 rôles. Seuls les 25 premiers seront affichés.", ephemeral=True)
+    
+    if len(channel_options) == 25:
+        await interaction.response.send_message("⚠️ Attention : Vous avez plus de 25 salons. Seuls les 25 premiers seront affichés.", ephemeral=True)
 
     # Créer un menu déroulant pour le rôle admin
     select_admin_role = discord.ui.Select(

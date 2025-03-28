@@ -665,7 +665,7 @@ async def viewpremium(interaction: discord.Interaction):
 @bot.command(name="setup")
 async def setup(ctx):
     try:
-        # Création de l'embed affichant les infos actuelles
+        # Récupérer les données du serveur depuis MongoDB
         guild_data = collection.find_one({"guild_id": str(ctx.guild.id)})
         
         if guild_data:
@@ -677,29 +677,29 @@ async def setup(ctx):
         else:
             admin_role = staff_role = sanctions_channel = reports_channel = owner = None
 
+        # Création de l'embed avec des couleurs et un meilleur formatage
         embed = discord.Embed(
-            title="Configuration du serveur",
-            description="Voici les informations actuelles du serveur. Vous pouvez choisir ce que vous souhaitez modifier.",
-            color=discord.Color.blue()
+            title="Configuration du Serveur",
+            description="Voici les informations actuelles du serveur. Vous pouvez modifier ce que vous souhaitez.",
+            color=discord.Color.green()
         )
 
-        # Ajout des informations dans l'embed
-        embed.add_field(name="Rôle Admin", value=admin_role.name if admin_role else "Non défini", inline=False)
-        embed.add_field(name="Rôle Staff", value=staff_role.name if staff_role else "Non défini", inline=False)
-        embed.add_field(name="Salon des Sanctions", value=sanctions_channel.name if sanctions_channel else "Non défini", inline=False)
-        embed.add_field(name="Salon des Rapports", value=reports_channel.name if reports_channel else "Non défini", inline=False)
-        embed.add_field(name="Owner", value=owner.name if owner else "Non défini", inline=False)
+        embed.add_field(name="Rôle Admin", value=f"{admin_role.mention if admin_role else 'Non défini'}", inline=False)
+        embed.add_field(name="Rôle Staff", value=f"{staff_role.mention if staff_role else 'Non défini'}", inline=False)
+        embed.add_field(name="Salon des Sanctions", value=f"{sanctions_channel.mention if sanctions_channel else 'Non défini'}", inline=False)
+        embed.add_field(name="Salon des Rapports", value=f"{reports_channel.mention if reports_channel else 'Non défini'}", inline=False)
+        embed.add_field(name="Owner", value=f"{owner.mention if owner else 'Non défini'}", inline=False)
 
-        # Sélecteur pour choisir l'option à modifier
+        # Sélecteur amélioré avec des emojis et un meilleur visuel
         options = [
-            discord.SelectOption(label="Rôle Admin", value="admin_role"),
-            discord.SelectOption(label="Rôle Staff", value="staff_role"),
-            discord.SelectOption(label="Salon des Sanctions", value="sanctions_channel"),
-            discord.SelectOption(label="Salon des Rapports", value="reports_channel"),
-            discord.SelectOption(label="Owner", value="owner")
+            discord.SelectOption(label="Rôle Admin 🛡️", value="admin_role"),
+            discord.SelectOption(label="Rôle Staff 👥", value="staff_role"),
+            discord.SelectOption(label="Salon des Sanctions 🚨", value="sanctions_channel"),
+            discord.SelectOption(label="Salon des Rapports 📝", value="reports_channel"),
+            discord.SelectOption(label="Owner 👑", value="owner")
         ]
         
-        select = Select(placeholder="Choisissez l'élément à modifier", options=options, min_values=1, max_values=1)
+        select = Select(placeholder="Choisissez ce que vous souhaitez modifier", options=options, min_values=1, max_values=1)
         
         # Création de la vue avec le sélecteur
         view = View()
@@ -708,23 +708,24 @@ async def setup(ctx):
         # Envoi du message avec l'embed et le sélecteur
         await ctx.send(embed=embed, view=view)
 
-        # Attente de la sélection de l'utilisateur
+        # Attente de l'interaction de l'utilisateur
         interaction = await bot.wait_for("interaction", check=lambda i: i.user == ctx.author and i.data['component_type'] == 3)
 
-        # Récupérer la sélection de l'utilisateur
+        # Récupérer l'option sélectionnée
         selected_option = interaction.data["values"][0]
-        await interaction.response.send_message(f"Vous avez choisi de modifier : {selected_option}. Veuillez maintenant entrer la nouvelle valeur.", ephemeral=True)
+        await interaction.response.send_message(f"Vous avez choisi de modifier : **{selected_option}**. Veuillez maintenant entrer la nouvelle valeur.", ephemeral=True)
 
-        # Fonction pour gérer les réponses utilisateur
+        # Fonction pour vérifier les messages de l'utilisateur
         def check(msg):
             return msg.author == ctx.author and msg.channel == ctx.channel
 
-        # Attendre la réponse de l'utilisateur
+        # Attente de la réponse de l'utilisateur
         response = await bot.wait_for("message", check=check)
 
-        # Traitement de la réponse selon l'option choisie
+        # Traitement de la réponse en fonction de l'option choisie
         if selected_option == "admin_role":
             try:
+                # Si un rôle est mentionné, on l'accepte
                 new_role = ctx.guild.get_role(int(response.content)) if not response.mentions else response.mentions[0]
                 if new_role:
                     collection.update_one(
@@ -732,7 +733,7 @@ async def setup(ctx):
                         {"$set": {"admin_role": str(new_role.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"Le rôle Admin a été mis à jour avec succès : {new_role.name}", ephemeral=True)
+                    await ctx.send(f"Le rôle Admin a été mis à jour avec succès : {new_role.mention}", ephemeral=True)
                 else:
                     await ctx.send("Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
             except ValueError:
@@ -747,7 +748,7 @@ async def setup(ctx):
                         {"$set": {"staff_role": str(new_role.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"Le rôle Staff a été mis à jour avec succès : {new_role.name}", ephemeral=True)
+                    await ctx.send(f"Le rôle Staff a été mis à jour avec succès : {new_role.mention}", ephemeral=True)
                 else:
                     await ctx.send("Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
             except ValueError:
@@ -755,6 +756,7 @@ async def setup(ctx):
 
         elif selected_option == "sanctions_channel":
             try:
+                # Si un salon est mentionné, on l'accepte
                 new_channel = ctx.guild.get_channel(int(response.content)) if not response.mentions else response.mentions[0]
                 if new_channel and isinstance(new_channel, discord.TextChannel):
                     collection.update_one(
@@ -762,7 +764,7 @@ async def setup(ctx):
                         {"$set": {"sanctions_channel": str(new_channel.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"Le salon des sanctions a été mis à jour avec succès : {new_channel.name}", ephemeral=True)
+                    await ctx.send(f"Le salon des sanctions a été mis à jour avec succès : {new_channel.mention}", ephemeral=True)
                 else:
                     await ctx.send("Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
             except ValueError:
@@ -777,7 +779,7 @@ async def setup(ctx):
                         {"$set": {"reports_channel": str(new_channel.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"Le salon des rapports a été mis à jour avec succès : {new_channel.name}", ephemeral=True)
+                    await ctx.send(f"Le salon des rapports a été mis à jour avec succès : {new_channel.mention}", ephemeral=True)
                 else:
                     await ctx.send("Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
             except ValueError:
@@ -785,6 +787,7 @@ async def setup(ctx):
 
         elif selected_option == "owner":
             try:
+                # Si un membre est mentionné, on l'accepte
                 new_owner = ctx.guild.get_member(int(response.content)) if not response.mentions else response.mentions[0]
                 if new_owner:
                     collection.update_one(
@@ -792,7 +795,7 @@ async def setup(ctx):
                         {"$set": {"owner": str(new_owner.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"L'owner a été mis à jour avec succès : {new_owner.name}", ephemeral=True)
+                    await ctx.send(f"L'owner a été mis à jour avec succès : {new_owner.mention}", ephemeral=True)
                 else:
                     await ctx.send("Erreur : Ce membre n'existe pas. Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
             except ValueError:

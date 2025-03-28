@@ -724,49 +724,80 @@ async def setup(ctx):
 
         # Traitement de la réponse selon l'option choisie
         if selected_option == "admin_role":
-            new_role = ctx.guild.get_role(int(response.content))
-            collection.update_one(
-                {"guild_id": str(ctx.guild.id)},
-                {"$set": {"admin_role": str(new_role.id)}},
-                upsert=True
-            )
-            await ctx.send(f"Le rôle Admin a été mis à jour avec succès : {new_role.name}")
-        
+            # Vérification si le message est une mention de rôle ou un ID de rôle valide
+            try:
+                new_role = ctx.guild.get_role(int(response.content)) if not response.mentions else response.mentions[0]
+                if new_role:
+                    collection.update_one(
+                        {"guild_id": str(ctx.guild.id)},
+                        {"$set": {"admin_role": str(new_role.id)}},
+                        upsert=True
+                    )
+                    await ctx.send(f"Le rôle Admin a été mis à jour avec succès : {new_role.name}", ephemeral=True)
+                else:
+                    await ctx.send("Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
+            except ValueError:
+                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
+
         elif selected_option == "staff_role":
-            new_role = ctx.guild.get_role(int(response.content))
-            collection.update_one(
-                {"guild_id": str(ctx.guild.id)},
-                {"$set": {"staff_role": str(new_role.id)}},
-                upsert=True
-            )
-            await ctx.send(f"Le rôle Staff a été mis à jour avec succès : {new_role.name}")
-        
+            try:
+                new_role = ctx.guild.get_role(int(response.content)) if not response.mentions else response.mentions[0]
+                if new_role:
+                    collection.update_one(
+                        {"guild_id": str(ctx.guild.id)},
+                        {"$set": {"staff_role": str(new_role.id)}},
+                        upsert=True
+                    )
+                    await ctx.send(f"Le rôle Staff a été mis à jour avec succès : {new_role.name}", ephemeral=True)
+                else:
+                    await ctx.send("Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
+            except ValueError:
+                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
+
         elif selected_option == "sanctions_channel":
-            new_channel = ctx.guild.get_channel(int(response.content))
-            collection.update_one(
-                {"guild_id": str(ctx.guild.id)},
-                {"$set": {"sanctions_channel": str(new_channel.id)}},
-                upsert=True
-            )
-            await ctx.send(f"Le salon des sanctions a été mis à jour avec succès : {new_channel.name}")
-        
+            try:
+                new_channel = ctx.guild.get_channel(int(response.content)) if not response.mentions else response.mentions[0]
+                if new_channel and isinstance(new_channel, discord.TextChannel):
+                    collection.update_one(
+                        {"guild_id": str(ctx.guild.id)},
+                        {"$set": {"sanctions_channel": str(new_channel.id)}},
+                        upsert=True
+                    )
+                    await ctx.send(f"Le salon des sanctions a été mis à jour avec succès : {new_channel.name}", ephemeral=True)
+                else:
+                    await ctx.send("Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
+            except ValueError:
+                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un salon.", ephemeral=True)
+
         elif selected_option == "reports_channel":
-            new_channel = ctx.guild.get_channel(int(response.content))
-            collection.update_one(
-                {"guild_id": str(ctx.guild.id)},
-                {"$set": {"reports_channel": str(new_channel.id)}},
-                upsert=True
-            )
-            await ctx.send(f"Le salon des rapports a été mis à jour avec succès : {new_channel.name}")
-        
+            try:
+                new_channel = ctx.guild.get_channel(int(response.content)) if not response.mentions else response.mentions[0]
+                if new_channel and isinstance(new_channel, discord.TextChannel):
+                    collection.update_one(
+                        {"guild_id": str(ctx.guild.id)},
+                        {"$set": {"reports_channel": str(new_channel.id)}},
+                        upsert=True
+                    )
+                    await ctx.send(f"Le salon des rapports a été mis à jour avec succès : {new_channel.name}", ephemeral=True)
+                else:
+                    await ctx.send("Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
+            except ValueError:
+                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un salon.", ephemeral=True)
+
         elif selected_option == "owner":
-            new_owner = ctx.guild.get_member(int(response.content))
-            collection.update_one(
-                {"guild_id": str(ctx.guild.id)},
-                {"$set": {"owner": str(new_owner.id)}},
-                upsert=True
-            )
-            await ctx.send(f"L'owner a été mis à jour avec succès : {new_owner.name}")
+            try:
+                new_owner = ctx.guild.get_member(int(response.content)) if not response.mentions else response.mentions[0]
+                if new_owner:
+                    collection.update_one(
+                        {"guild_id": str(ctx.guild.id)},
+                        {"$set": {"owner": str(new_owner.id)}},
+                        upsert=True
+                    )
+                    await ctx.send(f"L'owner a été mis à jour avec succès : {new_owner.name}", ephemeral=True)
+                else:
+                    await ctx.send("Erreur : Ce membre n'existe pas. Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
+            except ValueError:
+                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
 
     except Exception as e:
         # Gestion des erreurs et envoi d'un message d'erreur si besoin

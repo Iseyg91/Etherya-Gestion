@@ -661,113 +661,76 @@ async def viewpremium(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed)
 
 #------------------------------------------------------------------------- Commande SETUP
-@bot.tree.command(name="setup", description="Configure les rôles et salons nécessaires pour le bot.")
-@app_commands.checks.has_permissions(administrator=True)
+# Commande Slash
+@bot.tree.command(name="setup", description="Configure les rôles et salons du serveur.")
 async def setup(interaction: discord.Interaction):
-    guild_id = interaction.guild.id
-    roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
-    channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
-
-    # Créer une liste de choix pour les rôles
-    role_options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in roles if role.name != "@everyone"]
-
-    # Créer une liste de choix pour les salons
-    channel_options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
-
-    # Récupérer les paramètres précédemment définis
-    setup_data = load_guild_settings(guild_id)
-    admin_role = interaction.guild.get_role(int(setup_data.get("admin_role", 0)))
-    staff_role = interaction.guild.get_role(int(setup_data.get("staff_role", 0)))
-    sanctions_channel = interaction.guild.get_channel(int(setup_data.get("sanctions_channel", 0)))
-    reports_channel = interaction.guild.get_channel(int(setup_data.get("reports_channel", 0)))
-
-    # Préparer les messages d'affichage pour chaque champ
-    admin_role_name = admin_role.name if admin_role else "Vous n'avez rien défini pour ce champ"
-    staff_role_name = staff_role.name if staff_role else "Vous n'avez rien défini pour ce champ"
-    sanctions_channel_name = sanctions_channel.name if sanctions_channel else "Vous n'avez rien défini pour ce champ"
-    reports_channel_name = reports_channel.name if reports_channel else "Vous n'avez rien défini pour ce champ"
-
-    # Créer un embed pour afficher les informations actuelles
+    # Création de l'embed
     embed = discord.Embed(
-        title="Configuration des Rôles et Salons",
-        description="Voici les informations actuelles pour la configuration du bot.",
+        title="Configuration du serveur",
+        description="Veuillez sélectionner les rôles et salons à configurer pour le serveur.",
         color=discord.Color.blue()
     )
-    embed.add_field(name="Rôle Administrateur", value=admin_role_name, inline=False)
-    embed.add_field(name="Rôle Staff", value=staff_role_name, inline=False)
-    embed.add_field(name="Salon de Sanctions", value=sanctions_channel_name, inline=False)
-    embed.add_field(name="Salon de Rapports", value=reports_channel_name, inline=False)
 
-    # Créer un menu déroulant pour le rôle admin
-    select_admin_role = discord.ui.Select(
-        placeholder="Choisissez le rôle administrateur...",
-        options=role_options,
-        min_values=1,
-        max_values=1
-    )
+    # Sélecteurs de rôles et salons
+    select_admin = Select(placeholder="Sélectionner le rôle Admin", min_values=1, max_values=1)
+    select_staff = Select(placeholder="Sélectionner le rôle Staff", min_values=1, max_values=1)
+    select_sanctions = Select(placeholder="Sélectionner le salon des sanctions", min_values=1, max_values=1)
+    select_reports = Select(placeholder="Sélectionner le salon des rapports", min_values=1, max_values=1)
 
-    # Créer un menu déroulant pour le rôle staff
-    select_staff_role = discord.ui.Select(
-        placeholder="Choisissez le rôle staff...",
-        options=role_options,
-        min_values=1,
-        max_values=1
-    )
+    # Récupération des rôles et salons
+    admin_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
+    staff_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
+    channels = [channel for channel in interaction.guild.text_channels]
 
-    # Créer un menu déroulant pour le salon de sanctions
-    select_sanctions_channel = discord.ui.Select(
-        placeholder="Choisissez le salon de sanctions...",
-        options=channel_options,
-        min_values=1,
-        max_values=1
-    )
+    # Ajout des options au sélecteur
+    select_admin.add_options(*[discord.SelectOption(label=role.name, value=str(role.id)) for role in admin_roles])
+    select_staff.add_options(*[discord.SelectOption(label=role.name, value=str(role.id)) for role in staff_roles])
+    select_sanctions.add_options(*[discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels])
+    select_reports.add_options(*[discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels])
 
-    # Créer un menu déroulant pour le salon de rapports
-    select_reports_channel = discord.ui.Select(
-        placeholder="Choisissez le salon de rapports...",
-        options=channel_options,
-        min_values=1,
-        max_values=1
-    )
+    # Création de la vue
+    view = View()
+    view.add_item(select_admin)
+    view.add_item(select_staff)
+    view.add_item(select_sanctions)
+    view.add_item(select_reports)
 
-    # Créer une vue pour le menu déroulant
-    class SetupView(discord.ui.View):
-        @discord.ui.button(label="Confirmer", style=discord.ButtonStyle.green)
-        async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
-            selected_admin_role = interaction.guild.get_role(int(select_admin_role.values[0]))
-            selected_staff_role = interaction.guild.get_role(int(select_staff_role.values[0]))
-            selected_sanctions_channel = interaction.guild.get_channel(int(select_sanctions_channel.values[0]))
-            selected_reports_channel = interaction.guild.get_channel(int(select_reports_channel.values[0]))
-
-            # Enregistrer les rôles et salons dans MongoDB
-            collection.update_one(
-                {"guild_id": guild_id},
-                {
-                    "$set": {
-                        "admin_role": str(selected_admin_role.id),  # SROLE_ADMIN
-                        "staff_role": str(selected_staff_role.id),  # SROLE_STAFF
-                        "owner": str(interaction.user.id),  # SOWNER_ID
-                        "sanctions_channel": str(selected_sanctions_channel.id),  # SCHANNEL_SANCTIONS
-                        "reports_channel": str(selected_reports_channel.id)  # SCHANNEL_REPORT
-                    }
-                },
-                upsert=True
-            )
-            await interaction.response.send_message("Les rôles et salons ont été configurés avec succès !", ephemeral=True)
-
-    # Ajouter les menus déroulants à la vue
-    view = SetupView()
-    view.add_item(select_admin_role)
-    view.add_item(select_staff_role)
-    view.add_item(select_sanctions_channel)
-    view.add_item(select_reports_channel)
-
+    # Envoi du message avec l'embed et les sélecteurs
     await interaction.response.send_message(embed=embed, view=view)
 
-# Fonction pour récupérer les rôles et salons définis
-def load_guild_settings(guild_id):
-    setup_data = collection.find_one({"guild_id": guild_id}) or {}
-    return setup_data
+    # Attente de la sélection des utilisateurs
+    await view.wait()
+
+    # Récupération des valeurs sélectionnées
+    selected_admin_role_id = select_admin.values[0]
+    selected_staff_role_id = select_staff.values[0]
+    selected_sanctions_channel_id = select_sanctions.values[0]
+    selected_reports_channel_id = select_reports.values[0]
+
+    # Récupération des objets de rôle et salon
+    selected_admin_role = interaction.guild.get_role(int(selected_admin_role_id))
+    selected_staff_role = interaction.guild.get_role(int(selected_staff_role_id))
+    selected_sanctions_channel = interaction.guild.get_channel(int(selected_sanctions_channel_id))
+    selected_reports_channel = interaction.guild.get_channel(int(selected_reports_channel_id))
+
+    # Enregistrement des données dans MongoDB
+    guild_id = str(interaction.guild.id)  # ID du serveur
+    collection.update_one(
+        {"guild_id": guild_id},
+        {
+            "$set": {
+                "admin_role": str(selected_admin_role.id),
+                "staff_role": str(selected_staff_role.id),
+                "owner": str(interaction.guild.owner.id),
+                "sanctions_channel": str(selected_sanctions_channel.id),
+                "reports_channel": str(selected_reports_channel.id)
+            }
+        },
+        upsert=True
+    )
+
+    # Réponse à l'utilisateur
+    await interaction.followup.send("Les rôles et salons ont été configurés avec succès !", ephemeral=True)
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
@@ -4804,7 +4767,7 @@ async def gcreate(ctx):
     embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(6).png?raw=true")  # Icône ou logo du giveaway
 
     view.message = await ctx.send(embed=embed, view=view)
-
+    
 @bot.command()
 async def alladmin(ctx):
     """Affiche la liste des administrateurs avec un joli embed"""

@@ -34,6 +34,8 @@ print("Mongo URI :", mongo_uri)  # Cela affichera l'URI de connexion (assure-toi
 client = MongoClient(mongo_uri)
 db = client['Cass-Eco2']
 collection = db['setup']
+collection2 = db['setup_premium']
+collection3 = db['bounty']
 
 def load_guild_settings(guild_id):
     setup_data = collection.find_one({"guild_id": guild_id}) or {}

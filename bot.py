@@ -665,73 +665,108 @@ async def viewpremium(interaction: discord.Interaction):
 @bot.command(name="setup")
 async def setup(ctx):
     try:
-        # Création de l'embed
+        # Création de l'embed affichant les infos actuelles
+        guild_data = collection.find_one({"guild_id": str(ctx.guild.id)})
+        
+        if guild_data:
+            admin_role = ctx.guild.get_role(int(guild_data.get("admin_role", 0)))
+            staff_role = ctx.guild.get_role(int(guild_data.get("staff_role", 0)))
+            sanctions_channel = ctx.guild.get_channel(int(guild_data.get("sanctions_channel", 0)))
+            reports_channel = ctx.guild.get_channel(int(guild_data.get("reports_channel", 0)))
+            owner = ctx.guild.get_member(int(guild_data.get("owner", 0)))
+        else:
+            admin_role = staff_role = sanctions_channel = reports_channel = owner = None
+
         embed = discord.Embed(
             title="Configuration du serveur",
-            description="Veuillez sélectionner les rôles et salons à configurer pour le serveur.",
+            description="Voici les informations actuelles du serveur. Vous pouvez choisir ce que vous souhaitez modifier.",
             color=discord.Color.blue()
         )
 
-        # Sélecteurs de rôles et salons
-        select_admin = Select(placeholder="Sélectionner le rôle Admin", min_values=1, max_values=1, options=[])
-        select_staff = Select(placeholder="Sélectionner le rôle Staff", min_values=1, max_values=1, options=[])
-        select_sanctions = Select(placeholder="Sélectionner le salon des sanctions", min_values=1, max_values=1, options=[])
-        select_reports = Select(placeholder="Sélectionner le salon des rapports", min_values=1, max_values=1, options=[])
+        # Ajout des informations dans l'embed
+        embed.add_field(name="Rôle Admin", value=admin_role.name if admin_role else "Non défini", inline=False)
+        embed.add_field(name="Rôle Staff", value=staff_role.name if staff_role else "Non défini", inline=False)
+        embed.add_field(name="Salon des Sanctions", value=sanctions_channel.name if sanctions_channel else "Non défini", inline=False)
+        embed.add_field(name="Salon des Rapports", value=reports_channel.name if reports_channel else "Non défini", inline=False)
+        embed.add_field(name="Owner", value=owner.name if owner else "Non défini", inline=False)
 
-        # Récupération des rôles et salons
-        admin_roles = [role for role in ctx.guild.roles if role.name != "@everyone"]
-        staff_roles = [role for role in ctx.guild.roles if role.name != "@everyone"]
-        channels = [channel for channel in ctx.guild.text_channels]
-
-        # Ajouter des options au sélecteur
-        select_admin.options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in admin_roles]
-        select_staff.options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in staff_roles]
-        select_sanctions.options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
-        select_reports.options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
-
-        # Création de la vue
+        # Sélecteur pour choisir l'option à modifier
+        options = [
+            discord.SelectOption(label="Rôle Admin", value="admin_role"),
+            discord.SelectOption(label="Rôle Staff", value="staff_role"),
+            discord.SelectOption(label="Salon des Sanctions", value="sanctions_channel"),
+            discord.SelectOption(label="Salon des Rapports", value="reports_channel"),
+            discord.SelectOption(label="Owner", value="owner")
+        ]
+        
+        select = Select(placeholder="Choisissez l'élément à modifier", options=options, min_values=1, max_values=1)
+        
+        # Création de la vue avec le sélecteur
         view = View()
-        view.add_item(select_admin)
-        view.add_item(select_staff)
-        view.add_item(select_sanctions)
-        view.add_item(select_reports)
+        view.add_item(select)
 
-        # Envoi du message avec l'embed et les sélecteurs
+        # Envoi du message avec l'embed et le sélecteur
         await ctx.send(embed=embed, view=view)
 
-        # Attente de la sélection des utilisateurs
+        # Attente de la sélection de l'utilisateur
         await view.wait()
 
-        # Récupération des valeurs sélectionnées
-        selected_admin_role_id = select_admin.values[0]
-        selected_staff_role_id = select_staff.values[0]
-        selected_sanctions_channel_id = select_sanctions.values[0]
-        selected_reports_channel_id = select_reports.values[0]
+        # Récupérer la sélection de l'utilisateur
+        selected_option = select.values[0]
+        await ctx.send(f"Vous avez choisi de modifier : {selected_option}. Veuillez maintenant entrer la nouvelle valeur.")
 
-        # Récupération des objets de rôle et salon
-        selected_admin_role = ctx.guild.get_role(int(selected_admin_role_id))
-        selected_staff_role = ctx.guild.get_role(int(selected_staff_role_id))
-        selected_sanctions_channel = ctx.guild.get_channel(int(selected_sanctions_channel_id))
-        selected_reports_channel = ctx.guild.get_channel(int(selected_reports_channel_id))
+        # Fonction pour gérer les réponses utilisateur
+        def check(msg):
+            return msg.author == ctx.author and msg.channel == ctx.channel
 
-        # Enregistrement des données dans MongoDB
-        guild_id = str(ctx.guild.id)  # ID du serveur
-        collection.update_one(
-            {"guild_id": guild_id},
-            {
-                "$set": {
-                    "admin_role": str(selected_admin_role.id),
-                    "staff_role": str(selected_staff_role.id),
-                    "owner": str(ctx.guild.owner.id),
-                    "sanctions_channel": str(selected_sanctions_channel.id),
-                    "reports_channel": str(selected_reports_channel.id)
-                }
-            },
-            upsert=True
-        )
+        # Attendre la réponse de l'utilisateur
+        response = await bot.wait_for("message", check=check)
 
-        # Réponse à l'utilisateur
-        await ctx.send("Les rôles et salons ont été configurés avec succès !", ephemeral=True)
+        # Traitement de la réponse selon l'option choisie
+        if selected_option == "admin_role":
+            new_role = ctx.guild.get_role(int(response.content))
+            collection.update_one(
+                {"guild_id": str(ctx.guild.id)},
+                {"$set": {"admin_role": str(new_role.id)}},
+                upsert=True
+            )
+            await ctx.send(f"Le rôle Admin a été mis à jour avec succès : {new_role.name}")
+        
+        elif selected_option == "staff_role":
+            new_role = ctx.guild.get_role(int(response.content))
+            collection.update_one(
+                {"guild_id": str(ctx.guild.id)},
+                {"$set": {"staff_role": str(new_role.id)}},
+                upsert=True
+            )
+            await ctx.send(f"Le rôle Staff a été mis à jour avec succès : {new_role.name}")
+        
+        elif selected_option == "sanctions_channel":
+            new_channel = ctx.guild.get_channel(int(response.content))
+            collection.update_one(
+                {"guild_id": str(ctx.guild.id)},
+                {"$set": {"sanctions_channel": str(new_channel.id)}},
+                upsert=True
+            )
+            await ctx.send(f"Le salon des sanctions a été mis à jour avec succès : {new_channel.name}")
+        
+        elif selected_option == "reports_channel":
+            new_channel = ctx.guild.get_channel(int(response.content))
+            collection.update_one(
+                {"guild_id": str(ctx.guild.id)},
+                {"$set": {"reports_channel": str(new_channel.id)}},
+                upsert=True
+            )
+            await ctx.send(f"Le salon des rapports a été mis à jour avec succès : {new_channel.name}")
+        
+        elif selected_option == "owner":
+            new_owner = ctx.guild.get_member(int(response.content))
+            collection.update_one(
+                {"guild_id": str(ctx.guild.id)},
+                {"$set": {"owner": str(new_owner.id)}},
+                upsert=True
+            )
+            await ctx.send(f"L'owner a été mis à jour avec succès : {new_owner.name}")
 
     except Exception as e:
         # Gestion des erreurs et envoi d'un message d'erreur si besoin

@@ -661,9 +661,9 @@ async def viewpremium(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed)
 
 #------------------------------------------------------------------------- Commande SETUP
-# Commande Slash
-@bot.tree.command(name="setup", description="Configure les rôles et salons du serveur.")
-async def setup(interaction: discord.Interaction):
+# Commande avec préfixe +setup
+@bot.command(name="setup")
+async def setup(ctx):
     try:
         # Création de l'embed
         embed = discord.Embed(
@@ -679,9 +679,9 @@ async def setup(interaction: discord.Interaction):
         select_reports = Select(placeholder="Sélectionner le salon des rapports", min_values=1, max_values=1, options=[])
 
         # Récupération des rôles et salons
-        admin_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
-        staff_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
-        channels = [channel for channel in interaction.guild.text_channels]
+        admin_roles = [role for role in ctx.guild.roles if role.name != "@everyone"]
+        staff_roles = [role for role in ctx.guild.roles if role.name != "@everyone"]
+        channels = [channel for channel in ctx.guild.text_channels]
 
         # Ajouter des options au sélecteur
         select_admin.options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in admin_roles]
@@ -697,7 +697,7 @@ async def setup(interaction: discord.Interaction):
         view.add_item(select_reports)
 
         # Envoi du message avec l'embed et les sélecteurs
-        await interaction.response.send_message(embed=embed, view=view)
+        await ctx.send(embed=embed, view=view)
 
         # Attente de la sélection des utilisateurs
         await view.wait()
@@ -709,20 +709,20 @@ async def setup(interaction: discord.Interaction):
         selected_reports_channel_id = select_reports.values[0]
 
         # Récupération des objets de rôle et salon
-        selected_admin_role = interaction.guild.get_role(int(selected_admin_role_id))
-        selected_staff_role = interaction.guild.get_role(int(selected_staff_role_id))
-        selected_sanctions_channel = interaction.guild.get_channel(int(selected_sanctions_channel_id))
-        selected_reports_channel = interaction.guild.get_channel(int(selected_reports_channel_id))
+        selected_admin_role = ctx.guild.get_role(int(selected_admin_role_id))
+        selected_staff_role = ctx.guild.get_role(int(selected_staff_role_id))
+        selected_sanctions_channel = ctx.guild.get_channel(int(selected_sanctions_channel_id))
+        selected_reports_channel = ctx.guild.get_channel(int(selected_reports_channel_id))
 
         # Enregistrement des données dans MongoDB
-        guild_id = str(interaction.guild.id)  # ID du serveur
+        guild_id = str(ctx.guild.id)  # ID du serveur
         collection.update_one(
             {"guild_id": guild_id},
             {
                 "$set": {
                     "admin_role": str(selected_admin_role.id),
                     "staff_role": str(selected_staff_role.id),
-                    "owner": str(interaction.guild.owner.id),
+                    "owner": str(ctx.guild.owner.id),
                     "sanctions_channel": str(selected_sanctions_channel.id),
                     "reports_channel": str(selected_reports_channel.id)
                 }
@@ -731,13 +731,12 @@ async def setup(interaction: discord.Interaction):
         )
 
         # Réponse à l'utilisateur
-        await interaction.followup.send("Les rôles et salons ont été configurés avec succès !", ephemeral=True)
+        await ctx.send("Les rôles et salons ont été configurés avec succès !", ephemeral=True)
 
     except Exception as e:
         # Gestion des erreurs et envoi d'un message d'erreur si besoin
-        await interaction.followup.send(f"Une erreur est survenue : {str(e)}", ephemeral=True)
+        await ctx.send(f"Une erreur est survenue : {str(e)}", ephemeral=True)
         print(f"Error occurred: {e}")
-
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

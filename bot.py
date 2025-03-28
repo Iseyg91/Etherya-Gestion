@@ -954,11 +954,11 @@ private_threads = {}  # Stocke les fils privés des nouveaux membres
 
 ETHERYA_SERVER_ID = 1034007767050104892  # L'ID du serveur Etherya
 # ID du salon de bienvenue
-WELCOME_CHANNEL_ID = 1344194595092697108
+WELCOME_CHANNEL_ID = 1355198748296351854
 
 # Liste des salons à pinguer
 salon_ids = [
-    1342179344889675827
+    1355158116903419997
 ]
 
 class GuideView(View):
@@ -1110,7 +1110,7 @@ async def on_member_join(member):
                 print("Une erreur est survenue lors de l'envoi du message.")
     
     # Création d'un fil privé pour le membre
-    channel_id = 1342179655263977492  # Remplace par l'ID du salon souhaité
+    channel_id = 1355158120095027220  # Remplace par l'ID du salon souhaité
     channel = bot.get_channel(channel_id)
 
     if channel and isinstance(channel, discord.TextChannel):
@@ -1152,7 +1152,7 @@ async def guide_command(interaction: discord.Interaction):
         return
 
     # Crée un nouveau thread privé à chaque commande
-    channel_id = 1342179655263977492
+    channel_id = 1355158120095027220
     channel = bot.get_channel(channel_id)
 
     if not channel:
@@ -1215,7 +1215,7 @@ async def etherya(interaction: discord.Interaction):
         "☕ ・ Divers **Salons** pour un divertissement optimal.\n"
         "☁️ ・ Un staff sympa, à l'écoute et qui **recrute** !\n"
         "🔥 ・ Pas convaincu ? Rejoins-nous et vois par toi-même le potentiel de notre serveur !\n\n"
-        "🎫 **[Accès direct au serveur Etherya !](https://discord.com/invite/tVVYC2Ynfy) **\n\n"
+        "🎫 **[Accès direct au serveur Etherya !](https://discord.gg/weX6tKbDta) **\n\n"
         "Rejoins-nous et amuse-toi ! 🎉"
     )
 
@@ -2517,7 +2517,7 @@ async def ticket_euro_million(ctx, user: discord.Member):
     embed_announce.set_footer(text="Ticket généré avec succès !")
     embed_announce.set_footer(text=f"Commandé par {ctx.author.name} |♥️by Iseyg", icon_url=ctx.author.avatar.url)
 
-    salon_announce = bot.get_channel(1343358346287120514)
+    salon_announce = bot.get_channel(1355234774033104997)
     if salon_announce:
         await salon_announce.send(embed=embed_announce)
     else:
@@ -3841,7 +3841,7 @@ async def start10(ctx):
 
 bounties = {}  # Dictionnaire stockant les primes
 hunter_rewards = {}  # Dictionnaire stockant les récompenses des chasseurs
-BOUNTY_CHANNEL_ID = 1352651647955898440  # Salon où les victoires sont annoncées
+BOUNTY_CHANNEL_ID = 1355298449829920950  # Salon où les victoires sont annoncées
 PRIME_IMAGE_URL = "https://cdn.gamma.app/m6u5udkwwfl3cxy/generated-images/MUnIIu5yOv6nMFAXKteig.jpg"
 
 class DuelView(discord.ui.View):
@@ -4143,8 +4143,8 @@ async def liste_idees(ctx):
 
 #--------------------------------------------------------------------------------------------
 
-SUGGESTION_CHANNEL_ID = 1352366542557282356  # ID du salon des suggestions
-NEW_USER_ID = 1166334631784759307  # Nouvel ID à mentionner
+SUGGESTION_CHANNEL_ID = 1355191928467230792  # ID du salon des suggestions
+NEW_USER_ID = 1355157752950821046  # Nouvel ID à mentionner
 
 # Stockage des suggestions
 suggestions = []
@@ -4296,11 +4296,9 @@ async def suggestions_command(interaction: discord.Interaction):
     # Envoi des embeds
     await interaction.response.send_message(embeds=embeds)
 #-------------------------------------------------------------------------------- Sondage: /sondage
-import discord
-import time
 
-SONDAGE_CHANNEL_ID = 1245440480850870344  # ID du salon des sondages
-NEW_USER_ID = 1166334631784759307  # Nouvel ID à mentionner
+SONDAGE_CHANNEL_ID = 1355157860438376479  # ID du salon des sondages
+NEW_USER_ID = 1355157752950821046  # Nouvel ID à mentionner
 
 # Stockage des sondages
 polls = []

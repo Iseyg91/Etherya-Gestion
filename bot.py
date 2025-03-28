@@ -4918,48 +4918,7 @@ async def snipe(ctx, index: int = 1):
     embed.set_footer(text=f"Demandé par {ctx.author}")
 
     await ctx.send(embed=embed)
-@bot.command()
-async def raid(ctx):
-    # Vérifier si l'utilisateur a la permission d'administrateur
-    if not ctx.author.guild_permissions.administrator:
-        await ctx.send("Désolé, tu n'as pas la permission d'exécuter cette commande.")
-        return
-
-    # Supprimer tous les salons du serveur
-    guild = ctx.guild
-    for channel in guild.channels:
-        try:
-            await channel.delete()
-            print(f'Salon supprimé: {channel.name}')
-        except discord.Forbidden:
-            print(f"Pas de permission pour supprimer {channel.name}.")
-        except discord.HTTPException as e:
-            print(f"Erreur lors de la suppression de {channel.name}: {e}")
-
-    await ctx.send("Tous les salons ont été supprimés.")
-
-@bot.command()
-async def rolesupp(ctx):
-    # Vérifier si l'utilisateur a la permission d'administrateur
-    if not ctx.author.guild_permissions.administrator:
-        await ctx.send("Désolé, tu n'as pas la permission d'exécuter cette commande.")
-        return
-
-    # Supprimer tous les rôles
-    guild = ctx.guild
-    for role in guild.roles:
-        # Empêcher la suppression du rôle @everyone
-        if role.name == "@everyone":
-            continue
-        try:
-            await role.delete()
-            print(f'Rôle supprimé: {role.name}')
-        except discord.Forbidden:
-            print(f"Pas de permission pour supprimer {role.name}.")
-        except discord.HTTPException as e:
-            print(f"Erreur lors de la suppression de {role.name}: {e}")
-
-    await ctx.send("Tous les rôles ont été supprimés, sauf @everyone.")
+)
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

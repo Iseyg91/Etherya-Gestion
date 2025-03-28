@@ -4633,24 +4633,21 @@ class GiveawayView(discord.ui.View):
         self.channel = ctx.channel
         self.message = None  # Pour stocker l'embed message
 
-async def update_embed(self):
-    """ Met à jour l'embed avec les nouvelles informations. """
-    embed = discord.Embed(
-        title="🎉 **Création d'un Giveaway**",
-        description=f"🎁 **Gain:** {self.prize}\n"
-                    f"⏳ **Durée:** {self.duration_text}\n"
-                    f"🏆 **Gagnants:** {self.winners}\n"
-                    f"📍 **Salon:** {self.channel.mention}",
-        color=discord.Color.blurple()
-    )
-    embed.set_footer(text="Choisissez les options dans le menu déroulant ci-dessous.")
-    embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(9).png?raw=true")
+    async def update_embed(self):
+        """ Met à jour l'embed avec les nouvelles informations. """
+        embed = discord.Embed(
+            title="🎉 **Création d'un Giveaway**",
+            description=f"🎁 **Gain:** {self.prize}\n"
+                        f"⏳ **Durée:** {self.duration_text}\n"
+                        f"🏆 **Gagnants:** {self.winners}\n"
+                        f"📍 **Salon:** {self.channel.mention}",
+            color=discord.Color.blurple()  # Utilisation d'une couleur bleue sympathique
+        )
+        embed.set_footer(text="Choisissez les options dans le menu déroulant ci-dessous.")
+        embed.set_thumbnail(url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/t%C3%A9l%C3%A9chargement%20(9).png?raw=true")  # Logo ou icône du giveaway
 
-    try:
         if self.message:
             await self.message.edit(embed=embed, view=self)
-    except discord.errors.NotFound:
-        print("Le message a été supprimé ou la vue est expirée.")
 
     async def parse_duration(self, text):
         """ Convertit un texte en secondes et retourne un affichage formaté. """
@@ -4700,7 +4697,7 @@ async def update_embed(self):
     )
     async def select_action(self, interaction: discord.Interaction, select: discord.ui.Select):
         value = select.values[0]
-        
+
         if value == "edit_prize":
             response = await self.wait_for_response(interaction, "Quel est le gain du giveaway ?", str)
             if response:

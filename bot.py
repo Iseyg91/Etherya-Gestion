@@ -733,7 +733,7 @@ async def setup(ctx):
         # Traitement de la réponse en fonction de l'option choisie
         if selected_option == "admin_role":
             try:
-                # Si un rôle est mentionné, on l'accepte
+                # Vérifier si un rôle est mentionné ou si l'entrée est un ID valide
                 new_role = ctx.guild.get_role(int(response.content)) if not response.mentions else response.mentions[0]
                 if new_role:
                     collection.update_one(
@@ -764,6 +764,7 @@ async def setup(ctx):
 
         elif selected_option == "sanctions_channel":
             try:
+                # Vérification que c'est bien un salon texte
                 new_channel = ctx.guild.get_channel(int(response.content)) if not response.mentions else response.mentions[0]
                 if new_channel and isinstance(new_channel, discord.TextChannel):
                     collection.update_one(
@@ -775,7 +776,7 @@ async def setup(ctx):
                 else:
                     await ctx.send("❌ Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
             except ValueError:
-                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un salon.", ephemeral=True)
+                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un salon texte.", ephemeral=True)
 
         elif selected_option == "reports_channel":
             try:
@@ -790,7 +791,7 @@ async def setup(ctx):
                 else:
                     await ctx.send("❌ Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
             except ValueError:
-                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un salon.", ephemeral=True)
+                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un salon texte.", ephemeral=True)
 
         elif selected_option == "owner":
             try:
@@ -811,6 +812,7 @@ async def setup(ctx):
         # Gestion des erreurs et envoi d'un message d'erreur si besoin
         await ctx.send(f"❌ Une erreur est survenue : {str(e)}", ephemeral=True)
         print(f"Error occurred: {e}")
+
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

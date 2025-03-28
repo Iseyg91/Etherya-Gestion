@@ -747,11 +747,21 @@ async def setup(ctx):
         # Attente de la réponse de l'utilisateur
         response = await bot.wait_for("message", check=check)
 
+        # Fonction pour vérifier si un message contient une mention et obtenir l'ID
+        def get_mention_id(content, type_mention):
+            if type_mention == "role":
+                return discord.utils.get(ctx.guild.roles, mention=content)
+            elif type_mention == "channel":
+                return discord.utils.get(ctx.guild.text_channels, mention=content)
+            elif type_mention == "member":
+                return discord.utils.get(ctx.guild.members, mention=content)
+            return None
+
         # Traitement de la réponse en fonction de l'option choisie
         if selected_option == "admin_role":
             try:
-                # Vérifier si un rôle est mentionné ou si l'entrée est un ID valide
-                new_role = ctx.guild.get_role(int(response.content)) if not response.mentions else response.mentions[0]
+                # Essayer d'obtenir le rôle via mention ou ID
+                new_role = get_mention_id(response.content, "role") or ctx.guild.get_role(int(response.content))
                 if new_role:
                     collection.update_one(
                         {"guild_id": str(ctx.guild.id)},
@@ -766,7 +776,7 @@ async def setup(ctx):
 
         elif selected_option == "staff_role":
             try:
-                new_role = ctx.guild.get_role(int(response.content)) if not response.mentions else response.mentions[0]
+                new_role = get_mention_id(response.content, "role") or ctx.guild.get_role(int(response.content))
                 if new_role:
                     collection.update_one(
                         {"guild_id": str(ctx.guild.id)},
@@ -781,8 +791,7 @@ async def setup(ctx):
 
         elif selected_option == "sanctions_channel":
             try:
-                # Vérification que c'est bien un salon texte
-                new_channel = ctx.guild.get_channel(int(response.content)) if not response.mentions else response.mentions[0]
+                new_channel = get_mention_id(response.content, "channel") or ctx.guild.get_channel(int(response.content))
                 if new_channel and isinstance(new_channel, discord.TextChannel):
                     collection.update_one(
                         {"guild_id": str(ctx.guild.id)},
@@ -797,7 +806,7 @@ async def setup(ctx):
 
         elif selected_option == "reports_channel":
             try:
-                new_channel = ctx.guild.get_channel(int(response.content)) if not response.mentions else response.mentions[0]
+                new_channel = get_mention_id(response.content, "channel") or ctx.guild.get_channel(int(response.content))
                 if new_channel and isinstance(new_channel, discord.TextChannel):
                     collection.update_one(
                         {"guild_id": str(ctx.guild.id)},
@@ -812,7 +821,7 @@ async def setup(ctx):
 
         elif selected_option == "owner":
             try:
-                new_owner = ctx.guild.get_member(int(response.content)) if not response.mentions else response.mentions[0]
+                new_owner = get_mention_id(response.content, "member") or ctx.guild.get_member(int(response.content))
                 if new_owner:
                     collection.update_one(
                         {"guild_id": str(ctx.guild.id)},
@@ -829,7 +838,6 @@ async def setup(ctx):
         # Gestion des erreurs et envoi d'un message d'erreur si besoin
         await ctx.send(f"❌ Une erreur est survenue : {str(e)}", ephemeral=True)
         print(f"Error occurred: {e}")
-
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

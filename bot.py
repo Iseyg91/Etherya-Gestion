@@ -664,73 +664,78 @@ async def viewpremium(interaction: discord.Interaction):
 # Commande Slash
 @bot.tree.command(name="setup", description="Configure les rôles et salons du serveur.")
 async def setup(interaction: discord.Interaction):
-    # Création de l'embed
-    embed = discord.Embed(
-        title="Configuration du serveur",
-        description="Veuillez sélectionner les rôles et salons à configurer pour le serveur.",
-        color=discord.Color.blue()
-    )
+    try:
+        # Création de l'embed
+        embed = discord.Embed(
+            title="Configuration du serveur",
+            description="Veuillez sélectionner les rôles et salons à configurer pour le serveur.",
+            color=discord.Color.blue()
+        )
 
-    # Sélecteurs de rôles et salons
-    select_admin = Select(placeholder="Sélectionner le rôle Admin", min_values=1, max_values=1)
-    select_staff = Select(placeholder="Sélectionner le rôle Staff", min_values=1, max_values=1)
-    select_sanctions = Select(placeholder="Sélectionner le salon des sanctions", min_values=1, max_values=1)
-    select_reports = Select(placeholder="Sélectionner le salon des rapports", min_values=1, max_values=1)
+        # Sélecteurs de rôles et salons
+        select_admin = Select(placeholder="Sélectionner le rôle Admin", min_values=1, max_values=1)
+        select_staff = Select(placeholder="Sélectionner le rôle Staff", min_values=1, max_values=1)
+        select_sanctions = Select(placeholder="Sélectionner le salon des sanctions", min_values=1, max_values=1)
+        select_reports = Select(placeholder="Sélectionner le salon des rapports", min_values=1, max_values=1)
 
-    # Récupération des rôles et salons
-    admin_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
-    staff_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
-    channels = [channel for channel in interaction.guild.text_channels]
+        # Récupération des rôles et salons
+        admin_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
+        staff_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
+        channels = [channel for channel in interaction.guild.text_channels]
 
-    # Ajout des options au sélecteur
-    select_admin.add_options(*[discord.SelectOption(label=role.name, value=str(role.id)) for role in admin_roles])
-    select_staff.add_options(*[discord.SelectOption(label=role.name, value=str(role.id)) for role in staff_roles])
-    select_sanctions.add_options(*[discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels])
-    select_reports.add_options(*[discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels])
+        # Ajout des options au sélecteur
+        select_admin.add_options(*[discord.SelectOption(label=role.name, value=str(role.id)) for role in admin_roles])
+        select_staff.add_options(*[discord.SelectOption(label=role.name, value=str(role.id)) for role in staff_roles])
+        select_sanctions.add_options(*[discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels])
+        select_reports.add_options(*[discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels])
 
-    # Création de la vue
-    view = View()
-    view.add_item(select_admin)
-    view.add_item(select_staff)
-    view.add_item(select_sanctions)
-    view.add_item(select_reports)
+        # Création de la vue
+        view = View()
+        view.add_item(select_admin)
+        view.add_item(select_staff)
+        view.add_item(select_sanctions)
+        view.add_item(select_reports)
 
-    # Envoi du message avec l'embed et les sélecteurs
-    await interaction.response.send_message(embed=embed, view=view)
+        # Envoi du message avec l'embed et les sélecteurs
+        await interaction.response.send_message(embed=embed, view=view)
 
-    # Attente de la sélection des utilisateurs
-    await view.wait()
+        # Attente de la sélection des utilisateurs
+        await view.wait()
 
-    # Récupération des valeurs sélectionnées
-    selected_admin_role_id = select_admin.values[0]
-    selected_staff_role_id = select_staff.values[0]
-    selected_sanctions_channel_id = select_sanctions.values[0]
-    selected_reports_channel_id = select_reports.values[0]
+        # Récupération des valeurs sélectionnées
+        selected_admin_role_id = select_admin.values[0]
+        selected_staff_role_id = select_staff.values[0]
+        selected_sanctions_channel_id = select_sanctions.values[0]
+        selected_reports_channel_id = select_reports.values[0]
 
-    # Récupération des objets de rôle et salon
-    selected_admin_role = interaction.guild.get_role(int(selected_admin_role_id))
-    selected_staff_role = interaction.guild.get_role(int(selected_staff_role_id))
-    selected_sanctions_channel = interaction.guild.get_channel(int(selected_sanctions_channel_id))
-    selected_reports_channel = interaction.guild.get_channel(int(selected_reports_channel_id))
+        # Récupération des objets de rôle et salon
+        selected_admin_role = interaction.guild.get_role(int(selected_admin_role_id))
+        selected_staff_role = interaction.guild.get_role(int(selected_staff_role_id))
+        selected_sanctions_channel = interaction.guild.get_channel(int(selected_sanctions_channel_id))
+        selected_reports_channel = interaction.guild.get_channel(int(selected_reports_channel_id))
 
-    # Enregistrement des données dans MongoDB
-    guild_id = str(interaction.guild.id)  # ID du serveur
-    collection.update_one(
-        {"guild_id": guild_id},
-        {
-            "$set": {
-                "admin_role": str(selected_admin_role.id),
-                "staff_role": str(selected_staff_role.id),
-                "owner": str(interaction.guild.owner.id),
-                "sanctions_channel": str(selected_sanctions_channel.id),
-                "reports_channel": str(selected_reports_channel.id)
-            }
-        },
-        upsert=True
-    )
+        # Enregistrement des données dans MongoDB
+        guild_id = str(interaction.guild.id)  # ID du serveur
+        collection.update_one(
+            {"guild_id": guild_id},
+            {
+                "$set": {
+                    "admin_role": str(selected_admin_role.id),
+                    "staff_role": str(selected_staff_role.id),
+                    "owner": str(interaction.guild.owner.id),
+                    "sanctions_channel": str(selected_sanctions_channel.id),
+                    "reports_channel": str(selected_reports_channel.id)
+                }
+            },
+            upsert=True
+        )
 
-    # Réponse à l'utilisateur
-    await interaction.followup.send("Les rôles et salons ont été configurés avec succès !", ephemeral=True)
+        # Réponse à l'utilisateur
+        await interaction.followup.send("Les rôles et salons ont été configurés avec succès !", ephemeral=True)
+
+    except Exception as e:
+        await interaction.followup.send(f"Une erreur est survenue : {str(e)}", ephemeral=True)
+        print(f"Error occurred: {e}")
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 

@@ -668,16 +668,35 @@ async def setup(interaction: discord.Interaction):
     roles = interaction.guild.roles  # Récupérer tous les rôles du serveur
     channels = interaction.guild.text_channels  # Récupérer tous les salons textuels
 
-    # Limiter le nombre d'options (max 25)
-    role_options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in roles if role.name != "@everyone"][:25]
-    channel_options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels][:25]
+    # Créer une liste de choix pour les rôles
+    role_options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in roles if role.name != "@everyone"]
 
-    # Vérifier si le nombre d'options dépasse 25 et prévenir l'utilisateur
-    if len(role_options) == 25:
-        await interaction.response.send_message("⚠️ Attention : Vous avez plus de 25 rôles. Seuls les 25 premiers seront affichés.", ephemeral=True)
-    
-    if len(channel_options) == 25:
-        await interaction.response.send_message("⚠️ Attention : Vous avez plus de 25 salons. Seuls les 25 premiers seront affichés.", ephemeral=True)
+    # Créer une liste de choix pour les salons
+    channel_options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
+
+    # Récupérer les paramètres précédemment définis
+    setup_data = load_guild_settings(guild_id)
+    admin_role = interaction.guild.get_role(int(setup_data.get("admin_role", 0)))
+    staff_role = interaction.guild.get_role(int(setup_data.get("staff_role", 0)))
+    sanctions_channel = interaction.guild.get_channel(int(setup_data.get("sanctions_channel", 0)))
+    reports_channel = interaction.guild.get_channel(int(setup_data.get("reports_channel", 0)))
+
+    # Préparer les messages d'affichage pour chaque champ
+    admin_role_name = admin_role.name if admin_role else "Vous n'avez rien défini pour ce champ"
+    staff_role_name = staff_role.name if staff_role else "Vous n'avez rien défini pour ce champ"
+    sanctions_channel_name = sanctions_channel.name if sanctions_channel else "Vous n'avez rien défini pour ce champ"
+    reports_channel_name = reports_channel.name if reports_channel else "Vous n'avez rien défini pour ce champ"
+
+    # Créer un embed pour afficher les informations actuelles
+    embed = discord.Embed(
+        title="Configuration des Rôles et Salons",
+        description="Voici les informations actuelles pour la configuration du bot.",
+        color=discord.Color.blue()
+    )
+    embed.add_field(name="Rôle Administrateur", value=admin_role_name, inline=False)
+    embed.add_field(name="Rôle Staff", value=staff_role_name, inline=False)
+    embed.add_field(name="Salon de Sanctions", value=sanctions_channel_name, inline=False)
+    embed.add_field(name="Salon de Rapports", value=reports_channel_name, inline=False)
 
     # Créer un menu déroulant pour le rôle admin
     select_admin_role = discord.ui.Select(
@@ -709,13 +728,6 @@ async def setup(interaction: discord.Interaction):
         options=channel_options,
         min_values=1,
         max_values=1
-    )
-
-    # Créer un embed pour expliquer la commande
-    embed = discord.Embed(
-        title="Configuration des Rôles et Salons",
-        description="Sélectionnez les rôles et salons nécessaires pour le bot.",
-        color=discord.Color.blue()
     )
 
     # Créer une vue pour le menu déroulant
@@ -756,7 +768,6 @@ async def setup(interaction: discord.Interaction):
 def load_guild_settings(guild_id):
     setup_data = collection.find_one({"guild_id": guild_id}) or {}
     return setup_data
-
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 

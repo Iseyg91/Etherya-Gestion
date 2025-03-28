@@ -709,11 +709,11 @@ async def setup(ctx):
         await ctx.send(embed=embed, view=view)
 
         # Attente de la sélection de l'utilisateur
-        await view.wait()
+        interaction = await bot.wait_for("interaction", check=lambda i: i.user == ctx.author and i.data['component_type'] == 3)
 
         # Récupérer la sélection de l'utilisateur
-        selected_option = select.values[0]
-        await ctx.send(f"Vous avez choisi de modifier : {selected_option}. Veuillez maintenant entrer la nouvelle valeur.")
+        selected_option = interaction.data["values"][0]
+        await interaction.response.send_message(f"Vous avez choisi de modifier : {selected_option}. Veuillez maintenant entrer la nouvelle valeur.", ephemeral=True)
 
         # Fonction pour gérer les réponses utilisateur
         def check(msg):
@@ -724,7 +724,6 @@ async def setup(ctx):
 
         # Traitement de la réponse selon l'option choisie
         if selected_option == "admin_role":
-            # Vérification si le message est une mention de rôle ou un ID de rôle valide
             try:
                 new_role = ctx.guild.get_role(int(response.content)) if not response.mentions else response.mentions[0]
                 if new_role:

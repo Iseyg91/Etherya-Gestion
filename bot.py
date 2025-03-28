@@ -38,8 +38,23 @@ collection2 = db['setup_premium']
 collection3 = db['bounty']
 
 def load_guild_settings(guild_id):
+    # Charger les données de la collection principale
     setup_data = collection.find_one({"guild_id": guild_id}) or {}
-    return setup_data
+    
+    # Charger les données de la collection premium
+    setup_premium_data = collection2.find_one({"guild_id": guild_id}) or {}
+    
+    # Charger les données de la collection bounty
+    bounty_data = collection3.find_one({"guild_id": guild_id}) or {}
+    
+    # Combiner les données dans un dictionnaire
+    combined_data = {
+        "setup": setup_data,
+        "setup_premium": setup_premium_data,
+        "bounty": bounty_data
+    }
+    
+    return combined_data
 
 # Dictionnaire pour stocker les paramètres de chaque serveur
 GUILD_SETTINGS = {}

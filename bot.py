@@ -673,21 +673,21 @@ async def setup(interaction: discord.Interaction):
         )
 
         # Sélecteurs de rôles et salons
-        select_admin = Select(placeholder="Sélectionner le rôle Admin", min_values=1, max_values=1)
-        select_staff = Select(placeholder="Sélectionner le rôle Staff", min_values=1, max_values=1)
-        select_sanctions = Select(placeholder="Sélectionner le salon des sanctions", min_values=1, max_values=1)
-        select_reports = Select(placeholder="Sélectionner le salon des rapports", min_values=1, max_values=1)
+        select_admin = Select(placeholder="Sélectionner le rôle Admin", min_values=1, max_values=1, options=[])
+        select_staff = Select(placeholder="Sélectionner le rôle Staff", min_values=1, max_values=1, options=[])
+        select_sanctions = Select(placeholder="Sélectionner le salon des sanctions", min_values=1, max_values=1, options=[])
+        select_reports = Select(placeholder="Sélectionner le salon des rapports", min_values=1, max_values=1, options=[])
 
         # Récupération des rôles et salons
         admin_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
         staff_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
         channels = [channel for channel in interaction.guild.text_channels]
 
-        # Ajout des options au sélecteur
-        select_admin.add_options(*[discord.SelectOption(label=role.name, value=str(role.id)) for role in admin_roles])
-        select_staff.add_options(*[discord.SelectOption(label=role.name, value=str(role.id)) for role in staff_roles])
-        select_sanctions.add_options(*[discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels])
-        select_reports.add_options(*[discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels])
+        # Ajouter des options au sélecteur
+        select_admin.options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in admin_roles]
+        select_staff.options = [discord.SelectOption(label=role.name, value=str(role.id)) for role in staff_roles]
+        select_sanctions.options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
+        select_reports.options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
 
         # Création de la vue
         view = View()
@@ -734,6 +734,7 @@ async def setup(interaction: discord.Interaction):
         await interaction.followup.send("Les rôles et salons ont été configurés avec succès !", ephemeral=True)
 
     except Exception as e:
+        # Gestion des erreurs et envoi d'un message d'erreur si besoin
         await interaction.followup.send(f"Une erreur est survenue : {str(e)}", ephemeral=True)
         print(f"Error occurred: {e}")
 

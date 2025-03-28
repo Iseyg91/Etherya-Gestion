@@ -661,9 +661,17 @@ async def viewpremium(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed)
 
 #------------------------------------------------------------------------- Commande SETUP
+# ID de l'utilisateur autorisé
+AUTHORIZED_USER_ID = 792755123587645461
+
 # Commande avec préfixe +setup
 @bot.command(name="setup")
 async def setup(ctx):
+    # Vérification si l'utilisateur a les permissions nécessaires
+    if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:
+        await ctx.send("Désolé, vous n'avez pas la permission d'exécuter cette commande.", ephemeral=True)
+        return
+
     try:
         # Récupérer les données du serveur depuis MongoDB
         guild_data = collection.find_one({"guild_id": str(ctx.guild.id)})
@@ -684,11 +692,11 @@ async def setup(ctx):
             color=discord.Color.green()
         )
 
-        embed.add_field(name="Rôle Admin", value=f"{admin_role.mention if admin_role else 'Non défini'}", inline=False)
-        embed.add_field(name="Rôle Staff", value=f"{staff_role.mention if staff_role else 'Non défini'}", inline=False)
-        embed.add_field(name="Salon des Sanctions", value=f"{sanctions_channel.mention if sanctions_channel else 'Non défini'}", inline=False)
-        embed.add_field(name="Salon des Rapports", value=f"{reports_channel.mention if reports_channel else 'Non défini'}", inline=False)
-        embed.add_field(name="Owner", value=f"{owner.mention if owner else 'Non défini'}", inline=False)
+        embed.add_field(name="Rôle Admin 🛡️", value=f"{admin_role.mention if admin_role else 'Non défini'}", inline=False)
+        embed.add_field(name="Rôle Staff 👥", value=f"{staff_role.mention if staff_role else 'Non défini'}", inline=False)
+        embed.add_field(name="Salon des Sanctions 🚨", value=f"{sanctions_channel.mention if sanctions_channel else 'Non défini'}", inline=False)
+        embed.add_field(name="Salon des Rapports 📝", value=f"{reports_channel.mention if reports_channel else 'Non défini'}", inline=False)
+        embed.add_field(name="Owner 👑", value=f"{owner.mention if owner else 'Non défini'}", inline=False)
 
         # Sélecteur amélioré avec des emojis et un meilleur visuel
         options = [
@@ -706,7 +714,7 @@ async def setup(ctx):
         view.add_item(select)
 
         # Envoi du message avec l'embed et le sélecteur
-        await ctx.send(embed=embed, view=view)
+        message = await ctx.send(embed=embed, view=view)
 
         # Attente de l'interaction de l'utilisateur
         interaction = await bot.wait_for("interaction", check=lambda i: i.user == ctx.author and i.data['component_type'] == 3)
@@ -733,11 +741,11 @@ async def setup(ctx):
                         {"$set": {"admin_role": str(new_role.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"Le rôle Admin a été mis à jour avec succès : {new_role.mention}", ephemeral=True)
+                    await ctx.send(f"✅ Le rôle Admin a été mis à jour avec succès : {new_role.mention}", ephemeral=True)
                 else:
-                    await ctx.send("Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
+                    await ctx.send("❌ Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
             except ValueError:
-                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
+                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
 
         elif selected_option == "staff_role":
             try:
@@ -748,15 +756,14 @@ async def setup(ctx):
                         {"$set": {"staff_role": str(new_role.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"Le rôle Staff a été mis à jour avec succès : {new_role.mention}", ephemeral=True)
+                    await ctx.send(f"✅ Le rôle Staff a été mis à jour avec succès : {new_role.mention}", ephemeral=True)
                 else:
-                    await ctx.send("Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
+                    await ctx.send("❌ Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
             except ValueError:
-                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
+                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
 
         elif selected_option == "sanctions_channel":
             try:
-                # Si un salon est mentionné, on l'accepte
                 new_channel = ctx.guild.get_channel(int(response.content)) if not response.mentions else response.mentions[0]
                 if new_channel and isinstance(new_channel, discord.TextChannel):
                     collection.update_one(
@@ -764,11 +771,11 @@ async def setup(ctx):
                         {"$set": {"sanctions_channel": str(new_channel.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"Le salon des sanctions a été mis à jour avec succès : {new_channel.mention}", ephemeral=True)
+                    await ctx.send(f"✅ Le salon des sanctions a été mis à jour avec succès : {new_channel.mention}", ephemeral=True)
                 else:
-                    await ctx.send("Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
+                    await ctx.send("❌ Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
             except ValueError:
-                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un salon.", ephemeral=True)
+                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un salon.", ephemeral=True)
 
         elif selected_option == "reports_channel":
             try:
@@ -779,15 +786,14 @@ async def setup(ctx):
                         {"$set": {"reports_channel": str(new_channel.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"Le salon des rapports a été mis à jour avec succès : {new_channel.mention}", ephemeral=True)
+                    await ctx.send(f"✅ Le salon des rapports a été mis à jour avec succès : {new_channel.mention}", ephemeral=True)
                 else:
-                    await ctx.send("Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
+                    await ctx.send("❌ Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
             except ValueError:
-                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un salon.", ephemeral=True)
+                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un salon.", ephemeral=True)
 
         elif selected_option == "owner":
             try:
-                # Si un membre est mentionné, on l'accepte
                 new_owner = ctx.guild.get_member(int(response.content)) if not response.mentions else response.mentions[0]
                 if new_owner:
                     collection.update_one(
@@ -795,15 +801,15 @@ async def setup(ctx):
                         {"$set": {"owner": str(new_owner.id)}},
                         upsert=True
                     )
-                    await ctx.send(f"L'owner a été mis à jour avec succès : {new_owner.mention}", ephemeral=True)
+                    await ctx.send(f"✅ L'owner a été mis à jour avec succès : {new_owner.mention}", ephemeral=True)
                 else:
-                    await ctx.send("Erreur : Ce membre n'existe pas. Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
+                    await ctx.send("❌ Erreur : Ce membre n'existe pas. Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
             except ValueError:
-                await ctx.send("Erreur : Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
+                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
 
     except Exception as e:
         # Gestion des erreurs et envoi d'un message d'erreur si besoin
-        await ctx.send(f"Une erreur est survenue : {str(e)}", ephemeral=True)
+        await ctx.send(f"❌ Une erreur est survenue : {str(e)}", ephemeral=True)
         print(f"Error occurred: {e}")
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 

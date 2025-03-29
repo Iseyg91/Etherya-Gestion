@@ -65,23 +65,21 @@ async def on_ready():
 
     # Initialiser l'uptime du bot
     bot.uptime = time.time()
-
-    # Liste des activités à alterner
-    activity_types = [
-        discord.Game("Etherya"),  # Playing
-        discord.Activity(type=discord.ActivityType.watching, name=" Le Monde d'Etherya"),  # Watching
-        discord.Activity(type=discord.ActivityType.listening, name=" Les Murmures du Passé"),  # Listening
-        discord.Activity(type=discord.ActivityType.streaming, name=" Les Sombres Secrets")  # Streaming
-    ]
-
-    # Liste des statuts à alterner
-    status_types = [
-        discord.Status.online,  # En ligne
-        discord.Status.idle,    # Inactif
-        discord.Status.dnd      # Ne pas déranger
-    ]
     
-    print(f'{bot.user} est connecté !')
+    # Récupérer le nombre de serveurs et d'utilisateurs
+    guild_count = len(bot.guilds)
+    member_count = sum(guild.member_count for guild in bot.guilds)
+    
+    # Afficher les stats dans la console
+    print(f"📊 Statistiques du bot :")
+    print(f"➡️ Serveurs : {guild_count}")
+    print(f"➡️ Utilisateurs : {member_count}")
+
+    # Mettre en statut une des stats
+    activity = discord.Game(f"Présent sur {guild_count} serveurs")
+    await bot.change_presence(activity=activity, status=discord.Status.online)
+    
+    print(f"{bot.user} est connecté et affiche ses statistiques !")
 
     # Afficher les commandes chargées
     print("📌 Commandes disponibles 😊")

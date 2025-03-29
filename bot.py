@@ -689,7 +689,6 @@ async def viewpremium(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed)
 
 #------------------------------------------------------------------------- Commande SETUP
-
 AUTHORIZED_USER_ID = 792755123587645461
 
 @bot.command(name="setup")
@@ -767,7 +766,7 @@ async def setup(ctx):
 
         # Traitement des options de sécurité
         if selected_option == "anti_link":
-            await interaction.response.send_message("Veuillez entrer **True** pour activer l'anti-lien ou **False** pour le désactiver.", ephemeral=True)
+            await interaction.followup.send("Veuillez entrer **True** pour activer l'anti-lien ou **False** pour le désactiver.", ephemeral=True)
             response = await bot.wait_for("message", check=check)
 
             if response.content.lower() in ["true", "false"]:
@@ -782,12 +781,12 @@ async def setup(ctx):
                 await ctx.send("❌ Erreur : Veuillez entrer **True** ou **False**.", ephemeral=True)
 
         elif selected_option == "anti_spam":
-            await interaction.response.send_message("Veuillez entrer le nombre de messages maximum autorisés par minute pour l'anti-spam.", ephemeral=True)
+            await interaction.followup.send("Veuillez entrer le nombre de messages maximum autorisés par minute pour l'anti-spam.", ephemeral=True)
             response = await bot.wait_for("message", check=check)
 
             try:
                 spam_limit = int(response.content)
-                await interaction.response.send_message(f"Veuillez entrer le nombre de minutes dans lesquelles cette limite s'applique.", ephemeral=True)
+                await interaction.followup.send(f"Veuillez entrer le nombre de minutes dans lesquelles cette limite s'applique.", ephemeral=True)
                 response = await bot.wait_for("message", check=check)
 
                 spam_time = int(response.content)
@@ -801,12 +800,12 @@ async def setup(ctx):
                 await ctx.send("❌ Erreur : Veuillez entrer un nombre valide.", ephemeral=True)
 
         elif selected_option == "anti_massban":
-            await interaction.response.send_message("Veuillez entrer le nombre d'utilisateurs pouvant être bannis simultanément.", ephemeral=True)
+            await interaction.followup.send("Veuillez entrer le nombre d'utilisateurs pouvant être bannis simultanément.", ephemeral=True)
             response = await bot.wait_for("message", check=check)
 
             try:
                 massban_limit = int(response.content)
-                await interaction.response.send_message("Veuillez entrer le nombre de minutes dans lesquelles cela s'applique.", ephemeral=True)
+                await interaction.followup.send("Veuillez entrer le nombre de minutes dans lesquelles cela s'applique.", ephemeral=True)
                 response = await bot.wait_for("message", check=check)
 
                 massban_time = int(response.content)
@@ -820,7 +819,7 @@ async def setup(ctx):
                 await ctx.send("❌ Erreur : Veuillez entrer un nombre valide.", ephemeral=True)
 
         elif selected_option == "anti_everyone":
-            await interaction.response.send_message("Veuillez entrer **True** pour activer l'anti-everyone ou **False** pour le désactiver.", ephemeral=True)
+            await interaction.followup.send("Veuillez entrer **True** pour activer l'anti-everyone ou **False** pour le désactiver.", ephemeral=True)
             response = await bot.wait_for("message", check=check)
 
             if response.content.lower() in ["true", "false"]:
@@ -836,6 +835,7 @@ async def setup(ctx):
 
     except Exception as e:
         await ctx.send(f"❌ Une erreur s'est produite pendant la configuration : {str(e)}", ephemeral=True)
+
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 

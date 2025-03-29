@@ -61,21 +61,21 @@ GUILD_SETTINGS = {}
 
 @bot.event
 async def on_ready():
-    print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
+    print(f"✅ Le bot {bot.user} est maintenant connecté ! (ID: {bot.user.id})")
 
-    # Initialiser l'uptime du bot
+    # Initialisation de l'uptime du bot
     bot.uptime = time.time()
     
-    # Récupérer le nombre de serveurs et d'utilisateurs
+    # Récupération du nombre de serveurs et d'utilisateurs
     guild_count = len(bot.guilds)
     member_count = sum(guild.member_count for guild in bot.guilds)
     
-    # Afficher les stats dans la console
-    print(f"📊 Statistiques du bot :")
-    print(f"➡️ Serveurs : {guild_count}")
-    print(f"➡️ Utilisateurs : {member_count}")
+    # Affichage des statistiques du bot dans la console
+    print(f"\n📊 **Statistiques du bot :**")
+    print(f"➡️ **Serveurs** : {guild_count}")
+    print(f"➡️ **Utilisateurs** : {member_count}")
     
-    # Liste des activités dynamiques basées sur les stats
+    # Liste des activités dynamiques
     activity_types = [
         discord.Activity(type=discord.ActivityType.watching, name=f"{member_count} Membres"),
         discord.Activity(type=discord.ActivityType.streaming, name=f"{guild_count} Serveurs", url="https://twitch.tv/example"),
@@ -83,16 +83,17 @@ async def on_ready():
         discord.Game(f"Gère {member_count} Joueurs")
     ]
     
-    # Sélectionner une activité au hasard
+    # Sélection d'une activité au hasard
     activity = random.choice(activity_types)
     
-    status_types = [discord.Status.online, discord.Status.idle, discord.Status.dnd, discord.Status.invisible]
+    # Choix d'un statut aléatoire
+    status_types = [discord.Status.online, discord.Status.idle, discord.Status.dnd]
     status = random.choice(status_types)
+    
+    # Mise à jour du statut et de l'activité
     await bot.change_presence(activity=activity, status=status)
     
-    print(f"{bot.user} est connecté et affiche ses statistiques dynamiquement !")
-
-
+    print(f"\n🎉 **{bot.user}** est maintenant connecté et affiche ses statistiques dynamiques avec succès !")
 
     # Afficher les commandes chargées
     print("📌 Commandes disponibles 😊")

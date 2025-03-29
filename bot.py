@@ -727,13 +727,23 @@ async def setup(ctx):
         embed.add_field(name="Salon des Rapports 📝", value=f"{reports_channel.mention if reports_channel else 'Non défini'}", inline=False)
         embed.add_field(name="Owner 👑", value=f"{owner.mention if owner else 'Non défini'}", inline=False)
 
+        # Ajout des options de sécurité
+        embed.add_field(name="Anti-lien 🔗", value="Non configuré", inline=False)
+        embed.add_field(name="Anti-Spam 💬", value="Non configuré", inline=False)
+        embed.add_field(name="Anti-MassBan 🚫", value="Non configuré", inline=False)
+        embed.add_field(name="Anti-Everyone @everyone", value="Non configuré", inline=False)
+
         # Sélecteur amélioré avec des emojis et un meilleur visuel
         options = [
             discord.SelectOption(label="Rôle Admin 🛡️", value="admin_role"),
             discord.SelectOption(label="Rôle Staff 👥", value="staff_role"),
             discord.SelectOption(label="Salon des Sanctions 🚨", value="sanctions_channel"),
             discord.SelectOption(label="Salon des Rapports 📝", value="reports_channel"),
-            discord.SelectOption(label="Owner 👑", value="owner")
+            discord.SelectOption(label="Owner 👑", value="owner"),
+            discord.SelectOption(label="Anti-lien 🔗", value="anti_link"),
+            discord.SelectOption(label="Anti-Spam 💬", value="anti_spam"),
+            discord.SelectOption(label="Anti-MassBan 🚫", value="anti_massban"),
+            discord.SelectOption(label="Anti-Everyone @everyone", value="anti_everyone")
         ]
         
         select = Select(placeholder="Choisissez ce que vous souhaitez modifier", options=options, min_values=1, max_values=1)
@@ -772,7 +782,6 @@ async def setup(ctx):
         # Traitement de la réponse en fonction de l'option choisie
         if selected_option == "admin_role":
             try:
-                # Essayer d'obtenir le rôle via mention ou ID
                 new_role = get_mention_id(response.content, "role") or ctx.guild.get_role(int(response.content))
                 if new_role:
                     collection.update_one(
@@ -846,10 +855,69 @@ async def setup(ctx):
             except ValueError:
                 await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
 
+        # Traitement des options de sécurité
+        elif selected_option == "anti_link":
+            await interaction.response.send_message("Veuillez entrer **True** pour activer l'anti-lien ou **False** pour le désactiver.", ephemeral=True)
+            response = await bot.wait_for("message", check=check)
+
+            if response.content.lower() in ["true", "false"]:
+                is_active = response.content.lower() == "true"
+                collection.update_one(
+                    {"guild_id": str(ctx.guild.id)},
+                    {"$set": {"anti_link": is_active}},
+                    upsert=True
+                )
+                await ctx.send(f"✅ L'anti-lien a été {'activé' if is_active else 'désactivé'}.", ephemeral=True)
+            else:
+                await ctx.send("❌ Erreur : Veuillez entrer **True** ou **False**.", ephemeral=True)
+
+        elif selected_option == "anti_spam":
+            await interaction.response.send_message("Veuillez entrer le nombre de messages maximum autorisés par minute pour l'anti-spam.", ephemeral=True)
+            response = await bot.wait_for("message", check=check)
+
+            try:
+                spam_limit = int(response.content)
+                collection.update_one(
+                    {"guild_id": str(ctx.guild.id)},
+                    {"$set": {"anti_spam_limit": spam_limit}},
+                    upsert=True
+                )
+                await ctx.send(f"✅ La limite de spam a été définie à {spam_limit} messages par minute.", ephemeral=True)
+            except ValueError:
+                await ctx.send("❌ Erreur : Veuillez entrer un nombre valide.", ephemeral=True)
+
+        elif selected_option == "anti_massban":
+            await interaction.response.send_message("Veuillez entrer **True** pour activer l'anti-massban ou **False** pour le désactiver.", ephemeral=True)
+            response = await bot.wait_for("message", check=check)
+
+            if response.content.lower() in ["true", "false"]:
+                is_active = response.content.lower() == "true"
+                collection.update_one(
+                    {"guild_id": str(ctx.guild.id)},
+                    {"$set": {"anti_massban": is_active}},
+                    upsert=True
+                )
+                await ctx.send(f"✅ L'anti-massban a été {'activé' if is_active else 'désactivé'}.", ephemeral=True)
+            else:
+                await ctx.send("❌ Erreur : Veuillez entrer **True** ou **False**.", ephemeral=True)
+
+        elif selected_option == "anti_everyone":
+            await interaction.response.send_message("Veuillez entrer **True** pour activer l'anti-everyone ou **False** pour le désactiver.", ephemeral=True)
+            response = await bot.wait_for("message", check=check)
+
+            if response.content.lower() in ["true", "false"]:
+                is_active = response.content.lower() == "true"
+                collection.update_one(
+                    {"guild_id": str(ctx.guild.id)},
+                    {"$set": {"anti_everyone": is_active}},
+                    upsert=True
+                )
+                await ctx.send(f"✅ L'anti-everyone a été {'activé' if is_active else 'désactivé'}.", ephemeral=True)
+            else:
+                await ctx.send("❌ Erreur : Veuillez entrer **True** ou **False**.", ephemeral=True)
     except Exception as e:
-        # Gestion des erreurs et envoi d'un message d'erreur si besoin
-        await ctx.send(f"❌ Une erreur est survenue : {str(e)}", ephemeral=True)
-        print(f"Error occurred: {e}")
+        await ctx.send(f"❌ Une erreur s'est produite pendant la configuration : {str(e)}", ephemeral=True)
+
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles
@@ -4989,19 +5057,8 @@ class PresentationForm(discord.ui.Modal, title="Faisons connaissance !"):
 # Commande Slash /presentation
 @bot.tree.command(name="presentation", description="Remplis le formulaire pour te présenter !")
 async def presentation(interaction: discord.Interaction):
-    button = discord.ui.Button(label="Remplir", style=discord.ButtonStyle.primary, custom_id="open_presentation")
-    view = discord.ui.View()
-    view.add_item(button)
-
-    await interaction.response.send_message("📝 Clique sur le bouton ci-dessous pour te présenter !", view=view)
-
-    # Classe pour gérer le bouton et ouvrir le modal
-    class OpenPresentation(discord.ui.View):
-        @discord.ui.button(label="Remplir", style=discord.ButtonStyle.primary, custom_id="open_presentation")
-        async def open_presentation(self, interaction: discord.Interaction, button: discord.ui.Button):
-            await interaction.response.send_modal(PresentationForm())
-
-    await interaction.response.send_message(view=OpenPresentation())
+    # Envoi direct du modal
+    await interaction.response.send_modal(PresentationForm())
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

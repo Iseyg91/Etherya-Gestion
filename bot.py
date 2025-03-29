@@ -896,26 +896,26 @@ async def on_message(message):
 
     guild_data = collection.find_one({"guild_id": str(message.guild.id)})
 
-# Fonction anti-lien, y compris les liens Discord (uniquement les liens Discord)
-if guild_data and guild_data.get("anti_link", False):
-    if not message.author.guild_permissions.administrator:  # Vérifie directement si l'utilisateur est admin
-        if any(url in message.content for url in ["discord.gg"]):  # Vérifie uniquement les liens Discord
-            await message.delete()
-            await message.author.send("⚠️ Les liens Discord sont interdits sur ce serveur.")
+    # Fonction anti-lien, y compris les liens Discord (uniquement les liens Discord)
+    if guild_data and guild_data.get("anti_link", False):
+        if not message.author.guild_permissions.administrator:  # Vérifie directement si l'utilisateur est admin
+            if any(url in message.content for url in ["discord.gg"]):  # Vérifie uniquement les liens Discord
+                await message.delete()
+                await message.author.send("⚠️ Les liens Discord sont interdits sur ce serveur.")
 
-# Anti-Spam
-if guild_data and guild_data.get("anti_spam_limit", False):
-    if not message.author.guild_permissions.administrator:  # Vérifie directement si l'utilisateur est admin
-        if len([t for t in user_messages.get(message.author.id, []) if t > time.time() - 60]) > guild_data["anti_spam_limit"]:
-            await message.delete()
-            await message.author.send("⚠️ Vous avez envoyé trop de messages trop rapidement. Veuillez réduire votre spam.")
+    # Anti-Spam
+    if guild_data and guild_data.get("anti_spam_limit", False):
+        if not message.author.guild_permissions.administrator:  # Vérifie directement si l'utilisateur est admin
+            if len([t for t in user_messages.get(message.author.id, []) if t > time.time() - 60]) > guild_data["anti_spam_limit"]:
+                await message.delete()
+                await message.author.send("⚠️ Vous avez envoyé trop de messages trop rapidement. Veuillez réduire votre spam.")
 
-# Anti-Everyone
-if guild_data and guild_data.get("anti_everyone", False):
-    if not message.author.guild_permissions.administrator:  # Vérifie directement si l'utilisateur est admin
-        if "@everyone" in message.content or "@here" in message.content:
-            await message.delete()
-            await message.author.send("⚠️ L'utilisation de `@everyone` ou `@here` est interdite sur ce serveur.")
+    # Anti-Everyone
+    if guild_data and guild_data.get("anti_everyone", False):
+        if not message.author.guild_permissions.administrator:  # Vérifie directement si l'utilisateur est admin
+            if "@everyone" in message.content or "@here" in message.content:
+                await message.delete()
+                await message.author.send("⚠️ L'utilisation de `@everyone` ou `@here` est interdite sur ce serveur.")
 
     # Détection des mots sensibles
     for word in sensitive_words:

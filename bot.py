@@ -74,12 +74,22 @@ async def on_ready():
     print(f"📊 Statistiques du bot :")
     print(f"➡️ Serveurs : {guild_count}")
     print(f"➡️ Utilisateurs : {member_count}")
-
-    # Mettre en statut une des stats
-    activity = discord.Game(f"Présent sur {guild_count} serveurs")
+    
+    # Liste des activités dynamiques basées sur les stats
+    activity_types = [
+        discord.Game(f"Présent sur {guild_count} serveurs"),
+        discord.Activity(type=discord.ActivityType.watching, name=f"{member_count} utilisateurs"),
+        discord.Activity(type=discord.ActivityType.listening, name="les commandes des joueurs"),
+        discord.Streaming(name=f"Statistiques en temps réel", url="https://twitch.tv/example")
+    ]
+    
+    # Sélectionner une activité au hasard
+    activity = random.choice(activity_types)
+    
     await bot.change_presence(activity=activity, status=discord.Status.online)
     
-    print(f"{bot.user} est connecté et affiche ses statistiques !")
+    print(f"{bot.user} est connecté et affiche ses statistiques dynamiquement !")
+
 
     # Afficher les commandes chargées
     print("📌 Commandes disponibles 😊")

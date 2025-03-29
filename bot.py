@@ -693,30 +693,32 @@ class SetupView(View):
     def __init__(self, ctx, guild_data, collection):
         super().__init__(timeout=180)
         self.ctx = ctx
-        self.guild_data = guild_data
+        self.guild_data = guild_data or {}
         self.collection = collection
         self.embed_message = None
         self.add_item(MainSelect(self))
 
     async def update_embed(self, category):
         """Met à jour l'embed en fonction de la catégorie sélectionnée."""
-        embed = discord.Embed(color=discord.Color.blue())
+        embed = discord.Embed(color=discord.Color.purple())
 
         if category == "gestion":
-            embed.title = "⚙️ Configuration du Bot"
-            embed.description = "Ici, vous pouvez modifier les rôles et salons du bot."
+            embed.title = "⚙️ **Configuration du Bot**"
+            embed.description = "Modifiez les rôles et salons importants du bot."
             embed.add_field(name="👑 Propriétaire", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
             embed.add_field(name="🛡️ Rôle Admin", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
             embed.add_field(name="👥 Rôle Staff", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
             embed.add_field(name="🚨 Salon Sanctions", value=f"<#{self.guild_data.get('sanctions_channel', 'Non défini')}>", inline=False)
             embed.add_field(name="📝 Salon Rapports", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
+            embed.set_footer(text="💡 Sélectionnez un paramètre à modifier dans le menu déroulant.")
 
         elif category == "anti":
-            embed.title = "🛡️ Paramètres de Sécurité"
-            embed.description = "Activez ou désactivez les protections contre les abus."
+            embed.title = "🛡️ **Paramètres de Sécurité**"
+            embed.description = "Activez/Désactivez les protections contre les abus."
             embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
             embed.add_field(name="💬 Anti-Spam", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
             embed.add_field(name="🚫 Anti-Everyone", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
+            embed.set_footer(text="💡 Sélectionnez une protection à activer/désactiver.")
 
         await self.embed_message.edit(embed=embed)
 
@@ -724,9 +726,9 @@ class MainSelect(Select):
     def __init__(self, view):
         options = [
             discord.SelectOption(label="Gestion du Bot", description="Modifier les rôles et salons", emoji="⚙️", value="gestion"),
-            discord.SelectOption(label="Anti-Raid et Anti-Spam", description="Activer/Désactiver les protections", emoji="🛡️", value="anti")
+            discord.SelectOption(label="Anti-Raid et Anti-Spam", description="Configurer les protections", emoji="🛡️", value="anti")
         ]
-        super().__init__(placeholder="📌 Choisissez une catégorie", options=options)
+        super().__init__(placeholder="📌 Sélectionnez une catégorie", options=options)
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
@@ -816,7 +818,7 @@ async def setup(ctx):
     🛡️ **Anti-Raid et Anti-Spam** : Activer/Désactiver les protections.
     
     🔽 **Choisissez une option ci-dessous pour commencer !**
-    """, color=discord.Color.blue())
+    """, color=discord.Color.purple())
 
     view = SetupView(ctx, guild_data, collection)
     view.embed_message = await ctx.send(embed=embed, view=view)

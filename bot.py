@@ -703,17 +703,17 @@ class SetupView(View):
         embed = discord.Embed(color=discord.Color.blue())
 
         if category == "gestion":
-            embed.title = "⚙️ Gestion du Bot"
-            embed.description = "Modifiez les rôles et salons du bot."
-            embed.add_field(name="👑 Owner", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
+            embed.title = "⚙️ Configuration du Bot"
+            embed.description = "Ici, vous pouvez modifier les rôles et salons du bot."
+            embed.add_field(name="👑 Propriétaire", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
             embed.add_field(name="🛡️ Rôle Admin", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
             embed.add_field(name="👥 Rôle Staff", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
             embed.add_field(name="🚨 Salon Sanctions", value=f"<#{self.guild_data.get('sanctions_channel', 'Non défini')}>", inline=False)
             embed.add_field(name="📝 Salon Rapports", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
 
         elif category == "anti":
-            embed.title = "🛡️ Anti-Raid et Anti-Spam"
-            embed.description = "Activez/Désactivez les protections."
+            embed.title = "🛡️ Paramètres de Sécurité"
+            embed.description = "Activez ou désactivez les protections contre les abus."
             embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
             embed.add_field(name="💬 Anti-Spam", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
             embed.add_field(name="🚫 Anti-Everyone", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
@@ -744,7 +744,7 @@ class MainSelect(Select):
 class InfoSelect(Select):
     def __init__(self, view):
         options = [
-            discord.SelectOption(label="👑 Owner", value="owner"),
+            discord.SelectOption(label="👑 Propriétaire", value="owner"),
             discord.SelectOption(label="🛡️ Rôle Admin", value="admin_role"),
             discord.SelectOption(label="👥 Rôle Staff", value="staff_role"),
             discord.SelectOption(label="🚨 Salon Sanctions", value="sanctions_channel"),
@@ -773,6 +773,7 @@ class InfoSelect(Select):
         if new_value:
             self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {param: str(new_value)}}, upsert=True)
             await self.view_ctx.ctx.send(f"✅ {param} mis à jour avec succès !", ephemeral=True)
+            await self.view_ctx.update_embed("gestion")
         else:
             await self.view_ctx.ctx.send("❌ Valeur invalide.", ephemeral=True)
 
@@ -807,10 +808,15 @@ async def setup(ctx):
 
     guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
 
-    embed = discord.Embed(title="🔧 Configuration du Serveur", description="Modifiez les paramètres de votre serveur.", color=discord.Color.blue())
-    embed.add_field(name="👑 Owner", value=f"<@{guild_data.get('owner', 'Non défini')}>", inline=False)
-    embed.add_field(name="🛡️ Rôle Admin", value=f"<@&{guild_data.get('admin_role', 'Non défini')}>", inline=False)
-    embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
+    embed = discord.Embed(title="🔧 Configuration du Serveur", description="""
+    **Bienvenue dans le Setup !**  
+    Ce menu vous permet de modifier les paramètres du bot :
+    
+    📌 **Gestion du Bot** : Modifier les rôles et salons.  
+    🛡️ **Anti-Raid et Anti-Spam** : Activer/Désactiver les protections.
+    
+    🔽 **Choisissez une option ci-dessous pour commencer !**
+    """, color=discord.Color.blue())
 
     view = SetupView(ctx, guild_data, collection)
     view.embed_message = await ctx.send(embed=embed, view=view)

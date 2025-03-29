@@ -78,9 +78,8 @@ async def on_ready():
     # Liste des activités dynamiques
     activity_types = [
         discord.Activity(type=discord.ActivityType.watching, name=f"{member_count} Membres"),
-        discord.Activity(type=discord.ActivityType.streaming, name=f"{guild_count} Serveurs", url="https://twitch.tv/example"),
-        discord.Activity(type=discord.ActivityType.streaming, name="Etherya", url="https://twitch.tv/example"),
-        discord.Game(f"Gère {member_count} Joueurs")
+        discord.Activity(type=discord.ActivityType.streaming, name=f"{guild_count} Serveurs"),
+        discord.Activity(type=discord.ActivityType.streaming, name="Etherya"),
     ]
     
     # Sélection d'une activité au hasard

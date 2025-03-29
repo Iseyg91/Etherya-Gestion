@@ -718,7 +718,7 @@ async def setup(ctx):
         embed = discord.Embed(
             title="Configuration du Serveur",
             description="Voici les informations actuelles du serveur. Vous pouvez modifier ce que vous souhaitez.",
-            color=discord.Color.green()
+            color=discord.Color.blue()  # Couleur plus agréable
         )
 
         embed.add_field(name="Rôle Admin 🛡️", value=f"{admin_role.mention if admin_role else 'Non défini'}", inline=False)
@@ -728,10 +728,10 @@ async def setup(ctx):
         embed.add_field(name="Owner 👑", value=f"{owner.mention if owner else 'Non défini'}", inline=False)
 
         # Ajout des options de sécurité
-        embed.add_field(name="Anti-lien 🔗", value="Non configuré", inline=False)
-        embed.add_field(name="Anti-Spam 💬", value="Non configuré", inline=False)
-        embed.add_field(name="Anti-MassBan 🚫", value="Non configuré", inline=False)
-        embed.add_field(name="Anti-Everyone @everyone", value="Non configuré", inline=False)
+        embed.add_field(name="Anti-lien 🔗", value=f"{'Activé' if guild_data.get('anti_link') else 'Désactivé'}", inline=False)
+        embed.add_field(name="Anti-Spam 💬", value=f"{'Activé' if guild_data.get('anti_spam') else 'Désactivé'}", inline=False)
+        embed.add_field(name="Anti-MassBan 🚫", value=f"{'Activé' if guild_data.get('anti_massban') else 'Désactivé'}", inline=False)
+        embed.add_field(name="Anti-Everyone @everyone", value=f"{'Activé' if guild_data.get('anti_everyone') else 'Désactivé'}", inline=False)
 
         # Sélecteur amélioré avec des emojis et un meilleur visuel
         options = [
@@ -918,6 +918,7 @@ async def setup(ctx):
     except Exception as e:
         await ctx.send(f"❌ Une erreur s'est produite pendant la configuration : {str(e)}", ephemeral=True)
 
+
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles
@@ -962,6 +963,14 @@ sensitive_words = [
     "insurrection", "émeute", "rébellion", "coup d'état", "anarchie", "terroriste", "séparatiste"
 ]
 
+import asyncio
+import re
+import discord
+from discord.ext import commands
+from discord.ui import View, Button
+from datetime import datetime
+import time
+
 ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 
 # IDs des utilisateurs qui font le bump
@@ -970,15 +979,36 @@ bump_ids = [302050872383242240, 528557940811104258]
 # Dictionnaire pour suivre les rappels
 bump_reminders = {}
 
-def get_main_guild():
-    return bot.guilds[0] if bot.guilds else None
+# Liste des mots sensibles
+sensitive_words = ["mot_sensible1", "mot_sensible2", "mot_sensible3"]
+
+# Dictionnaire pour suivre les messages d'un utilisateur pour l'anti-spam
+user_messages = {}
 
 @bot.event
 async def on_message(message):
     if message.author.bot:
-        return  # Ignorer les bots
+        return  # Ignorer les messages du bot
 
-    member = message.guild.get_member(message.author.id)
+    guild_data = collection.find_one({"guild_id": str(message.guild.id)})
+
+    # Fonction anti-lien, y compris les liens Discord
+    if guild_data and guild_data.get("anti_link", False):
+        if any(url in message.content for url in ["http", "www", ".com", ".net", "discord.gg"]):
+            await message.delete()
+            await message.author.send("⚠️ Les liens sont interdits sur ce serveur, y compris les liens Discord.")
+    
+    # Anti-Spam
+    if guild_data and guild_data.get("anti_spam_limit", False):
+        if len([t for t in user_messages.get(message.author.id, []) if t > time.time() - 60]) > guild_data["anti_spam_limit"]:
+            await message.delete()
+            await message.author.send("⚠️ Vous avez envoyé trop de messages trop rapidement. Veuillez réduire votre spam.")
+    
+    # Anti-Everyone
+    if guild_data and guild_data.get("anti_everyone", False):
+        if "@everyone" in message.content or "@here" in message.content:
+            await message.delete()
+            await message.author.send("⚠️ L'utilisation de `@everyone` ou `@here` est interdite sur ce serveur.")
 
     # Détection des mots sensibles
     for word in sensitive_words:
@@ -1032,6 +1062,7 @@ async def on_message(message):
         # Supprime le rappel une fois envoyé
         del bump_reminders[message.author.id]
 
+    # Processus des commandes
     await bot.process_commands(message)
 
 async def send_alert_to_admin(message, detected_word):
@@ -1054,6 +1085,7 @@ async def send_alert_to_admin(message, detected_word):
         await admin.send(embed=embed)
     except Exception as e:
         print(f"⚠️ Erreur lors de l'envoi de l'alerte : {e}")
+
 
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join
 

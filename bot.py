@@ -451,10 +451,9 @@ async def on_guild_join(guild):
         embed.set_footer(text=f"Bot rejoint le serveur {guild.name}!", icon_url="https://github.com/Iseyg91/Etherya-Gestion/blob/main/37baf0deff8e2a1a3cddda717a3d3e40.jpg?raw=true")
 
         # Sections d'info sur le bot
-        embed.add_field(name="🔧 **Que puis-je faire pour vous ?**", value="Je propose des **commandes pratiques** pour gérer l'économie du serveur, organiser des événements, et bien plus encore ! 👾🎮", inline=False)
-        embed.add_field(name="💡 **Commandes principales**", value="📜 Voici les commandes essentielles pour bien commencer :\n`+help` - Afficher toutes les commandes disponibles\n`+stats` - Voir les statistiques du serveur\n`+shop` - Accéder à la boutique\n`+quests` - Participez à des quêtes épiques ! 🏆", inline=False)
-        embed.add_field(name="🎮 **Participez à l'aventure !**", value="Venez participer aux **événements** et remportez des **récompenses spéciales**. Chaque moment passé ici est une aventure ! 🚀✨", inline=False)
-        embed.add_field(name="🚀 **Prêt à commencer ?**", value="Tapez `+help` pour voir toutes les commandes disponibles ou dites-moi ce que vous souhaitez faire. Si vous avez des questions, je suis là pour vous aider ! 🎉", inline=False)
+        embed.add_field(name="🔧 **Que puis-je faire pour vous ?**", value="Je propose des **commandes pratiques** pour gérer les serveur, détecter les mots sensibles, et bien plus encore ! 👾🎮", inline=False)
+        embed.add_field(name="💡 **Commandes principales**", value="📜 Voici les commandes essentielles pour bien commencer :\n`+aide` - Afficher toutes les commandes disponibles\n`+vc` - Voir les statistiques du serveur\n`+setup` - Pour pour configurer le bot en fonction de vos besoins`", inline=False)
+        embed.add_field(name="🚀 **Prêt à commencer ?**", value="Tapez `+aide` pour voir toutes les commandes disponibles ou dites-moi ce que vous souhaitez faire. Si vous avez des questions, je suis là pour vous aider ! 🎉", inline=False)
         embed.add_field(name="🌐 **Serveurs utiles**", value="**[Serveur de Support](https://discord.com/invite/PzTHvVKDxN)**\n**[Serveur Etherya](https://discord.com/invite/tVVYC2Ynfy)**", inline=False)
 
         # Envoie l'embed dans le salon le plus haut
@@ -690,152 +689,134 @@ async def viewpremium(interaction: discord.Interaction):
 #------------------------------------------------------------------------- Commande SETUP
 AUTHORIZED_USER_ID = 792755123587645461
 
-@bot.command(name="setup")
-async def setup(ctx):
-    if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:
-        await ctx.send("❌ Vous n'avez pas les permissions nécessaires pour exécuter cette commande.", ephemeral=True)
-        return
+class SetupView(View):
+    def __init__(self, ctx, guild_data, collection):
+        super().__init__(timeout=60)
+        self.ctx = ctx
+        self.guild_data = guild_data
+        self.collection = collection
+        self.embed_message = None  # Pour stocker le message avec l'embed
+        self.add_item(MainSelect(self))
 
-    try:
-        # Récupérer les données du serveur depuis MongoDB
-        guild_data = collection.find_one({"guild_id": str(ctx.guild.id)})
-        
-        if guild_data:
-            admin_role = ctx.guild.get_role(int(guild_data.get("admin_role", 0)))
-            staff_role = ctx.guild.get_role(int(guild_data.get("staff_role", 0)))
-            sanctions_channel = ctx.guild.get_channel(int(guild_data.get("sanctions_channel", 0)))
-            reports_channel = ctx.guild.get_channel(int(guild_data.get("reports_channel", 0)))
-            owner = ctx.guild.get_member(int(guild_data.get("owner", 0)))
-        else:
-            admin_role = staff_role = sanctions_channel = reports_channel = owner = None
+    async def update_embed(self, category):
+        """Met à jour l'embed selon la catégorie sélectionnée."""
+        embed = discord.Embed(color=discord.Color.blue())
 
-        # Création de l'embed avec des couleurs attrayantes et un meilleur formatage
-        embed = discord.Embed(
-            title="Configuration du Serveur 🌐",
-            description="Voici les informations actuelles de votre serveur. Vous pouvez modifier les paramètres ci-dessous.",
-            color=discord.Color.green()  # Utilisation d'une couleur plus vive
-        )
+        if category == "info":
+            embed.title = "⚙️ Gestion du Bot"
+            embed.description = "Modifiez les rôles et salons du bot."
+            embed.add_field(name="Owner 👑", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
+            embed.add_field(name="Rôle Admin 🛡️", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
+            embed.add_field(name="Rôle Staff 👥", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
+            embed.add_field(name="Salon des Sanctions 🚨", value=f"<#{self.guild_data.get('sanctions_channel', 'Non défini')}>", inline=False)
+            embed.add_field(name="Salon des Rapports 📝", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
 
-        embed.add_field(name="Rôle Admin 🛡️", value=f"{admin_role.mention if admin_role else 'Non défini'}", inline=False)
-        embed.add_field(name="Rôle Staff 👥", value=f"{staff_role.mention if staff_role else 'Non défini'}", inline=False)
-        embed.add_field(name="Salon des Sanctions 🚨", value=f"{sanctions_channel.mention if sanctions_channel else 'Non défini'}", inline=False)
-        embed.add_field(name="Salon des Rapports 📝", value=f"{reports_channel.mention if reports_channel else 'Non défini'}", inline=False)
-        embed.add_field(name="Owner 👑", value=f"{owner.mention if owner else 'Non défini'}", inline=False)
+        elif category == "anti":
+            embed.title = "🛡️ Anti-Raid et Anti-Spam"
+            embed.description = "Activez/Désactivez les protections."
+            embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
+            embed.add_field(name="💬 Anti-Spam", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
+            embed.add_field(name="🚫 Anti-Raid", value=f"{'✅ Activé' if self.guild_data.get('anti_raid', False) else '❌ Désactivé'}", inline=True)
 
-        # Ajout des options de sécurité
-        embed.add_field(name="Anti-lien 🔗", value=f"{'Activé' if guild_data.get('anti_link', False) else 'Désactivé'}", inline=False)
-        embed.add_field(name="Anti-Spam 💬", value=f"{'Activé' if guild_data.get('anti_spam', False) else 'Désactivé'}", inline=False)
-        embed.add_field(name="Anti-MassBan 🚫", value=f"{'Activé' if guild_data.get('anti_massban', False) else 'Désactivé'}", inline=False)
-        embed.add_field(name="Anti-Everyone @everyone", value=f"{'Activé' if guild_data.get('anti_everyone', False) else 'Désactivé'}", inline=False)
+        await self.embed_message.edit(embed=embed)
 
-        # Sélecteur avec de meilleures options visuelles
+class MainSelect(Select):
+    def __init__(self, view):
         options = [
+            discord.SelectOption(label="Informations Gestion Bot", description="Modifier les rôles et salons", emoji="⚙️", value="info"),
+            discord.SelectOption(label="Anti-Raid et Anti-Spam", description="Activer/Désactiver les protections", emoji="🛡️", value="anti")
+        ]
+        super().__init__(placeholder="Choisissez une catégorie", options=options)
+        self.view = view
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        await self.view.update_embed(self.values[0])
+        self.view.clear_items()
+        if self.values[0] == "info":
+            self.view.add_item(InfoSelect(self.view))
+        elif self.values[0] == "anti":
+            self.view.add_item(AntiSelect(self.view))
+        await self.view.embed_message.edit(view=self.view)
+
+class InfoSelect(Select):
+    def __init__(self, view):
+        options = [
+            discord.SelectOption(label="Owner 👑", value="owner"),
             discord.SelectOption(label="Rôle Admin 🛡️", value="admin_role"),
             discord.SelectOption(label="Rôle Staff 👥", value="staff_role"),
             discord.SelectOption(label="Salon des Sanctions 🚨", value="sanctions_channel"),
             discord.SelectOption(label="Salon des Rapports 📝", value="reports_channel"),
-            discord.SelectOption(label="Owner 👑", value="owner"),
-            discord.SelectOption(label="Anti-lien 🔗", value="anti_link"),
-            discord.SelectOption(label="Anti-Spam 💬", value="anti_spam"),
-            discord.SelectOption(label="Anti-MassBan 🚫", value="anti_massban"),
-            discord.SelectOption(label="Anti-Everyone @everyone", value="anti_everyone")
         ]
+        super().__init__(placeholder="Sélectionnez un paramètre", options=options)
+        self.view = view
 
-        select = Select(placeholder="Choisissez un paramètre à modifier", options=options, min_values=1, max_values=1)
-        
-        view = View()
-        view.add_item(select)
-
-        # Envoi du message avec l'embed et le sélecteur
-        message = await ctx.send(embed=embed, view=view)
-
-        # Attente de l'interaction de l'utilisateur
-        interaction = await bot.wait_for("interaction", check=lambda i: i.user == ctx.author and i.data['component_type'] == 3)
-
-        selected_option = interaction.data["values"][0]
-
-        # Répondre immédiatement pour éviter l'erreur de double réponse
-        await interaction.response.send_message(f"Vous avez choisi de modifier : **{selected_option}**. Veuillez entrer la nouvelle valeur.", ephemeral=True)
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f"✏️ Mentionnez le nouveau paramètre pour **{self.values[0]}**.", ephemeral=True)
 
         def check(msg):
-            return msg.author == ctx.author and msg.channel == ctx.channel
+            return msg.author == self.view.ctx.author and msg.channel == self.view.ctx.channel
 
-        # Attente de la réponse de l'utilisateur
-        response = await bot.wait_for("message", check=check)
+        response = await self.view.ctx.bot.wait_for("message", check=check)
 
-        # Traitement des options de sécurité
-        if selected_option == "anti_link":
-            await interaction.followup.send("Veuillez entrer **True** pour activer l'anti-lien ou **False** pour le désactiver.", ephemeral=True)
-            response = await bot.wait_for("message", check=check)
+        param = self.values[0]
+        new_value = response.content
 
-            if response.content.lower() in ["true", "false"]:
-                is_active = response.content.lower() == "true"
-                collection.update_one(
-                    {"guild_id": str(ctx.guild.id)},
-                    {"$set": {"anti_link": is_active}},
-                    upsert=True
-                )
-                await ctx.send(f"✅ L'anti-lien a été {'activé' if is_active else 'désactivé'}.", ephemeral=True)
-            else:
-                await ctx.send("❌ Erreur : Veuillez entrer **True** ou **False**.", ephemeral=True)
+        if param in ["admin_role", "staff_role"]:
+            new_value = response.role_mentions[0].id if response.role_mentions else None
+        elif param in ["sanctions_channel", "reports_channel"]:
+            new_value = response.channel_mentions[0].id if response.channel_mentions else None
+        elif param == "owner":
+            new_value = response.mentions[0].id if response.mentions else None
 
-        elif selected_option == "anti_spam":
-            await interaction.followup.send("Veuillez entrer le nombre de messages maximum autorisés par minute pour l'anti-spam.", ephemeral=True)
-            response = await bot.wait_for("message", check=check)
+        if new_value:
+            self.view.collection.update_one({"guild_id": str(self.view.ctx.guild.id)}, {"$set": {param: str(new_value)}}, upsert=True)
+            await self.view.ctx.send(f"✅ {param} a été mis à jour !", ephemeral=True)
+        else:
+            await self.view.ctx.send("❌ Valeur invalide.", ephemeral=True)
 
-            try:
-                spam_limit = int(response.content)
-                await interaction.followup.send(f"Veuillez entrer le nombre de minutes dans lesquelles cette limite s'applique.", ephemeral=True)
-                response = await bot.wait_for("message", check=check)
+class AntiSelect(Select):
+    def __init__(self, view):
+        options = [
+            discord.SelectOption(label="Anti-lien 🔗", value="anti_link"),
+            discord.SelectOption(label="Anti-Spam 💬", value="anti_spam"),
+            discord.SelectOption(label="Anti-Raid 🚫", value="anti_raid"),
+        ]
+        super().__init__(placeholder="Sélectionnez une protection", options=options)
+        self.view = view
 
-                spam_time = int(response.content)
-                collection.update_one(
-                    {"guild_id": str(ctx.guild.id)},
-                    {"$set": {"anti_spam_limit": spam_limit, "anti_spam_time": spam_time}},
-                    upsert=True
-                )
-                await ctx.send(f"✅ La limite de spam a été définie à {spam_limit} messages par {spam_time} minute(s).", ephemeral=True)
-            except ValueError:
-                await ctx.send("❌ Erreur : Veuillez entrer un nombre valide.", ephemeral=True)
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message("✏️ Tapez `True` pour activer ou `False` pour désactiver.", ephemeral=True)
 
-        elif selected_option == "anti_massban":
-            await interaction.followup.send("Veuillez entrer le nombre d'utilisateurs pouvant être bannis simultanément.", ephemeral=True)
-            response = await bot.wait_for("message", check=check)
+        def check(msg):
+            return msg.author == self.view.ctx.author and msg.channel == self.view.ctx.channel
 
-            try:
-                massban_limit = int(response.content)
-                await interaction.followup.send("Veuillez entrer le nombre de minutes dans lesquelles cela s'applique.", ephemeral=True)
-                response = await bot.wait_for("message", check=check)
+        response = await self.view.ctx.bot.wait_for("message", check=check)
+        new_value = response.content.lower() == "true"
 
-                massban_time = int(response.content)
-                collection.update_one(
-                    {"guild_id": str(ctx.guild.id)},
-                    {"$set": {"anti_massban_limit": massban_limit, "anti_massban_time": massban_time}},
-                    upsert=True
-                )
-                await ctx.send(f"✅ L'anti-massban a été configuré avec une limite de {massban_limit} bans dans {massban_time} minutes.", ephemeral=True)
-            except ValueError:
-                await ctx.send("❌ Erreur : Veuillez entrer un nombre valide.", ephemeral=True)
+        self.view.collection.update_one({"guild_id": str(self.view.ctx.guild.id)}, {"$set": {self.values[0]: new_value}}, upsert=True)
+        await self.view.ctx.send(f"✅ {self.values[0]} a été {'activé' if new_value else 'désactivé'} avec succès !", ephemeral=True)
+        await self.view.update_embed("anti")
 
-        elif selected_option == "anti_everyone":
-            await interaction.followup.send("Veuillez entrer **True** pour activer l'anti-everyone ou **False** pour le désactiver.", ephemeral=True)
-            response = await bot.wait_for("message", check=check)
+@bot.command(name="setup")
+async def setup(ctx):
+    if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:
+        await ctx.send("❌ Vous n'avez pas les permissions nécessaires.", ephemeral=True)
+        return
 
-            if response.content.lower() in ["true", "false"]:
-                is_active = response.content.lower() == "true"
-                collection.update_one(
-                    {"guild_id": str(ctx.guild.id)},
-                    {"$set": {"anti_everyone": is_active}},
-                    upsert=True
-                )
-                await ctx.send(f"✅ L'anti-everyone a été {'activé' if is_active else 'désactivé'}.", ephemeral=True)
-            else:
-                await ctx.send("❌ Erreur : Veuillez entrer **True** ou **False**.", ephemeral=True)
+    try:
+        guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
+
+        embed = discord.Embed(title="🔧 Configuration du Serveur", description="Modifiez les paramètres de votre serveur.", color=discord.Color.blue())
+        embed.add_field(name="Owner 👑", value=f"<@{guild_data.get('owner', 'Non défini')}>", inline=False)
+        embed.add_field(name="Rôle Admin 🛡️", value=f"<@&{guild_data.get('admin_role', 'Non défini')}>", inline=False)
+        embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
+
+        view = SetupView(ctx, guild_data, collection)
+        view.embed_message = await ctx.send(embed=embed, view=view)
 
     except Exception as e:
-        await ctx.send(f"❌ Une erreur s'est produite pendant la configuration : {str(e)}", ephemeral=True)
-
-
+        await ctx.send(f"❌ Erreur : {str(e)}", ephemeral=True)
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

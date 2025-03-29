@@ -690,15 +690,13 @@ async def viewpremium(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed)
 
 #------------------------------------------------------------------------- Commande SETUP
-# ID de l'utilisateur autorisé
+
 AUTHORIZED_USER_ID = 792755123587645461
 
-# Commande avec préfixe +setup
 @bot.command(name="setup")
 async def setup(ctx):
-    # Vérification si l'utilisateur a les permissions nécessaires
     if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:
-        await ctx.send("Désolé, vous n'avez pas la permission d'exécuter cette commande.", ephemeral=True)
+        await ctx.send("❌ Vous n'avez pas les permissions nécessaires pour exécuter cette commande.", ephemeral=True)
         return
 
     try:
@@ -714,11 +712,11 @@ async def setup(ctx):
         else:
             admin_role = staff_role = sanctions_channel = reports_channel = owner = None
 
-        # Création de l'embed avec des couleurs et un meilleur formatage
+        # Création de l'embed avec des couleurs attrayantes et un meilleur formatage
         embed = discord.Embed(
-            title="Configuration du Serveur",
-            description="Voici les informations actuelles du serveur. Vous pouvez modifier ce que vous souhaitez.",
-            color=discord.Color.blue()  # Couleur plus agréable
+            title="Configuration du Serveur 🌐",
+            description="Voici les informations actuelles de votre serveur. Vous pouvez modifier les paramètres ci-dessous.",
+            color=discord.Color.blue()
         )
 
         embed.add_field(name="Rôle Admin 🛡️", value=f"{admin_role.mention if admin_role else 'Non défini'}", inline=False)
@@ -728,12 +726,12 @@ async def setup(ctx):
         embed.add_field(name="Owner 👑", value=f"{owner.mention if owner else 'Non défini'}", inline=False)
 
         # Ajout des options de sécurité
-        embed.add_field(name="Anti-lien 🔗", value=f"{'Activé' if guild_data.get('anti_link') else 'Désactivé'}", inline=False)
-        embed.add_field(name="Anti-Spam 💬", value=f"{'Activé' if guild_data.get('anti_spam') else 'Désactivé'}", inline=False)
-        embed.add_field(name="Anti-MassBan 🚫", value=f"{'Activé' if guild_data.get('anti_massban') else 'Désactivé'}", inline=False)
-        embed.add_field(name="Anti-Everyone @everyone", value=f"{'Activé' if guild_data.get('anti_everyone') else 'Désactivé'}", inline=False)
+        embed.add_field(name="Anti-lien 🔗", value=f"{'Activé' if guild_data.get('anti_link', False) else 'Désactivé'}", inline=False)
+        embed.add_field(name="Anti-Spam 💬", value=f"{'Activé' if guild_data.get('anti_spam', False) else 'Désactivé'}", inline=False)
+        embed.add_field(name="Anti-MassBan 🚫", value=f"{'Activé' if guild_data.get('anti_massban', False) else 'Désactivé'}", inline=False)
+        embed.add_field(name="Anti-Everyone @everyone", value=f"{'Activé' if guild_data.get('anti_everyone', False) else 'Désactivé'}", inline=False)
 
-        # Sélecteur amélioré avec des emojis et un meilleur visuel
+        # Sélecteur avec de meilleures options visuelles
         options = [
             discord.SelectOption(label="Rôle Admin 🛡️", value="admin_role"),
             discord.SelectOption(label="Rôle Staff 👥", value="staff_role"),
@@ -745,10 +743,9 @@ async def setup(ctx):
             discord.SelectOption(label="Anti-MassBan 🚫", value="anti_massban"),
             discord.SelectOption(label="Anti-Everyone @everyone", value="anti_everyone")
         ]
+
+        select = Select(placeholder="Choisissez un paramètre à modifier", options=options, min_values=1, max_values=1)
         
-        select = Select(placeholder="Choisissez ce que vous souhaitez modifier", options=options, min_values=1, max_values=1)
-        
-        # Création de la vue avec le sélecteur
         view = View()
         view.add_item(select)
 
@@ -758,105 +755,19 @@ async def setup(ctx):
         # Attente de l'interaction de l'utilisateur
         interaction = await bot.wait_for("interaction", check=lambda i: i.user == ctx.author and i.data['component_type'] == 3)
 
-        # Récupérer l'option sélectionnée
         selected_option = interaction.data["values"][0]
-        await interaction.response.send_message(f"Vous avez choisi de modifier : **{selected_option}**. Veuillez maintenant entrer la nouvelle valeur.", ephemeral=True)
 
-        # Fonction pour vérifier les messages de l'utilisateur
+        # Répondre immédiatement pour éviter l'erreur de double réponse
+        await interaction.response.send_message(f"Vous avez choisi de modifier : **{selected_option}**. Veuillez entrer la nouvelle valeur.", ephemeral=True)
+
         def check(msg):
             return msg.author == ctx.author and msg.channel == ctx.channel
 
         # Attente de la réponse de l'utilisateur
         response = await bot.wait_for("message", check=check)
 
-        # Fonction pour vérifier si un message contient une mention et obtenir l'ID
-        def get_mention_id(content, type_mention):
-            if type_mention == "role":
-                return discord.utils.get(ctx.guild.roles, mention=content)
-            elif type_mention == "channel":
-                return discord.utils.get(ctx.guild.text_channels, mention=content)
-            elif type_mention == "member":
-                return discord.utils.get(ctx.guild.members, mention=content)
-            return None
-
-        # Traitement de la réponse en fonction de l'option choisie
-        if selected_option == "admin_role":
-            try:
-                new_role = get_mention_id(response.content, "role") or ctx.guild.get_role(int(response.content))
-                if new_role:
-                    collection.update_one(
-                        {"guild_id": str(ctx.guild.id)},
-                        {"$set": {"admin_role": str(new_role.id)}},
-                        upsert=True
-                    )
-                    await ctx.send(f"✅ Le rôle Admin a été mis à jour avec succès : {new_role.mention}", ephemeral=True)
-                else:
-                    await ctx.send("❌ Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
-            except ValueError:
-                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
-
-        elif selected_option == "staff_role":
-            try:
-                new_role = get_mention_id(response.content, "role") or ctx.guild.get_role(int(response.content))
-                if new_role:
-                    collection.update_one(
-                        {"guild_id": str(ctx.guild.id)},
-                        {"$set": {"staff_role": str(new_role.id)}},
-                        upsert=True
-                    )
-                    await ctx.send(f"✅ Le rôle Staff a été mis à jour avec succès : {new_role.mention}", ephemeral=True)
-                else:
-                    await ctx.send("❌ Erreur : Ce rôle n'existe pas. Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
-            except ValueError:
-                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un rôle.", ephemeral=True)
-
-        elif selected_option == "sanctions_channel":
-            try:
-                new_channel = get_mention_id(response.content, "channel") or ctx.guild.get_channel(int(response.content))
-                if new_channel and isinstance(new_channel, discord.TextChannel):
-                    collection.update_one(
-                        {"guild_id": str(ctx.guild.id)},
-                        {"$set": {"sanctions_channel": str(new_channel.id)}},
-                        upsert=True
-                    )
-                    await ctx.send(f"✅ Le salon des sanctions a été mis à jour avec succès : {new_channel.mention}", ephemeral=True)
-                else:
-                    await ctx.send("❌ Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
-            except ValueError:
-                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un salon texte.", ephemeral=True)
-
-        elif selected_option == "reports_channel":
-            try:
-                new_channel = get_mention_id(response.content, "channel") or ctx.guild.get_channel(int(response.content))
-                if new_channel and isinstance(new_channel, discord.TextChannel):
-                    collection.update_one(
-                        {"guild_id": str(ctx.guild.id)},
-                        {"$set": {"reports_channel": str(new_channel.id)}},
-                        upsert=True
-                    )
-                    await ctx.send(f"✅ Le salon des rapports a été mis à jour avec succès : {new_channel.mention}", ephemeral=True)
-                else:
-                    await ctx.send("❌ Erreur : Ce salon n'existe pas ou n'est pas un salon texte valide.", ephemeral=True)
-            except ValueError:
-                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un salon texte.", ephemeral=True)
-
-        elif selected_option == "owner":
-            try:
-                new_owner = get_mention_id(response.content, "member") or ctx.guild.get_member(int(response.content))
-                if new_owner:
-                    collection.update_one(
-                        {"guild_id": str(ctx.guild.id)},
-                        {"$set": {"owner": str(new_owner.id)}},
-                        upsert=True
-                    )
-                    await ctx.send(f"✅ L'owner a été mis à jour avec succès : {new_owner.mention}", ephemeral=True)
-                else:
-                    await ctx.send("❌ Erreur : Ce membre n'existe pas. Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
-            except ValueError:
-                await ctx.send("❌ Erreur : Veuillez entrer un ID valide ou mentionner un membre.", ephemeral=True)
-
         # Traitement des options de sécurité
-        elif selected_option == "anti_link":
+        if selected_option == "anti_link":
             await interaction.response.send_message("Veuillez entrer **True** pour activer l'anti-lien ou **False** pour le désactiver.", ephemeral=True)
             response = await bot.wait_for("message", check=check)
 
@@ -915,9 +826,9 @@ async def setup(ctx):
                 await ctx.send(f"✅ L'anti-everyone a été {'activé' if is_active else 'désactivé'}.", ephemeral=True)
             else:
                 await ctx.send("❌ Erreur : Veuillez entrer **True** ou **False**.", ephemeral=True)
+
     except Exception as e:
         await ctx.send(f"❌ Une erreur s'est produite pendant la configuration : {str(e)}", ephemeral=True)
-
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 

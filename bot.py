@@ -4956,6 +4956,54 @@ async def snipe(ctx, index: int = 1):
     embed.set_footer(text=f"Demandé par {ctx.author}")
 
     await ctx.send(embed=embed)
+
+GUILD_ID = 1034007767050104892  # Remplace par l'ID de ton serveur
+CHANNEL_ID = 1355157891358920836  # Remplace par l'ID du salon où envoyer l'embed
+
+intents = discord.Intents.default()
+intents.messages = True
+intents.guilds = True
+intents.members = True
+
+# Création du formulaire (modal)
+class PresentationForm(discord.ui.Modal, title="Faisons connaissance !"):
+    pseudo = discord.ui.TextInput(label="Ton pseudo", placeholder="Ex: Jean_57", required=True)
+    age = discord.ui.TextInput(label="Ton âge", placeholder="Ex: 18", required=True)
+    passion = discord.ui.TextInput(label="Ta passion principale", placeholder="Ex: Gaming, Musique...", required=True)
+    bio = discord.ui.TextInput(label="Une courte bio", placeholder="Parle un peu de toi...", style=discord.TextStyle.paragraph, required=True)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        embed = discord.Embed(
+            title=f"Présentation de {interaction.user.name}",
+            description="Une nouvelle présentation vient d'être envoyée ! 🎉",
+            color=discord.Color.blue()
+        )
+        embed.set_thumbnail(url=interaction.user.display_avatar.url)
+        embed.add_field(name="👤 Pseudo", value=self.pseudo.value, inline=True)
+        embed.add_field(name="🎂 Âge", value=self.age.value, inline=True)
+        embed.add_field(name="🎨 Passion", value=self.passion.value, inline=False)
+        embed.add_field(name="📝 Bio", value=self.bio.value, inline=False)
+        embed.set_footer(text=f"ID de l'utilisateur: {interaction.user.id}")
+
+        channel = bot.get_channel(CHANNEL_ID)
+        if channel:
+            await channel.send(embed=embed)
+            await interaction.response.send_message("✅ Ta présentation a été envoyée avec succès !", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ Erreur : Salon introuvable.", ephemeral=True)
+
+# Commande pour ouvrir le formulaire
+@bot.command()
+async def presentation(ctx):
+    await ctx.send("📝 Remplis le formulaire pour te présenter !", view=discord.ui.View().add_item(discord.ui.Button(label="Remplir", custom_id="open_presentation", style=discord.ButtonStyle.primary)))
+
+    class OpenPresentation(discord.ui.View):
+        @discord.ui.button(label="Remplir", style=discord.ButtonStyle.primary, custom_id="open_presentation")
+        async def open_presentation(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await interaction.response.send_modal(PresentationForm())
+
+    await ctx.send(view=OpenPresentation())
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

@@ -59,10 +59,6 @@ def load_guild_settings(guild_id):
 # Dictionnaire pour stocker les paramètres de chaque serveur
 GUILD_SETTINGS = {}
 
-import discord
-import time
-import random
-
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est connecté en tant que {bot.user} (ID: {bot.user.id})")
@@ -82,15 +78,17 @@ async def on_ready():
     # Liste des activités dynamiques basées sur les stats
     activity_types = [
         discord.Activity(type=discord.ActivityType.watching, name=f"{member_count} Membres"),
-        discord.Activity(type=discord.ActivityType.streaming, name=f"{guild_count} Serveurs"),
-        discord.Activity(type=discord.ActivityType.streaming, name="Etherya"),
+        discord.Activity(type=discord.ActivityType.streaming, name=f"{guild_count} Serveurs", url="https://twitch.tv/example"),
+        discord.Activity(type=discord.ActivityType.streaming, name="Etherya", url="https://twitch.tv/example"),
         discord.Game(f"Gère {member_count} Joueurs")
     ]
     
     # Sélectionner une activité au hasard
     activity = random.choice(activity_types)
     
-    await bot.change_presence(activity=activity, status=discord.Status.online)
+    status_types = [discord.Status.online, discord.Status.idle, discord.Status.dnd, discord.Status.invisible]
+    status = random.choice(status_types)
+    await bot.change_presence(activity=activity, status=status)
     
     print(f"{bot.user} est connecté et affiche ses statistiques dynamiquement !")
 

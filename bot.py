@@ -691,65 +691,67 @@ AUTHORIZED_USER_ID = 792755123587645461
 
 class SetupView(View):
     def __init__(self, ctx, guild_data, collection):
-        super().__init__(timeout=60)
+        super().__init__(timeout=180)
         self.ctx = ctx
         self.guild_data = guild_data
         self.collection = collection
         self.embed_message = None
-        self.add_item(MainSelect(self.ctx, self))
+        self.add_item(MainSelect(self))
 
     async def update_embed(self, category):
-        """Met à jour l'embed selon la catégorie sélectionnée."""
+        """Met à jour l'embed en fonction de la catégorie sélectionnée."""
         embed = discord.Embed(color=discord.Color.blue())
 
-        if category == "info":
+        if category == "gestion":
             embed.title = "⚙️ Gestion du Bot"
             embed.description = "Modifiez les rôles et salons du bot."
-            embed.add_field(name="Owner 👑", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
-            embed.add_field(name="Rôle Admin 🛡️", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
-            embed.add_field(name="Rôle Staff 👥", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
-            embed.add_field(name="Salon des Sanctions 🚨", value=f"<#{self.guild_data.get('sanctions_channel', 'Non défini')}>", inline=False)
-            embed.add_field(name="Salon des Rapports 📝", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
+            embed.add_field(name="👑 Owner", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
+            embed.add_field(name="🛡️ Rôle Admin", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
+            embed.add_field(name="👥 Rôle Staff", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
+            embed.add_field(name="🚨 Salon Sanctions", value=f"<#{self.guild_data.get('sanctions_channel', 'Non défini')}>", inline=False)
+            embed.add_field(name="📝 Salon Rapports", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
 
         elif category == "anti":
             embed.title = "🛡️ Anti-Raid et Anti-Spam"
             embed.description = "Activez/Désactivez les protections."
             embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
             embed.add_field(name="💬 Anti-Spam", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
-            embed.add_field(name="🚫 Anti-Raid", value=f"{'✅ Activé' if self.guild_data.get('anti_raid', False) else '❌ Désactivé'}", inline=True)
+            embed.add_field(name="🚫 Anti-Everyone", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
 
         await self.embed_message.edit(embed=embed)
 
 class MainSelect(Select):
-    def __init__(self, ctx, view):
-        self.view_ctx = view
+    def __init__(self, view):
         options = [
-            discord.SelectOption(label="Informations Gestion Bot", description="Modifier les rôles et salons", emoji="⚙️", value="info"),
+            discord.SelectOption(label="Gestion du Bot", description="Modifier les rôles et salons", emoji="⚙️", value="gestion"),
             discord.SelectOption(label="Anti-Raid et Anti-Spam", description="Activer/Désactiver les protections", emoji="🛡️", value="anti")
         ]
-        super().__init__(placeholder="Choisissez une catégorie", options=options)
+        super().__init__(placeholder="📌 Choisissez une catégorie", options=options)
+        self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
         await self.view_ctx.update_embed(self.values[0])
         self.view_ctx.clear_items()
-        if self.values[0] == "info":
-            self.view_ctx.add_item(InfoSelect(self.view_ctx.ctx, self.view_ctx))
+        
+        if self.values[0] == "gestion":
+            self.view_ctx.add_item(InfoSelect(self.view_ctx))
         elif self.values[0] == "anti":
-            self.view_ctx.add_item(AntiSelect(self.view_ctx.ctx, self.view_ctx))
+            self.view_ctx.add_item(AntiSelect(self.view_ctx))
+
         await self.view_ctx.embed_message.edit(view=self.view_ctx)
 
 class InfoSelect(Select):
-    def __init__(self, ctx, view):
-        self.view_ctx = view
+    def __init__(self, view):
         options = [
-            discord.SelectOption(label="Owner 👑", value="owner"),
-            discord.SelectOption(label="Rôle Admin 🛡️", value="admin_role"),
-            discord.SelectOption(label="Rôle Staff 👥", value="staff_role"),
-            discord.SelectOption(label="Salon des Sanctions 🚨", value="sanctions_channel"),
-            discord.SelectOption(label="Salon des Rapports 📝", value="reports_channel"),
+            discord.SelectOption(label="👑 Owner", value="owner"),
+            discord.SelectOption(label="🛡️ Rôle Admin", value="admin_role"),
+            discord.SelectOption(label="👥 Rôle Staff", value="staff_role"),
+            discord.SelectOption(label="🚨 Salon Sanctions", value="sanctions_channel"),
+            discord.SelectOption(label="📝 Salon Rapports", value="reports_channel"),
         ]
-        super().__init__(placeholder="Sélectionnez un paramètre", options=options)
+        super().__init__(placeholder="🎛️ Sélectionnez un paramètre à modifier", options=options)
+        self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_message(f"✏️ Mentionnez le nouveau paramètre pour **{self.values[0]}**.", ephemeral=True)
@@ -758,7 +760,6 @@ class InfoSelect(Select):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
 
         response = await self.view_ctx.ctx.bot.wait_for("message", check=check)
-
         param = self.values[0]
         new_value = response.content
 
@@ -771,19 +772,19 @@ class InfoSelect(Select):
 
         if new_value:
             self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {param: str(new_value)}}, upsert=True)
-            await self.view_ctx.ctx.send(f"✅ {param} a été mis à jour !", ephemeral=True)
+            await self.view_ctx.ctx.send(f"✅ {param} mis à jour avec succès !", ephemeral=True)
         else:
             await self.view_ctx.ctx.send("❌ Valeur invalide.", ephemeral=True)
 
 class AntiSelect(Select):
-    def __init__(self, ctx, view):
-        self.view_ctx = view
+    def __init__(self, view):
         options = [
-            discord.SelectOption(label="Anti-lien 🔗", value="anti_link"),
-            discord.SelectOption(label="Anti-Spam 💬", value="anti_spam"),
-            discord.SelectOption(label="Anti-Raid 🚫", value="anti_raid"),
+            discord.SelectOption(label="🔗 Anti-lien", value="anti_link"),
+            discord.SelectOption(label="💬 Anti-Spam", value="anti_spam"),
+            discord.SelectOption(label="🚫 Anti-Everyone", value="anti_everyone"),
         ]
-        super().__init__(placeholder="Sélectionnez une protection", options=options)
+        super().__init__(placeholder="🛑 Sélectionnez une protection", options=options)
+        self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_message("✏️ Tapez `True` pour activer ou `False` pour désactiver.", ephemeral=True)
@@ -795,7 +796,7 @@ class AntiSelect(Select):
         new_value = response.content.lower() == "true"
 
         self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {self.values[0]: new_value}}, upsert=True)
-        await self.view_ctx.ctx.send(f"✅ {self.values[0]} a été {'activé' if new_value else 'désactivé'} avec succès !", ephemeral=True)
+        await self.view_ctx.ctx.send(f"✅ {self.values[0]} {'activé' if new_value else 'désactivé'} avec succès !", ephemeral=True)
         await self.view_ctx.update_embed("anti")
 
 @bot.command(name="setup")
@@ -804,19 +805,15 @@ async def setup(ctx):
         await ctx.send("❌ Vous n'avez pas les permissions nécessaires.", ephemeral=True)
         return
 
-    try:
-        guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
+    guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
 
-        embed = discord.Embed(title="🔧 Configuration du Serveur", description="Modifiez les paramètres de votre serveur.", color=discord.Color.blue())
-        embed.add_field(name="Owner 👑", value=f"<@{guild_data.get('owner', 'Non défini')}>", inline=False)
-        embed.add_field(name="Rôle Admin 🛡️", value=f"<@&{guild_data.get('admin_role', 'Non défini')}>", inline=False)
-        embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
+    embed = discord.Embed(title="🔧 Configuration du Serveur", description="Modifiez les paramètres de votre serveur.", color=discord.Color.blue())
+    embed.add_field(name="👑 Owner", value=f"<@{guild_data.get('owner', 'Non défini')}>", inline=False)
+    embed.add_field(name="🛡️ Rôle Admin", value=f"<@&{guild_data.get('admin_role', 'Non défini')}>", inline=False)
+    embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
 
-        view = SetupView(ctx, guild_data, collection)
-        view.embed_message = await ctx.send(embed=embed, view=view)
-
-    except Exception as e:
-        await ctx.send(f"❌ Erreur : {str(e)}", ephemeral=True)
+    view = SetupView(ctx, guild_data, collection)
+    view.embed_message = await ctx.send(embed=embed, view=view)
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

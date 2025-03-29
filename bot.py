@@ -695,8 +695,8 @@ class SetupView(View):
         self.ctx = ctx
         self.guild_data = guild_data
         self.collection = collection
-        self.embed_message = None  # Pour stocker le message avec l'embed
-        self.add_item(MainSelect(self))
+        self.embed_message = None
+        self.add_item(MainSelect(self.ctx, self))
 
     async def update_embed(self, category):
         """Met à jour l'embed selon la catégorie sélectionnée."""
@@ -721,26 +721,27 @@ class SetupView(View):
         await self.embed_message.edit(embed=embed)
 
 class MainSelect(Select):
-    def __init__(self, view):
+    def __init__(self, ctx, view):
+        self.view_ctx = view
         options = [
             discord.SelectOption(label="Informations Gestion Bot", description="Modifier les rôles et salons", emoji="⚙️", value="info"),
             discord.SelectOption(label="Anti-Raid et Anti-Spam", description="Activer/Désactiver les protections", emoji="🛡️", value="anti")
         ]
         super().__init__(placeholder="Choisissez une catégorie", options=options)
-        self.view = view
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        await self.view.update_embed(self.values[0])
-        self.view.clear_items()
+        await self.view_ctx.update_embed(self.values[0])
+        self.view_ctx.clear_items()
         if self.values[0] == "info":
-            self.view.add_item(InfoSelect(self.view))
+            self.view_ctx.add_item(InfoSelect(self.view_ctx.ctx, self.view_ctx))
         elif self.values[0] == "anti":
-            self.view.add_item(AntiSelect(self.view))
-        await self.view.embed_message.edit(view=self.view)
+            self.view_ctx.add_item(AntiSelect(self.view_ctx.ctx, self.view_ctx))
+        await self.view_ctx.embed_message.edit(view=self.view_ctx)
 
 class InfoSelect(Select):
-    def __init__(self, view):
+    def __init__(self, ctx, view):
+        self.view_ctx = view
         options = [
             discord.SelectOption(label="Owner 👑", value="owner"),
             discord.SelectOption(label="Rôle Admin 🛡️", value="admin_role"),
@@ -749,15 +750,14 @@ class InfoSelect(Select):
             discord.SelectOption(label="Salon des Rapports 📝", value="reports_channel"),
         ]
         super().__init__(placeholder="Sélectionnez un paramètre", options=options)
-        self.view = view
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_message(f"✏️ Mentionnez le nouveau paramètre pour **{self.values[0]}**.", ephemeral=True)
 
         def check(msg):
-            return msg.author == self.view.ctx.author and msg.channel == self.view.ctx.channel
+            return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
 
-        response = await self.view.ctx.bot.wait_for("message", check=check)
+        response = await self.view_ctx.ctx.bot.wait_for("message", check=check)
 
         param = self.values[0]
         new_value = response.content
@@ -770,33 +770,33 @@ class InfoSelect(Select):
             new_value = response.mentions[0].id if response.mentions else None
 
         if new_value:
-            self.view.collection.update_one({"guild_id": str(self.view.ctx.guild.id)}, {"$set": {param: str(new_value)}}, upsert=True)
-            await self.view.ctx.send(f"✅ {param} a été mis à jour !", ephemeral=True)
+            self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {param: str(new_value)}}, upsert=True)
+            await self.view_ctx.ctx.send(f"✅ {param} a été mis à jour !", ephemeral=True)
         else:
-            await self.view.ctx.send("❌ Valeur invalide.", ephemeral=True)
+            await self.view_ctx.ctx.send("❌ Valeur invalide.", ephemeral=True)
 
 class AntiSelect(Select):
-    def __init__(self, view):
+    def __init__(self, ctx, view):
+        self.view_ctx = view
         options = [
             discord.SelectOption(label="Anti-lien 🔗", value="anti_link"),
             discord.SelectOption(label="Anti-Spam 💬", value="anti_spam"),
             discord.SelectOption(label="Anti-Raid 🚫", value="anti_raid"),
         ]
         super().__init__(placeholder="Sélectionnez une protection", options=options)
-        self.view = view
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_message("✏️ Tapez `True` pour activer ou `False` pour désactiver.", ephemeral=True)
 
         def check(msg):
-            return msg.author == self.view.ctx.author and msg.channel == self.view.ctx.channel
+            return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
 
-        response = await self.view.ctx.bot.wait_for("message", check=check)
+        response = await self.view_ctx.ctx.bot.wait_for("message", check=check)
         new_value = response.content.lower() == "true"
 
-        self.view.collection.update_one({"guild_id": str(self.view.ctx.guild.id)}, {"$set": {self.values[0]: new_value}}, upsert=True)
-        await self.view.ctx.send(f"✅ {self.values[0]} a été {'activé' if new_value else 'désactivé'} avec succès !", ephemeral=True)
-        await self.view.update_embed("anti")
+        self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {self.values[0]: new_value}}, upsert=True)
+        await self.view_ctx.ctx.send(f"✅ {self.values[0]} a été {'activé' if new_value else 'désactivé'} avec succès !", ephemeral=True)
+        await self.view_ctx.update_embed("anti")
 
 @bot.command(name="setup")
 async def setup(ctx):

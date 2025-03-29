@@ -832,13 +832,21 @@ async def setup(ctx):
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
+import re
+import asyncio
+import discord
+from discord.ext import commands
+from discord.ui import Button, View
+from datetime import datetime
+import time
+
 # Liste des mots sensibles
 sensitive_words = [
     # Insultes et injures
     "connard", "crétin", "idiot", "imbécile", "salopard", "enfoiré", "méchant", "abruti", "débile", "bouffon",
     "clown", "baltringue", "fils de pute", "gros con", "sale type", "ordure", "merdeux", "guignol", "vaurien",
     "tocard", "branleur", "crasseux", "charognard", "raté", "bâtard", "déchet", "parasite",
-    
+
     # Discrimination et discours haineux
     "raciste", "sexiste", "homophobe", "antisémite", "xénophobe", "transphobe", "islamophobe", "misogyne", 
     "misandre", "discriminatoire", "suprémaciste", "extrémiste", "fasciste", "nazi", "néonazi", "dictateur",
@@ -847,7 +855,7 @@ sensitive_words = [
     "viol", "tuer", "assassin", "attaque", "agression", "meurtre", "génocide", "exécution", "kidnapping",
     "prise d'otage", "armes", "fusillade", "terrorisme", "attentat", "jihad", "bombardement", "suicidaire",
     "décapitation", "immolation", "torture", "lynchage", "massacre", "pillage", "extermination",
-    
+
     # Crimes sexuels et exploitation
     "pédocriminel", "abus", "sexe", "pornographie", "nu", "masturbation", "prostitution", "pédophilie", 
     "inceste", "exhibition", "fétichisme", "harcèlement", "traite humaine", "esclavage sexuel", "viol collectif",
@@ -874,14 +882,6 @@ sensitive_words = [
     "insurrection", "émeute", "rébellion", "coup d'état", "anarchie", "terroriste", "séparatiste"
 ]
 
-import asyncio
-import re
-import discord
-from discord.ext import commands
-from discord.ui import View, Button
-from datetime import datetime
-import time
-
 ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 
 # IDs des utilisateurs qui font le bump
@@ -889,9 +889,6 @@ bump_ids = [302050872383242240, 528557940811104258]
 
 # Dictionnaire pour suivre les rappels
 bump_reminders = {}
-
-# Liste des mots sensibles
-sensitive_words = ["mot_sensible1", "mot_sensible2", "mot_sensible3"]
 
 # Dictionnaire pour suivre les messages d'un utilisateur pour l'anti-spam
 user_messages = {}
@@ -923,10 +920,11 @@ async def on_message(message):
 
     # Détection des mots sensibles
     for word in sensitive_words:
+        # Recherche avec une expression régulière qui tient compte des mots complets et de la casse
         if re.search(rf"\b{re.escape(word)}\b", message.content, re.IGNORECASE):
             print(f"🚨 Mot sensible détecté dans le message de {message.author}: {word}")
             asyncio.create_task(send_alert_to_admin(message, word))
-            break  # On arrête la boucle dès qu'on trouve un mot interdit
+            break  # On arrête la boucle dès qu'un mot interdit est trouvé
 
     # Réponse automatique aux mentions du bot
     if bot.user.mentioned_in(message) and message.content.strip().startswith(f"<@{bot.user.id}>"):
@@ -996,6 +994,7 @@ async def send_alert_to_admin(message, detected_word):
         await admin.send(embed=embed)
     except Exception as e:
         print(f"⚠️ Erreur lors de l'envoi de l'alerte : {e}")
+
 
 
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join

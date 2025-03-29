@@ -700,17 +700,33 @@ class SetupView(View):
 
     async def update_embed(self, category):
         """Met à jour l'embed en fonction de la catégorie sélectionnée."""
-        embed = discord.Embed(color=discord.Color.purple())
+        embed = discord.Embed(color=discord.Color.blurple())
 
-        if category == "gestion":
+        if category == "accueil":
+            embed.title = "⚙️ **Configuration du Serveur**"
+            embed.description = """
+            🔧 **Bienvenue dans le setup !**  
+            Sélectionnez une catégorie pour modifier les paramètres :
+            📌 **Gestion du Bot** - Modifier les rôles et salons.  
+            🛡️ **Anti-Raid et Anti-Spam** - Activer/Désactiver les protections.
+
+            🔽 **Choisissez une option ci-dessous pour commencer !**
+            """
+            self.clear_items()
+            self.add_item(MainSelect(self))
+
+        elif category == "gestion":
             embed.title = "⚙️ **Configuration du Bot**"
-            embed.description = "Modifiez les rôles et salons importants du bot."
+            embed.description = "Modifiez les rôles et salons essentiels du bot."
             embed.add_field(name="👑 Propriétaire", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
             embed.add_field(name="🛡️ Rôle Admin", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
             embed.add_field(name="👥 Rôle Staff", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
             embed.add_field(name="🚨 Salon Sanctions", value=f"<#{self.guild_data.get('sanctions_channel', 'Non défini')}>", inline=False)
             embed.add_field(name="📝 Salon Rapports", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
-            embed.set_footer(text="💡 Sélectionnez un paramètre à modifier dans le menu déroulant.")
+
+            self.clear_items()
+            self.add_item(InfoSelect(self))
+            self.add_item(ReturnButton(self))
 
         elif category == "anti":
             embed.title = "🛡️ **Paramètres de Sécurité**"
@@ -718,9 +734,12 @@ class SetupView(View):
             embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
             embed.add_field(name="💬 Anti-Spam", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
             embed.add_field(name="🚫 Anti-Everyone", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
-            embed.set_footer(text="💡 Sélectionnez une protection à activer/désactiver.")
 
-        await self.embed_message.edit(embed=embed)
+            self.clear_items()
+            self.add_item(AntiSelect(self))
+            self.add_item(ReturnButton(self))
+
+        await self.embed_message.edit(embed=embed, view=self)
 
 class MainSelect(Select):
     def __init__(self, view):
@@ -734,14 +753,15 @@ class MainSelect(Select):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
         await self.view_ctx.update_embed(self.values[0])
-        self.view_ctx.clear_items()
-        
-        if self.values[0] == "gestion":
-            self.view_ctx.add_item(InfoSelect(self.view_ctx))
-        elif self.values[0] == "anti":
-            self.view_ctx.add_item(AntiSelect(self.view_ctx))
 
-        await self.view_ctx.embed_message.edit(view=self.view_ctx)
+class ReturnButton(Button):
+    def __init__(self, view):
+        super().__init__(style=discord.ButtonStyle.danger, label="🔙 Retour", custom_id="return")
+        self.view_ctx = view
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        await self.view_ctx.update_embed("accueil")
 
 class InfoSelect(Select):
     def __init__(self, view):
@@ -810,15 +830,7 @@ async def setup(ctx):
 
     guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
 
-    embed = discord.Embed(title="🔧 Configuration du Serveur", description="""
-    **Bienvenue dans le Setup !**  
-    Ce menu vous permet de modifier les paramètres du bot :
-    
-    📌 **Gestion du Bot** : Modifier les rôles et salons.  
-    🛡️ **Anti-Raid et Anti-Spam** : Activer/Désactiver les protections.
-    
-    🔽 **Choisissez une option ci-dessous pour commencer !**
-    """, color=discord.Color.purple())
+    embed = discord.Embed(title="🔧 Configuration du Serveur", description="**Bienvenue dans le Setup !**\nChoisissez une option ci-dessous.", color=discord.Color.blurple())
 
     view = SetupView(ctx, guild_data, collection)
     view.embed_message = await ctx.send(embed=embed, view=view)

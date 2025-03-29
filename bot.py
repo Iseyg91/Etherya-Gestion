@@ -4959,11 +4959,6 @@ async def snipe(ctx, index: int = 1):
 GUILD_ID = 1034007767050104892  # Remplace par l'ID de ton serveur
 CHANNEL_ID = 1355157891358920836  # Remplace par l'ID du salon où envoyer l'embed
 
-intents = discord.Intents.default()
-intents.messages = True
-intents.guilds = True
-intents.members = True
-
 # Création du formulaire (modal)
 class PresentationForm(discord.ui.Modal, title="Faisons connaissance !"):
     pseudo = discord.ui.TextInput(label="Ton pseudo", placeholder="Ex: Jean_57", required=True)
@@ -4991,17 +4986,22 @@ class PresentationForm(discord.ui.Modal, title="Faisons connaissance !"):
         else:
             await interaction.response.send_message("❌ Erreur : Salon introuvable.", ephemeral=True)
 
-# Commande pour ouvrir le formulaire
-@bot.command()
-async def presentation(ctx):
-    await ctx.send("📝 Remplis le formulaire pour te présenter !", view=discord.ui.View().add_item(discord.ui.Button(label="Remplir", custom_id="open_presentation", style=discord.ButtonStyle.primary)))
+# Commande Slash /presentation
+@bot.tree.command(name="presentation", description="Remplis le formulaire pour te présenter !")
+async def presentation(interaction: discord.Interaction):
+    button = discord.ui.Button(label="Remplir", style=discord.ButtonStyle.primary, custom_id="open_presentation")
+    view = discord.ui.View()
+    view.add_item(button)
 
+    await interaction.response.send_message("📝 Clique sur le bouton ci-dessous pour te présenter !", view=view)
+
+    # Classe pour gérer le bouton et ouvrir le modal
     class OpenPresentation(discord.ui.View):
         @discord.ui.button(label="Remplir", style=discord.ButtonStyle.primary, custom_id="open_presentation")
         async def open_presentation(self, interaction: discord.Interaction, button: discord.ui.Button):
             await interaction.response.send_modal(PresentationForm())
 
-    await ctx.send(view=OpenPresentation())
+    await interaction.response.send_message(view=OpenPresentation())
 
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  

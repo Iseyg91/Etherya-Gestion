@@ -21,7 +21,6 @@ from pymongo import MongoClient
 import psutil
 import platform
 
-
 token = os.environ['ETHERYA']
 intents = discord.Intents.all()
 start_time = time.time()
@@ -1102,12 +1101,12 @@ async def send_economy_info(user: discord.Member):
             title="📌 **Lis ces salons pour optimiser tes gains !**",
             description=(
                 "Bienvenue dans l'économie du serveur ! Pour en tirer le meilleur profit, assure-toi de lire ces salons :\n\n"
-                "💰 **Comment accéder à l'economie ?**\n➜ <#1344418391544303627>\n\n"
-                "📖 **Informations générales**\n➜ <#1340402373708746802>\n\n"
-                "💰 **Comment gagner des Coins ?**\n➜ <#1340402729272737926>\n\n"
-                "🏦 **Banque de l'Éco 1**\n➜ <#1340403431923519489>\n\n"
-                "🏦 **Banque de l'Éco 2**\n➜ <#1344309260825133100>\n\n"
-                "🎟️ **Ticket Finances** *(Pose tes questions ici !)*\n➜ <#1340443101386379486>\n\n"
+                "💰 **Comment accéder à l'economie ?**\n➜ <#1355190022047011117>\n\n"
+                "📖 **Informations générales**\n➜ <#1355158018517500086>\n\n"
+                "💰 **Comment gagner des Coins ?**\n➜ <#1355157853299675247>\n\n"
+                "🏦 **Banque de l'Éco 1**\n➜ <#1355158001606066267>\n\n"
+                "🏦 **Banque de l'Éco 2**\n➜ <#1355191522252951573>\n\n"
+                "🎟️ **Ticket Finances** *(Pose tes questions ici !)*\n➜ <#1355157942005006558>\n\n"
                 "📈 **Astuce :** Plus tu en sais, plus tu gagnes ! Alors prends quelques minutes pour lire ces infos. 🚀"
             ),
             color=discord.Color.gold()
@@ -1134,9 +1133,9 @@ async def on_member_join(member):
             description=(
                 "*<a:fire:1343873843730579478> Ici, l’économie règne en maître, les alliances se forment, les trahisons éclatent... et ta richesse ne tient qu’à un fil ! <a:fire:1343873843730579478>*\n\n"
                 "<:better_scroll:1342376863909285930> **Avant de commencer, prends le temps de lire :**\n\n"
-                "- <a:fleche3:1290077283100397672> **<#1245380752137388104>** pour éviter les problèmes dès le départ.\n"
-                "- <a:fleche3:1290077283100397672> **<#1340402373708746802>** pour comprendre les bases de l’économie.\n"
-                "- <a:fleche3:1290077283100397672> **<#1340402531712368752>** pour savoir ce que tu peux obtenir.\n\n"
+                "- <a:fleche3:1290077283100397672> **<#1355157955804139560>** pour éviter les problèmes dès le départ.\n"
+                "- <a:fleche3:1290077283100397672> **<#1355158018517500086>** pour comprendre les bases de l’économie.\n"
+                "- <a:fleche3:1290077283100397672> **<#1355157967510438080>** pour savoir ce que tu peux obtenir.\n\n"
                 "💡 *Un doute ? Une question ? Ouvre un ticket et le staff t’aidera !*\n\n"
                 "**Prépare-toi à bâtir ton empire... ou à tout perdre. Bonne chance ! 🍀**"
             ),

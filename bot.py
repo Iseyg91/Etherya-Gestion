@@ -715,7 +715,7 @@ async def setup(ctx):
         embed = discord.Embed(
             title="Configuration du Serveur 🌐",
             description="Voici les informations actuelles de votre serveur. Vous pouvez modifier les paramètres ci-dessous.",
-            color=discord.Color.blue()
+            color=discord.Color.green()  # Utilisation d'une couleur plus vive
         )
 
         embed.add_field(name="Rôle Admin 🛡️", value=f"{admin_role.mention if admin_role else 'Non défini'}", inline=False)
@@ -787,29 +787,37 @@ async def setup(ctx):
 
             try:
                 spam_limit = int(response.content)
+                await interaction.response.send_message(f"Veuillez entrer le nombre de minutes dans lesquelles cette limite s'applique.", ephemeral=True)
+                response = await bot.wait_for("message", check=check)
+
+                spam_time = int(response.content)
                 collection.update_one(
                     {"guild_id": str(ctx.guild.id)},
-                    {"$set": {"anti_spam_limit": spam_limit}},
+                    {"$set": {"anti_spam_limit": spam_limit, "anti_spam_time": spam_time}},
                     upsert=True
                 )
-                await ctx.send(f"✅ La limite de spam a été définie à {spam_limit} messages par minute.", ephemeral=True)
+                await ctx.send(f"✅ La limite de spam a été définie à {spam_limit} messages par {spam_time} minute(s).", ephemeral=True)
             except ValueError:
                 await ctx.send("❌ Erreur : Veuillez entrer un nombre valide.", ephemeral=True)
 
         elif selected_option == "anti_massban":
-            await interaction.response.send_message("Veuillez entrer **True** pour activer l'anti-massban ou **False** pour le désactiver.", ephemeral=True)
+            await interaction.response.send_message("Veuillez entrer le nombre d'utilisateurs pouvant être bannis simultanément.", ephemeral=True)
             response = await bot.wait_for("message", check=check)
 
-            if response.content.lower() in ["true", "false"]:
-                is_active = response.content.lower() == "true"
+            try:
+                massban_limit = int(response.content)
+                await interaction.response.send_message("Veuillez entrer le nombre de minutes dans lesquelles cela s'applique.", ephemeral=True)
+                response = await bot.wait_for("message", check=check)
+
+                massban_time = int(response.content)
                 collection.update_one(
                     {"guild_id": str(ctx.guild.id)},
-                    {"$set": {"anti_massban": is_active}},
+                    {"$set": {"anti_massban_limit": massban_limit, "anti_massban_time": massban_time}},
                     upsert=True
                 )
-                await ctx.send(f"✅ L'anti-massban a été {'activé' if is_active else 'désactivé'}.", ephemeral=True)
-            else:
-                await ctx.send("❌ Erreur : Veuillez entrer **True** ou **False**.", ephemeral=True)
+                await ctx.send(f"✅ L'anti-massban a été configuré avec une limite de {massban_limit} bans dans {massban_time} minutes.", ephemeral=True)
+            except ValueError:
+                await ctx.send("❌ Erreur : Veuillez entrer un nombre valide.", ephemeral=True)
 
         elif selected_option == "anti_everyone":
             await interaction.response.send_message("Veuillez entrer **True** pour activer l'anti-everyone ou **False** pour le désactiver.", ephemeral=True)
@@ -830,14 +838,6 @@ async def setup(ctx):
         await ctx.send(f"❌ Une erreur s'est produite pendant la configuration : {str(e)}", ephemeral=True)
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
-
-import re
-import asyncio
-import discord
-from discord.ext import commands
-from discord.ui import Button, View
-from datetime import datetime
-import time
 
 # Liste des mots sensibles
 sensitive_words = [

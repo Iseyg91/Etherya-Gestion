@@ -760,6 +760,7 @@ class MainSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
+        print(f"Interaction received: {interaction}")  # ✅ Ajouté pour afficher l'interaction
         await interaction.response.defer(thinking=True)
         
         try:
@@ -769,6 +770,7 @@ class MainSelect(Select):
             print(f"Erreur dans MainSelect: {e}")
             traceback.print_exc()
             await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
+
 
 class ReturnButton(Button):
     def __init__(self, view):
@@ -870,6 +872,7 @@ class AntiSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
+        print(f"Interaction received: {interaction}")  # ✅ Ajouté pour afficher l'interaction
         await interaction.response.defer(thinking=True)
 
         try:
@@ -893,7 +896,6 @@ class AntiSelect(Select):
             print(f"Erreur dans AntiSelect: {e}")
             traceback.print_exc()
             await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
-
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel

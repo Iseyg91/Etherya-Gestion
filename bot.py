@@ -937,26 +937,24 @@ class AntiSelect(Select):
 
 async def notify_guild_owner(self, interaction, param, new_value):
     guild_owner = interaction.guild.owner  # Récupère l'owner du serveur
-    if guild_owner:
-embed = discord.Embed(
-    title="🔔 **Mise à jour de la configuration**",
-    description=f"⚙️ **Une modification a été effectuée sur votre serveur `{interaction.guild.name}`.**",
-    color=discord.Color.orange(),
-    timestamp=discord.utils.utcnow()
-)
-embed.add_field(name="👤 **Modifié par**", value=interaction.user.mention, inline=True)
-embed.add_field(name="🔧 **Paramètre modifié**", value=f"`{param}`", inline=True)
-embed.add_field(name="🆕 **Nouvelle valeur**", value=f"{new_value}", inline=False)
-embed.set_thumbnail(url=interaction.guild.icon.url if interaction.guild.icon else None)
-embed.set_footer(text="Pensez à vérifier la configuration si nécessaire.")
+    if guild_owner:  # Indentation correcte ici
+        embed = discord.Embed(
+            title="🔔 **Mise à jour de la configuration**",
+            description=f"⚙️ **Une modification a été effectuée sur votre serveur `{interaction.guild.name}`.**",
+            color=discord.Color.orange(),
+            timestamp=discord.utils.utcnow()
+        )
+        embed.add_field(name="👤 **Modifié par**", value=interaction.user.mention, inline=True)
+        embed.add_field(name="🔧 **Paramètre modifié**", value=f"`{param}`", inline=True)
+        embed.add_field(name="🆕 **Nouvelle valeur**", value=f"{new_value}", inline=False)
+        embed.set_thumbnail(url=interaction.guild.icon.url if interaction.guild.icon else None)
+        embed.set_footer(text="Pensez à vérifier la configuration si nécessaire.")
 
-try:
-    await guild_owner.send(embed=embed)
-except discord.Forbidden:
-    print(f"⚠️ Impossible d'envoyer un MP au propriétaire du serveur {interaction.guild.name}.")
+        try:
+            await guild_owner.send(embed=embed)
+        except discord.Forbidden:
+            print(f"⚠️ Impossible d'envoyer un MP au propriétaire du serveur {interaction.guild.name}.")
 
-
-        
 @bot.command(name="setup")
 async def setup(ctx):
     if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:

@@ -777,7 +777,10 @@ class InfoSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f"✏️ **Mentionnez la nouvelle valeur pour `{self.values[0]}`**\n*(Mentionnez un rôle ou un salon si nécessaire !)*", ephemeral=True)
+        await interaction.response.send_message(
+            f"✏️ **Mentionnez la nouvelle valeur pour `{self.values[0]}`**\n"
+            f"*(Mentionnez un rôle ou un salon si nécessaire !)*", ephemeral=True
+        )
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
@@ -799,9 +802,18 @@ class InfoSelect(Select):
             new_value = response.mentions[0].id if response.mentions else None
 
         if new_value:
-            self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {param: str(new_value)}}, upsert=True)
+            self.view_ctx.collection.update_one(
+                {"guild_id": str(self.view_ctx.ctx.guild.id)},
+                {"$set": {param: str(new_value)}},
+                upsert=True
+            )
             self.view_ctx.guild_data[param] = str(new_value)
+
+            # ✅ Envoie un MP au propriétaire du serveur
+            await self.view_ctx.notify_guild_owner(interaction, param, new_value)
+
             await self.view_ctx.update_embed("gestion")
+            await interaction.followup.send(f"✅ **{param} mis à jour avec succès !**", ephemeral=True)
         else:
             await interaction.followup.send("❌ **Valeur invalide.** Veuillez réessayer.", ephemeral=True)
 
@@ -828,11 +840,11 @@ class AntiSelect(Select):
             response = await self.view_ctx.ctx.bot.wait_for("message", check=check, timeout=60)
             await response.delete()
         except asyncio.TimeoutError:
-            await self.view_ctx.ctx.send("⏳ Temps écoulé. Aucune modification effectuée.", ephemeral=True)
+            await interaction.followup.send("⏳ Temps écoulé. Aucune modification effectuée.", ephemeral=True)
             return
 
         if response.content.lower() == "cancel":
-            await self.view_ctx.ctx.send("🚫 **Modification annulée.**", ephemeral=True)
+            await interaction.followup.send("🚫 **Modification annulée.**", ephemeral=True)
             await self.view_ctx.update_embed("anti")
             return
 
@@ -844,8 +856,29 @@ class AntiSelect(Select):
             upsert=True
         )
 
-        await self.view_ctx.ctx.send(f"✅ **{self.values[0]} {'activé' if new_value else 'désactivé'} avec succès !**", ephemeral=True)
+        # ✅ Envoie un MP au propriétaire du serveur
+        await self.view_ctx.notify_guild_owner(interaction, self.values[0], new_value)
+
+        await interaction.followup.send(f"✅ **{self.values[0]} {'activé' if new_value else 'désactivé'} avec succès !**", ephemeral=True)
         await self.view_ctx.update_embed("anti")
+
+async def notify_guild_owner(self, interaction, param, new_value):
+    guild_owner = interaction.guild.owner  # Récupère l'owner du serveur
+    if guild_owner:
+        embed = discord.Embed(
+            title="🔔 **Modification de la configuration**",
+            description="⚙️ **Un paramètre du serveur a été modifié !**",
+            color=discord.Color.gold()
+        )
+        embed.add_field(name="👤 Modifié par :", value=interaction.user.mention, inline=True)
+        embed.add_field(name="🔧 Paramètre :", value=f"`{param}`", inline=True)
+        embed.add_field(name="🆕 Nouvelle valeur :", value=f"{new_value}", inline=False)
+        embed.set_footer(text=f"Serveur : {interaction.guild.name}")
+
+        try:
+            await guild_owner.send(embed=embed)
+        except discord.Forbidden:
+            print(f"⚠️ Impossible d'envoyer un MP au propriétaire du serveur {interaction.guild.name}.")
 
         
 @bot.command(name="setup")

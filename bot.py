@@ -699,14 +699,14 @@ class SetupView(View):
         self.add_item(MainSelect(self))
 
     async def update_embed(self, category):
-        """Met à jour l'embed en fonction de la catégorie sélectionnée et garde le message actif."""
+        """Met à jour l'embed et rafraîchit dynamiquement le message."""
         embed = discord.Embed(color=discord.Color.blurple())
 
         if category == "accueil":
             embed.title = "⚙️ **Configuration du Serveur**"
             embed.description = """
-            🔧 **Bienvenue dans le setup !**  
-            Configurez facilement votre serveur avec les options ci-dessous.  
+            🎉 **Bienvenue dans le menu de configuration !**  
+            Personnalisez votre serveur **facilement** grâce aux options ci-dessous.  
 
             📌 **Gestion du Bot** - 🎛️ Modifier les rôles et salons.  
             🛡️ **Sécurité & Anti-Raid** - 🚫 Activer/Désactiver les protections.  
@@ -718,28 +718,26 @@ class SetupView(View):
 
         elif category == "gestion":
             embed.title = "⚙️ **Gestion du Bot**"
-            embed.description = "🔍 **Paramètres actuels :**\nPersonnalisez les rôles et salons pour un fonctionnement optimal."
-            embed.add_field(name="👑 Propriétaire", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
-            embed.add_field(name="🛡️ Rôle Admin", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
-            embed.add_field(name="👥 Rôle Staff", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
-            embed.add_field(name="🚨 Salon Sanctions", value=f"<#{self.guild_data.get('sanctions_channel', 'Non défini')}>", inline=False)
-            embed.add_field(name="📝 Salon Alerte", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
+            embed.description = "🛠️ **Paramètres actuels du serveur**\n📝 **Modifiez un paramètre en le sélectionnant dans le menu ci-dessous !**"
+            embed.add_field(name="👑 Propriétaire :", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
+            embed.add_field(name="🛡️ Rôle Admin :", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
+            embed.add_field(name="👥 Rôle Staff :", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
+            embed.add_field(name="🚨 Salon Sanctions :", value=f"<#{self.guild_data.get('sanctions_channel', 'Non défini')}>", inline=False)
+            embed.add_field(name="📝 Salon Alerte :", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
 
             self.clear_items()
             self.add_item(InfoSelect(self))
-            self.add_item(CancelButton(self))
             self.add_item(ReturnButton(self))
 
         elif category == "anti":
             embed.title = "🛡️ **Sécurité & Anti-Raid**"
-            embed.description = "⚠️ Activez ou désactivez les protections contre les abus et le spam."
-            embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
-            embed.add_field(name="💬 Anti-Spam", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
-            embed.add_field(name="🚫 Anti-Everyone", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
+            embed.description = "⚠️ **Gérez les protections du serveur contre les abus et le spam.**\n🔽 **Sélectionnez une protection à activer/désactiver !**"
+            embed.add_field(name="🔗 Anti-lien :", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
+            embed.add_field(name="💬 Anti-Spam :", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
+            embed.add_field(name="🚫 Anti-Everyone :", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
 
             self.clear_items()
             self.add_item(AntiSelect(self))
-            self.add_item(CancelButton(self))
             self.add_item(ReturnButton(self))
 
         await self.embed_message.edit(embed=embed, view=self)
@@ -766,15 +764,6 @@ class ReturnButton(Button):
         await interaction.response.defer()
         await self.view_ctx.update_embed("accueil")
 
-class CancelButton(Button):
-    def __init__(self, view):
-        super().__init__(style=discord.ButtonStyle.secondary, label="❌ Annuler", custom_id="cancel")
-        self.view_ctx = view
-
-    async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message("🚫 **Action annulée.**", ephemeral=True)
-        await self.view_ctx.update_embed("accueil")
-
 class InfoSelect(Select):
     def __init__(self, view):
         options = [
@@ -784,11 +773,11 @@ class InfoSelect(Select):
             discord.SelectOption(label="🚨 Salon Sanctions", value="sanctions_channel"),
             discord.SelectOption(label="📝 Salon Rapports", value="reports_channel"),
         ]
-        super().__init__(placeholder="🎛️ Sélectionnez un paramètre", options=options)
+        super().__init__(placeholder="🎛️ Sélectionnez un paramètre à modifier", options=options)
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f"✏️ **Mentionnez la nouvelle valeur pour {self.values[0]}**.", ephemeral=True)
+        await interaction.response.send_message(f"✏️ **Mentionnez la nouvelle valeur pour `{self.values[0]}`**\n*(Mentionnez un rôle ou un salon si nécessaire !)*", ephemeral=True)
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
@@ -797,8 +786,7 @@ class InfoSelect(Select):
             response = await self.view_ctx.ctx.bot.wait_for("message", check=check, timeout=60)
             await response.delete()
         except asyncio.TimeoutError:
-            await self.view_ctx.ctx.send("⏳ Temps écoulé. Aucune modification effectuée.", ephemeral=True)
-            return
+            return await interaction.followup.send("⏳ Temps écoulé. Aucune modification effectuée.", ephemeral=True)
 
         param = self.values[0]
         new_value = response.content
@@ -812,10 +800,10 @@ class InfoSelect(Select):
 
         if new_value:
             self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {param: str(new_value)}}, upsert=True)
-            await self.view_ctx.ctx.send(f"✅ **{param} mis à jour avec succès !**", ephemeral=True)
+            self.view_ctx.guild_data[param] = str(new_value)
             await self.view_ctx.update_embed("gestion")
         else:
-            await self.view_ctx.ctx.send("❌ **Valeur invalide.** Veuillez réessayer.", ephemeral=True)
+            await interaction.followup.send("❌ **Valeur invalide.** Veuillez réessayer.", ephemeral=True)
 
 class AntiSelect(Select):
     def __init__(self, view):
@@ -824,14 +812,11 @@ class AntiSelect(Select):
             discord.SelectOption(label="💬 Anti-Spam", value="anti_spam"),
             discord.SelectOption(label="🚫 Anti-Everyone", value="anti_everyone"),
         ]
-        super().__init__(placeholder="🛑 Sélectionnez une protection", options=options)
+        super().__init__(placeholder="🛑 Sélectionnez une protection à modifier", options=options)
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(
-            "✏️ **Tapez `True` pour activer, `False` pour désactiver ou `Cancel` pour annuler.**",
-            ephemeral=True
-        )
+        await interaction.response.send_message("✏️ Tapez **`True`** pour activer, **`False`** pour désactiver.", ephemeral=True)
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
@@ -840,23 +825,11 @@ class AntiSelect(Select):
             response = await self.view_ctx.ctx.bot.wait_for("message", check=check, timeout=60)
             await response.delete()
         except asyncio.TimeoutError:
-            await self.view_ctx.ctx.send("⏳ Temps écoulé. Aucune modification effectuée.", ephemeral=True)
-            return
-
-        if response.content.lower() == "cancel":
-            await self.view_ctx.ctx.send("🚫 **Modification annulée.**", ephemeral=True)
-            await self.view_ctx.update_embed("anti")
-            return
+            return await interaction.followup.send("⏳ Temps écoulé.", ephemeral=True)
 
         new_value = response.content.lower() == "true"
-
-        self.view_ctx.collection.update_one(
-            {"guild_id": str(self.view_ctx.ctx.guild.id)},
-            {"$set": {self.values[0]: new_value}},
-            upsert=True
-        )
-
-        await self.view_ctx.ctx.send(f"✅ **{self.values[0]} {'activé' if new_value else 'désactivé'} avec succès !**", ephemeral=True)
+        self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {self.values[0]: new_value}}, upsert=True)
+        self.view_ctx.guild_data[self.values[0]] = new_value
         await self.view_ctx.update_embed("anti")
         
 @bot.command(name="setup")

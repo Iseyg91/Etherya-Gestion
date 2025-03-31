@@ -760,17 +760,13 @@ class MainSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        print(f"Interaction received: {interaction}")  # ✅ Ajouté pour afficher l'interaction
-        await interaction.response.defer(thinking=True)
-        
         try:
-            print(f"MainSelect callback started. Values: {self.values}")  # Log des valeurs envoyées
-            await self.view_ctx.update_embed(self.values[0])
+            print(f"Interaction received: {interaction}")  # Ajouté pour vérifier l'interaction
+            await interaction.response.send_message("✅ Interaction reçue!", ephemeral=True)
         except Exception as e:
             print(f"Erreur dans MainSelect: {e}")
             traceback.print_exc()
             await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
-
 
 class ReturnButton(Button):
     def __init__(self, view):

@@ -754,7 +754,7 @@ async def update_embed(self, category):
         self.add_item(AntiSelect(self))
         self.add_item(ReturnButton(self))
 
-    # Vérifier que embed_message est valide
+    # Vérifier que embed_message est valide avant de tenter de modifier
     if self.embed_message:
         print(f"Modification de l'embed: {embed.title}")  # Afficher le titre de l'embed pour confirmation
         await self.embed_message.edit(embed=embed, view=self)
@@ -780,7 +780,13 @@ class MainSelect(Select):
     async def callback(self, interaction: discord.Interaction):
         print("Interaction reçue.")  # Debug: Vérifie si l'interaction est reçue
         await interaction.response.defer()  # Avertir Discord que la réponse est en cours
-        await self.view_ctx.update_embed(self.values[0])  # Mettre à jour l'embed selon le choix de l'utilisateur
+
+        # Vérification de view_ctx avant d'appeler la mise à jour
+        if hasattr(self.view_ctx, 'update_embed'):
+            await self.view_ctx.update_embed(self.values[0])  # Mettre à jour l'embed selon le choix de l'utilisateur
+            print(f"Embed mis à jour avec la catégorie: {self.values[0]}")
+        else:
+            print("Erreur: view_ctx n'a pas la méthode update_embed.")
 
 class ReturnButton(Button):
     def __init__(self, view):

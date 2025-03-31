@@ -987,8 +987,14 @@ async def notify_guild_owner(self, interaction, param, new_value):
 
         try:
             await guild_owner.send(embed=embed)
+            print(f"Message privé envoyé au propriétaire {guild_owner.name}.")  # Log pour confirmer l'envoi
         except discord.Forbidden:
-            print(f"⚠️ Impossible d'envoyer un MP au propriétaire du serveur {interaction.guild.name}.")
+            print(f"⚠️ Impossible d'envoyer un MP au propriétaire du serveur {interaction.guild.name}.")  # Log en cas d'erreur
+            # Optionnel: informer l'utilisateur via l'interface que l'envoi a échoué
+            await interaction.followup.send(
+                "⚠️ **Impossible d'envoyer un message privé au propriétaire du serveur.**",
+                ephemeral=True
+            )
 
 @bot.command(name="setup")
 async def setup(ctx):

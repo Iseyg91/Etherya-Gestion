@@ -992,7 +992,9 @@ async def notify_guild_owner(self, interaction, param, new_value):
 
 @bot.command(name="setup")
 async def setup(ctx):
+    print("Commande 'setup' appelée.")  # Log de débogage
     if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:
+        print("Utilisateur non autorisé.")
         await ctx.send("❌ Vous n'avez pas les permissions nécessaires.", ephemeral=True)
         return
 
@@ -1012,8 +1014,11 @@ async def setup(ctx):
         color=discord.Color.blurple()
     )
 
+    print("Embed créé, envoi en cours...")
     view = SetupView(ctx, guild_data, collection)
-    view.embed_message = await ctx.send(embed=embed, view=view)  # ✅ Correction ici pour éviter un NoneType
+    view.embed_message = await ctx.send(embed=embed, view=view)  # Vérification que l'embed est envoyé
+    print("Message d'embed envoyé.")
+
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 

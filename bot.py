@@ -706,25 +706,24 @@ class SetupView(View):
             embed.title = "⚙️ **Configuration du Serveur**"
             embed.description = """
             🔧 **Bienvenue dans le setup !**  
-            Configurez les paramètres de votre serveur facilement.  
-            **Sélectionnez une catégorie ci-dessous pour commencer :**  
-            
-            📌 **Gestion du Bot** - Modifier les rôles et salons.  
-            🛡️ **Anti-Raid et Anti-Spam** - Activer/Désactiver les protections.  
+            Configurez facilement votre serveur avec les options ci-dessous.  
 
-            🔽 **Choisissez une option pour continuer !**
+            📌 **Gestion du Bot** - 🎛️ Modifier les rôles et salons.  
+            🛡️ **Sécurité & Anti-Raid** - 🚫 Activer/Désactiver les protections.  
+
+            🔽 **Sélectionnez une catégorie pour commencer !**
             """
             self.clear_items()
             self.add_item(MainSelect(self))
 
         elif category == "gestion":
-            embed.title = "⚙️ **Configuration du Bot**"
-            embed.description = "Modifiez les rôles et salons essentiels pour le bon fonctionnement du bot."
+            embed.title = "⚙️ **Gestion du Bot**"
+            embed.description = "🔍 **Paramètres actuels :**\nPersonnalisez les rôles et salons pour un fonctionnement optimal."
             embed.add_field(name="👑 Propriétaire", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
             embed.add_field(name="🛡️ Rôle Admin", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
             embed.add_field(name="👥 Rôle Staff", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
             embed.add_field(name="🚨 Salon Sanctions", value=f"<#{self.guild_data.get('sanctions_channel', 'Non défini')}>", inline=False)
-            embed.add_field(name="📝 Salon Rapports", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
+            embed.add_field(name="📝 Salon Alerte", value=f"<#{self.guild_data.get('reports_channel', 'Non défini')}>", inline=False)
 
             self.clear_items()
             self.add_item(InfoSelect(self))
@@ -732,8 +731,8 @@ class SetupView(View):
             self.add_item(ReturnButton(self))
 
         elif category == "anti":
-            embed.title = "🛡️ **Paramètres de Sécurité**"
-            embed.description = "Activez/Désactivez les protections contre les abus."
+            embed.title = "🛡️ **Sécurité & Anti-Raid**"
+            embed.description = "⚠️ Activez ou désactivez les protections contre les abus et le spam."
             embed.add_field(name="🔗 Anti-lien", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
             embed.add_field(name="💬 Anti-Spam", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
             embed.add_field(name="🚫 Anti-Everyone", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
@@ -748,8 +747,8 @@ class SetupView(View):
 class MainSelect(Select):
     def __init__(self, view):
         options = [
-            discord.SelectOption(label="Gestion du Bot", description="Modifier les rôles et salons", emoji="⚙️", value="gestion"),
-            discord.SelectOption(label="Anti-Raid et Anti-Spam", description="Configurer les protections", emoji="🛡️", value="anti")
+            discord.SelectOption(label="⚙️ Gestion du Bot", description="Modifier les rôles et salons", value="gestion"),
+            discord.SelectOption(label="🛡️ Sécurité & Anti-Raid", description="Configurer les protections", value="anti")
         ]
         super().__init__(placeholder="📌 Sélectionnez une catégorie", options=options)
         self.view_ctx = view
@@ -773,7 +772,7 @@ class CancelButton(Button):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message("🚫 **Modification annulée.**", ephemeral=True)
+        await interaction.response.send_message("🚫 **Action annulée.**", ephemeral=True)
         await self.view_ctx.update_embed("accueil")
 
 class InfoSelect(Select):
@@ -785,11 +784,11 @@ class InfoSelect(Select):
             discord.SelectOption(label="🚨 Salon Sanctions", value="sanctions_channel"),
             discord.SelectOption(label="📝 Salon Rapports", value="reports_channel"),
         ]
-        super().__init__(placeholder="🎛️ Sélectionnez un paramètre à modifier", options=options)
+        super().__init__(placeholder="🎛️ Sélectionnez un paramètre", options=options)
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f"✏️ **Mentionnez le nouveau paramètre pour {self.values[0]}**.", ephemeral=True)
+        await interaction.response.send_message(f"✏️ **Mentionnez la nouvelle valeur pour {self.values[0]}**.", ephemeral=True)
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
@@ -868,7 +867,19 @@ async def setup(ctx):
 
     guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
 
-    embed = discord.Embed(title="🔧 Configuration du Serveur", description="**Bienvenue dans le Setup !**\nChoisissez une option ci-dessous.", color=discord.Color.blurple())
+    embed = discord.Embed(
+        title="⚙️ **Configuration du Serveur**",
+        description="""
+        🔧 **Bienvenue dans le setup !**  
+        Configurez votre serveur facilement en quelques clics !  
+
+        📌 **Gestion du Bot** - 🎛️ Modifier les rôles et salons.  
+        🛡️ **Sécurité & Anti-Raid** - 🚫 Activer/Désactiver les protections.  
+
+        🔽 **Sélectionnez une option pour commencer !**
+        """,
+        color=discord.Color.blurple()
+    )
 
     view = SetupView(ctx, guild_data, collection)
     view.embed_message = await ctx.send(embed=embed, view=view)

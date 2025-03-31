@@ -812,11 +812,14 @@ class AntiSelect(Select):
             discord.SelectOption(label="💬 Anti-Spam", value="anti_spam"),
             discord.SelectOption(label="🚫 Anti-Everyone", value="anti_everyone"),
         ]
-        super().__init__(placeholder="🛑 Sélectionnez une protection à modifier", options=options)
+        super().__init__(placeholder="🛑 Sélectionnez une protection", options=options)
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message("✏️ Tapez **`True`** pour activer, **`False`** pour désactiver.", ephemeral=True)
+        await interaction.response.send_message(
+            "✏️ **Tapez True pour activer, False pour désactiver ou Cancel pour annuler.**",
+            ephemeral=True
+        )
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
@@ -825,12 +828,25 @@ class AntiSelect(Select):
             response = await self.view_ctx.ctx.bot.wait_for("message", check=check, timeout=60)
             await response.delete()
         except asyncio.TimeoutError:
-            return await interaction.followup.send("⏳ Temps écoulé.", ephemeral=True)
+            await self.view_ctx.ctx.send("⏳ Temps écoulé. Aucune modification effectuée.", ephemeral=True)
+            return
+
+        if response.content.lower() == "cancel":
+            await self.view_ctx.ctx.send("🚫 **Modification annulée.**", ephemeral=True)
+            await self.view_ctx.update_embed("anti")
+            return
 
         new_value = response.content.lower() == "true"
-        self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {self.values[0]: new_value}}, upsert=True)
-        self.view_ctx.guild_data[self.values[0]] = new_value
+
+        self.view_ctx.collection.update_one(
+            {"guild_id": str(self.view_ctx.ctx.guild.id)},
+            {"$set": {self.values[0]: new_value}},
+            upsert=True
+        )
+
+        await self.view_ctx.ctx.send(f"✅ **{self.values[0]} {'activé' if new_value else 'désactivé'} avec succès !**", ephemeral=True)
         await self.view_ctx.update_embed("anti")
+
         
 @bot.command(name="setup")
 async def setup(ctx):

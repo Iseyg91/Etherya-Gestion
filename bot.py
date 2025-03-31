@@ -859,6 +859,19 @@ class AntiSelect(Select):
 
         await self.view_ctx.ctx.send(f"✅ **{self.values[0]} {'activé' if new_value else 'désactivé'} avec succès !**", ephemeral=True)
         await self.view_ctx.update_embed("anti")
+        
+@bot.command(name="setup")
+async def setup(ctx):
+    if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:
+        await ctx.send("❌ Vous n'avez pas les permissions nécessaires.", ephemeral=True)
+        return
+
+    guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
+
+    embed = discord.Embed(title="🔧 Configuration du Serveur", description="**Bienvenue dans le Setup !**\nChoisissez une option ci-dessous.", color=discord.Color.blurple())
+
+    view = SetupView(ctx, guild_data, collection)
+    view.embed_message = await ctx.send(embed=embed, view=view)
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

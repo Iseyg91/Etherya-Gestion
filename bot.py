@@ -763,10 +763,11 @@ class MainSelect(Select):
         await interaction.response.defer(thinking=True)
         
         try:
+            print(f"MainSelect callback started. Values: {self.values}")  # Log des valeurs envoyées
             await self.view_ctx.update_embed(self.values[0])
         except Exception as e:
-            print(f"Erreur dans MainSelect: {e}")  
-            traceback.print_exc()  # ✅ Affiche l'erreur complète dans la console
+            print(f"Erreur dans MainSelect: {e}")
+            traceback.print_exc()
             await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
 
 class ReturnButton(Button):
@@ -858,7 +859,6 @@ class InfoSelect(Select):
             )
             await interaction.followup.send(embed=embed_error, ephemeral=True)
 
-
 class AntiSelect(Select):
     def __init__(self, view):
         options = [
@@ -873,6 +873,7 @@ class AntiSelect(Select):
         await interaction.response.defer(thinking=True)
 
         try:
+            print(f"AntiSelect callback started. Values: {self.values}")  # Log des valeurs envoyées
             param = self.values[0]
 
             embed_request = discord.Embed(
@@ -888,11 +889,11 @@ class AntiSelect(Select):
             embed_request.set_footer(text="Répondez dans les 60 secondes.")
 
             await interaction.followup.send(embed=embed_request, ephemeral=True)
-
         except Exception as e:
             print(f"Erreur dans AntiSelect: {e}")
-            traceback.print_exc()  # ✅ Ajouté pour afficher l'erreur complète
+            traceback.print_exc()
             await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
+
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
@@ -949,7 +950,6 @@ class AntiSelect(Select):
 
         await interaction.followup.send(embed=embed_success, ephemeral=True)
         await self.view_ctx.update_embed("anti")
-
 
 async def notify_guild_owner(self, interaction, param, new_value):
     guild_owner = interaction.guild.owner  # Récupère l'owner du serveur

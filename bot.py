@@ -714,8 +714,7 @@ async def update_embed(self, category):
 
         🔽 **Sélectionnez une catégorie pour commencer !**
         """
-        self.clear_items()
-        self.add_item(MainSelect(self))
+        self.add_item(MainSelect(self))  # ✅ Suppression de clear_items() avant
 
     elif category == "gestion":
         embed.title = "⚙️ **Gestion du Bot**"
@@ -725,7 +724,6 @@ async def update_embed(self, category):
         embed.add_field(name="🚨 Salon Sanctions :", value=format_mention(self.guild_data.get('sanctions_channel', 'Non défini'), "channel"), inline=False)
         embed.add_field(name="📝 Salon Alerte :", value=format_mention(self.guild_data.get('reports_channel', 'Non défini'), "channel"), inline=False)
 
-        self.clear_items()
         self.add_item(InfoSelect(self))
         self.add_item(ReturnButton(self))
 
@@ -736,11 +734,14 @@ async def update_embed(self, category):
         embed.add_field(name="💬 Anti-Spam :", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
         embed.add_field(name="🚫 Anti-Everyone :", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
 
-        self.clear_items()
         self.add_item(AntiSelect(self))
         self.add_item(ReturnButton(self))
 
-    await self.embed_message.edit(embed=embed, view=self)
+    # ✅ Vérification que embed_message n'est pas None avant d'éditer
+    if self.embed_message is None:
+        self.embed_message = await self.ctx.send(embed=embed, view=self)
+    else:
+        await self.embed_message.edit(embed=embed, view=self)
 
 # Déplacer la fonction format_mention en dehors de update_embed
 def format_mention(id, type_mention):
@@ -758,8 +759,13 @@ class MainSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        await self.view_ctx.update_embed(self.values[0])
+        await interaction.response.defer(thinking=True)  # ✅ Ajout de thinking=True pour éviter l'erreur
+        
+        try:
+            await self.view_ctx.update_embed(self.values[0])
+        except Exception as e:
+            print(f"Erreur dans MainSelect: {e}")  # ✅ Affichage de l'erreur pour debug
+            await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
 
 class ReturnButton(Button):
     def __init__(self, view):
@@ -862,21 +868,28 @@ class AntiSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        param = self.values[0]
+        await interaction.response.defer(thinking=True)  # ✅ Ajout de thinking=True
 
-        embed_request = discord.Embed(
-            title="⚙️ **Modification d'une protection**",
-            description=f"🛑 **Protection sélectionnée :** `{param}`\n\n"
-                        "Tapez :\n"
-                        "✅ `true` pour **activer**\n"
-                        "❌ `false` pour **désactiver**\n"
-                        "🚫 `cancel` pour **annuler**",
-            color=discord.Color.blurple(),
-            timestamp=discord.utils.utcnow()
-        )
-        embed_request.set_footer(text="Répondez dans les 60 secondes.")
+        try:
+            param = self.values[0]
 
-        await interaction.response.send_message(embed=embed_request, ephemeral=True)
+            embed_request = discord.Embed(
+                title="⚙️ **Modification d'une protection**",
+                description=f"🛑 **Protection sélectionnée :** `{param}`\n\n"
+                            "Tapez :\n"
+                            "✅ `true` pour **activer**\n"
+                            "❌ `false` pour **désactiver**\n"
+                            "🚫 `cancel` pour **annuler**",
+                color=discord.Color.blurple(),
+                timestamp=discord.utils.utcnow()
+            )
+            embed_request.set_footer(text="Répondez dans les 60 secondes.")
+
+            await interaction.followup.send(embed=embed_request, ephemeral=True)  # ✅ Utilisation de followup.send
+
+        except Exception as e:
+            print(f"Erreur dans AntiSelect: {e}")
+            await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
@@ -978,7 +991,8 @@ async def setup(ctx):
     )
 
     view = SetupView(ctx, guild_data, collection)
-    view.embed_message = await ctx.send(embed=embed, view=view)
+    view.embed_message = await ctx.send(embed=embed, view=view)  # ✅ Correction ici pour éviter un NoneType
+
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

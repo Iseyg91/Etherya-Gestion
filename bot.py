@@ -699,25 +699,27 @@ class SetupView(View):
         self.add_item(MainSelect(self))
 
     async def update_embed(self, category):
-        """Met à jour l'embed en fonction de la catégorie sélectionnée."""
+        """Met à jour l'embed en fonction de la catégorie sélectionnée et garde le message actif."""
         embed = discord.Embed(color=discord.Color.blurple())
 
         if category == "accueil":
             embed.title = "⚙️ **Configuration du Serveur**"
             embed.description = """
             🔧 **Bienvenue dans le setup !**  
-            Sélectionnez une catégorie pour modifier les paramètres :
+            Configurez les paramètres de votre serveur facilement.  
+            **Sélectionnez une catégorie ci-dessous pour commencer :**  
+            
             📌 **Gestion du Bot** - Modifier les rôles et salons.  
-            🛡️ **Anti-Raid et Anti-Spam** - Activer/Désactiver les protections.
+            🛡️ **Anti-Raid et Anti-Spam** - Activer/Désactiver les protections.  
 
-            🔽 **Choisissez une option ci-dessous pour commencer !**
+            🔽 **Choisissez une option pour continuer !**
             """
             self.clear_items()
             self.add_item(MainSelect(self))
 
         elif category == "gestion":
             embed.title = "⚙️ **Configuration du Bot**"
-            embed.description = "Modifiez les rôles et salons essentiels du bot."
+            embed.description = "Modifiez les rôles et salons essentiels pour le bon fonctionnement du bot."
             embed.add_field(name="👑 Propriétaire", value=f"<@{self.guild_data.get('owner', 'Non défini')}>", inline=False)
             embed.add_field(name="🛡️ Rôle Admin", value=f"<@&{self.guild_data.get('admin_role', 'Non défini')}>", inline=False)
             embed.add_field(name="👥 Rôle Staff", value=f"<@&{self.guild_data.get('staff_role', 'Non défini')}>", inline=False)
@@ -726,6 +728,7 @@ class SetupView(View):
 
             self.clear_items()
             self.add_item(InfoSelect(self))
+            self.add_item(CancelButton(self))
             self.add_item(ReturnButton(self))
 
         elif category == "anti":
@@ -737,6 +740,7 @@ class SetupView(View):
 
             self.clear_items()
             self.add_item(AntiSelect(self))
+            self.add_item(CancelButton(self))
             self.add_item(ReturnButton(self))
 
         await self.embed_message.edit(embed=embed, view=self)
@@ -763,6 +767,15 @@ class ReturnButton(Button):
         await interaction.response.defer()
         await self.view_ctx.update_embed("accueil")
 
+class CancelButton(Button):
+    def __init__(self, view):
+        super().__init__(style=discord.ButtonStyle.secondary, label="❌ Annuler", custom_id="cancel")
+        self.view_ctx = view
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message("🚫 **Modification annulée.**", ephemeral=True)
+        await self.view_ctx.update_embed("accueil")
+
 class InfoSelect(Select):
     def __init__(self, view):
         options = [
@@ -776,12 +789,18 @@ class InfoSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f"✏️ Mentionnez le nouveau paramètre pour **{self.values[0]}**.", ephemeral=True)
+        await interaction.response.send_message(f"✏️ **Mentionnez le nouveau paramètre pour {self.values[0]}**.", ephemeral=True)
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
 
-        response = await self.view_ctx.ctx.bot.wait_for("message", check=check)
+        try:
+            response = await self.view_ctx.ctx.bot.wait_for("message", check=check, timeout=60)
+            await response.delete()
+        except asyncio.TimeoutError:
+            await self.view_ctx.ctx.send("⏳ Temps écoulé. Aucune modification effectuée.", ephemeral=True)
+            return
+
         param = self.values[0]
         new_value = response.content
 
@@ -794,10 +813,10 @@ class InfoSelect(Select):
 
         if new_value:
             self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {param: str(new_value)}}, upsert=True)
-            await self.view_ctx.ctx.send(f"✅ {param} mis à jour avec succès !", ephemeral=True)
+            await self.view_ctx.ctx.send(f"✅ **{param} mis à jour avec succès !**", ephemeral=True)
             await self.view_ctx.update_embed("gestion")
         else:
-            await self.view_ctx.ctx.send("❌ Valeur invalide.", ephemeral=True)
+            await self.view_ctx.ctx.send("❌ **Valeur invalide.** Veuillez réessayer.", ephemeral=True)
 
 class AntiSelect(Select):
     def __init__(self, view):
@@ -810,30 +829,36 @@ class AntiSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message("✏️ Tapez `True` pour activer ou `False` pour désactiver.", ephemeral=True)
+        await interaction.response.send_message(
+            "✏️ **Tapez `True` pour activer, `False` pour désactiver ou `Cancel` pour annuler.**",
+            ephemeral=True
+        )
 
         def check(msg):
             return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
 
-        response = await self.view_ctx.ctx.bot.wait_for("message", check=check)
+        try:
+            response = await self.view_ctx.ctx.bot.wait_for("message", check=check, timeout=60)
+            await response.delete()
+        except asyncio.TimeoutError:
+            await self.view_ctx.ctx.send("⏳ Temps écoulé. Aucune modification effectuée.", ephemeral=True)
+            return
+
+        if response.content.lower() == "cancel":
+            await self.view_ctx.ctx.send("🚫 **Modification annulée.**", ephemeral=True)
+            await self.view_ctx.update_embed("anti")
+            return
+
         new_value = response.content.lower() == "true"
 
-        self.view_ctx.collection.update_one({"guild_id": str(self.view_ctx.ctx.guild.id)}, {"$set": {self.values[0]: new_value}}, upsert=True)
-        await self.view_ctx.ctx.send(f"✅ {self.values[0]} {'activé' if new_value else 'désactivé'} avec succès !", ephemeral=True)
+        self.view_ctx.collection.update_one(
+            {"guild_id": str(self.view_ctx.ctx.guild.id)},
+            {"$set": {self.values[0]: new_value}},
+            upsert=True
+        )
+
+        await self.view_ctx.ctx.send(f"✅ **{self.values[0]} {'activé' if new_value else 'désactivé'} avec succès !**", ephemeral=True)
         await self.view_ctx.update_embed("anti")
-
-@bot.command(name="setup")
-async def setup(ctx):
-    if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:
-        await ctx.send("❌ Vous n'avez pas les permissions nécessaires.", ephemeral=True)
-        return
-
-    guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
-
-    embed = discord.Embed(title="🔧 Configuration du Serveur", description="**Bienvenue dans le Setup !**\nChoisissez une option ci-dessous.", color=discord.Color.blurple())
-
-    view = SetupView(ctx, guild_data, collection)
-    view.embed_message = await ctx.send(embed=embed, view=view)
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

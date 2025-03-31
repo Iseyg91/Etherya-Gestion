@@ -696,8 +696,22 @@ class SetupView(View):
         self.ctx = ctx
         self.guild_data = guild_data or {}
         self.collection = collection
-        self.embed_message = None
+        self.embed_message = None  # initialisation ici
         self.add_item(MainSelect(self))
+
+    async def start(self):
+        """Envoie un message initial pour la configuration."""
+        embed = discord.Embed(
+            title="⚙️ **Configuration du Serveur**",
+            description="Choisissez une option pour commencer.",
+            color=discord.Color.blurple()
+        )
+
+        # Envoie le message et assigne à embed_message
+        self.embed_message = await self.ctx.send(embed=embed, view=self)
+
+        print(f"Message initial envoyé: {self.embed_message}")  # Vérification de l'envoi
+
 
 async def update_embed(self, category):
     """Met à jour l'embed et rafraîchit dynamiquement le message."""
@@ -742,15 +756,16 @@ async def update_embed(self, category):
             self.add_item(AntiSelect(self))
             self.add_item(ReturnButton(self))
 
-        # Ajout d'un print pour s'assurer que l'embed est bien créé
-        print(f"Embed créé pour la catégorie: {category}")
-
-        # S'assurer que le message embed_message existe avant de l'éditer
+        # Debug: Vérifier si embed_message est valide
+        print(f"embed_message: {self.embed_message}")  # Vérifie si l'objet embed_message est valide.
+        
+        # Vérifie si l'objet embed_message existe et est modifiable
         if self.embed_message:
             await self.embed_message.edit(embed=embed, view=self)
             print("Embed mis à jour.")
         else:
-            print("Erreur: embed_message est nul.")
+            print("Erreur: embed_message est nul ou invalide.")
+
     except Exception as e:
         print(f"Erreur lors de la mise à jour de l'embed: {e}")
         traceback.print_exc()

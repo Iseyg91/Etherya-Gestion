@@ -9,6 +9,7 @@ import datetime
 import re
 import subprocess
 import sys
+import traceback
 from keep_alive import keep_alive
 from discord.ui import Button, View
 from datetime import datetime
@@ -759,12 +760,13 @@ class MainSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)  # ✅ Ajout de thinking=True pour éviter l'erreur
+        await interaction.response.defer(thinking=True)
         
         try:
             await self.view_ctx.update_embed(self.values[0])
         except Exception as e:
-            print(f"Erreur dans MainSelect: {e}")  # ✅ Affichage de l'erreur pour debug
+            print(f"Erreur dans MainSelect: {e}")  
+            traceback.print_exc()  # ✅ Affiche l'erreur complète dans la console
             await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
 
 class ReturnButton(Button):
@@ -868,7 +870,7 @@ class AntiSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)  # ✅ Ajout de thinking=True
+        await interaction.response.defer(thinking=True)
 
         try:
             param = self.values[0]
@@ -885,10 +887,11 @@ class AntiSelect(Select):
             )
             embed_request.set_footer(text="Répondez dans les 60 secondes.")
 
-            await interaction.followup.send(embed=embed_request, ephemeral=True)  # ✅ Utilisation de followup.send
+            await interaction.followup.send(embed=embed_request, ephemeral=True)
 
         except Exception as e:
             print(f"Erreur dans AntiSelect: {e}")
+            traceback.print_exc()  # ✅ Ajouté pour afficher l'erreur complète
             await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
 
         def check(msg):

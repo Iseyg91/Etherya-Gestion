@@ -719,35 +719,36 @@ async def update_embed(self, category):
 
     elif category == "gestion":
         embed.title = "⚙️ **Gestion du Bot**"
+def format_mention(id, type_mention):
+    if not id or id == "Non défini":
+        return "❌ **Non défini**"
+    return f"<@{id}>" if type_mention == "user" else f"<@&{id}>" if type_mention == "role" else f"<#{id}>"
 
-        # Déplacement de la fonction en dehors du bloc 'elif'
-    def format_mention(id, type_mention):
-        if not id or id == "Non défini":
-            return "❌ **Non défini**"
-        return f"<@{id}>" if type_mention == "user" else f"<@&{id}>" if type_mention == "role" else f"<#{id}>"
+elif category == "gestion":
+    embed.title = "⚙️ **Gestion du Bot**"
 
-        embed.add_field(name="👑 Propriétaire :", value=format_mention(self.guild_data.get('owner', 'Non défini'), "user"), inline=False)
-        embed.add_field(name="🛡️ Rôle Admin :", value=format_mention(self.guild_data.get('admin_role', 'Non défini'), "role"), inline=False)
-        embed.add_field(name="👥 Rôle Staff :", value=format_mention(self.guild_data.get('staff_role', 'Non défini'), "role"), inline=False)
-        embed.add_field(name="🚨 Salon Sanctions :", value=format_mention(self.guild_data.get('sanctions_channel', 'Non défini'), "channel"), inline=False)
-        embed.add_field(name="📝 Salon Alerte :", value=format_mention(self.guild_data.get('reports_channel', 'Non défini'), "channel"), inline=False)
+    embed.add_field(name="👑 Propriétaire :", value=format_mention(self.guild_data.get('owner', 'Non défini'), "user"), inline=False)
+    embed.add_field(name="🛡️ Rôle Admin :", value=format_mention(self.guild_data.get('admin_role', 'Non défini'), "role"), inline=False)
+    embed.add_field(name="👥 Rôle Staff :", value=format_mention(self.guild_data.get('staff_role', 'Non défini'), "role"), inline=False)
+    embed.add_field(name="🚨 Salon Sanctions :", value=format_mention(self.guild_data.get('sanctions_channel', 'Non défini'), "channel"), inline=False)
+    embed.add_field(name="📝 Salon Alerte :", value=format_mention(self.guild_data.get('reports_channel', 'Non défini'), "channel"), inline=False)
 
-        self.clear_items()
-        self.add_item(InfoSelect(self))
-        self.add_item(ReturnButton(self))
+    self.clear_items()
+    self.add_item(InfoSelect(self))
+    self.add_item(ReturnButton(self))
 
-    elif category == "anti":
-        embed.title = "🛡️ **Sécurité & Anti-Raid**"
-        embed.description = "⚠️ **Gérez les protections du serveur contre les abus et le spam.**\n🔽 **Sélectionnez une protection à activer/désactiver !**"
-        embed.add_field(name="🔗 Anti-lien :", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
-        embed.add_field(name="💬 Anti-Spam :", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
-        embed.add_field(name="🚫 Anti-Everyone :", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
+elif category == "anti":
+    embed.title = "🛡️ **Sécurité & Anti-Raid**"
+    embed.description = "⚠️ **Gérez les protections du serveur contre les abus et le spam.**\n🔽 **Sélectionnez une protection à activer/désactiver !**"
+    embed.add_field(name="🔗 Anti-lien :", value=f"{'✅ Activé' if self.guild_data.get('anti_link', False) else '❌ Désactivé'}", inline=True)
+    embed.add_field(name="💬 Anti-Spam :", value=f"{'✅ Activé' if self.guild_data.get('anti_spam', False) else '❌ Désactivé'}", inline=True)
+    embed.add_field(name="🚫 Anti-Everyone :", value=f"{'✅ Activé' if self.guild_data.get('anti_everyone', False) else '❌ Désactivé'}", inline=True)
 
-        self.clear_items()
-        self.add_item(AntiSelect(self))
-        self.add_item(ReturnButton(self))
+    self.clear_items()
+    self.add_item(AntiSelect(self))
+    self.add_item(ReturnButton(self))
 
-    await self.embed_message.edit(embed=embed, view=self)
+await self.embed_message.edit(embed=embed, view=self)
 
 
 class MainSelect(Select):

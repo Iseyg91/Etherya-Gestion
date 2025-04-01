@@ -713,8 +713,13 @@ class SetupView(discord.ui.View):
 
 async def update_embed(self, category):
     """Met à jour l'embed et rafraîchit dynamiquement le message."""
-    embed = discord.Embed(color=discord.Color.blurple(), timestamp=discord.utils.utcnow())
-    embed.set_footer(text=f"Serveur : {self.ctx.guild.name}", icon_url=self.ctx.guild.icon.url if self.ctx.guild.icon else None)
+    embed = discord.Embed(title=f"Configuration: {category}", color=discord.Color.blurple())
+    embed.description = f"Voici les options pour la catégorie `{category}`."
+    
+    if self.embed_message:
+        await self.embed_message.edit(embed=embed)
+    else:
+        print("Erreur : embed_message n'est pas défini.")
 
     if category == "accueil":
         embed.title = "⚙️ **Configuration du Serveur**"
@@ -754,14 +759,15 @@ async def update_embed(self, category):
         self.add_item(ReturnButton(self))
 
     # Vérifier que embed_message est valide avant de tenter de modifier
-    if self.embed_message:
-        try:
-            await self.embed_message.edit(embed=embed, view=self)
-            print(f"Embed mis à jour pour la catégorie: {category}")
-        except Exception as e:
-            print(f"Erreur lors de la mise à jour de l'embed: {e}")
-    else:
-        print("Erreur : embed_message est nul ou non défini.")
+if self.embed_message:
+    try:
+        await self.embed_message.edit(embed=embed, view=self)
+        print(f"Embed mis à jour pour la catégorie: {category}")
+    except Exception as e:
+        print(f"Erreur lors de la mise à jour de l'embed: {e}")
+else:
+    print("Erreur : embed_message est nul ou non défini.")
+
 
 def format_mention(id, type_mention):
     if not id or id == "Non défini":
@@ -777,16 +783,15 @@ class MainSelect(Select):
         super().__init__(placeholder="📌 Sélectionnez une catégorie", options=options)
         self.view_ctx = view
 
-    async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer()  # Avertir Discord que la réponse est en cours
+async def callback(self, interaction: discord.Interaction):
+    await interaction.response.defer()  # Avertir Discord que la réponse est en cours
 
-        if hasattr(self.view_ctx, 'update_embed'):
-            category = self.values[0]
-            await self.view_ctx.update_embed(category)
-            print(f"Embed mis à jour avec la catégorie: {category}")
-        else:
-            print("Erreur: view_ctx n'a pas la méthode update_embed.")
-
+    if hasattr(self.view_ctx, 'update_embed'):
+        category = self.values[0]  # Vérifier que la valeur sélectionnée est correcte
+        await self.view_ctx.update_embed(category)
+        print(f"Embed mis à jour avec la catégorie: {category}")
+    else:
+        print("Erreur: view_ctx n'a pas la méthode update_embed.")
 
 class ReturnButton(Button):
     def __init__(self, view):
@@ -2983,19 +2988,24 @@ async def send_dm(member, action, reason):
 # Commande de warning
 @bot.command()
 async def warn(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
-    if await check_permissions(ctx) and not await is_immune(member):
-        # Envoi du message de confirmation
-        embed = discord.Embed(
-            title="⚠️ Avertissement donné",
-            description=f"{member.mention} a reçu un avertissement pour la raison suivante :\n**{reason}**",
-            color=discord.Color.orange()
-        )
-        embed.set_footer(text=f"Avertissement donné par {ctx.author}", icon_url=ctx.author.avatar.url)
-        await ctx.send(embed=embed)
+    try:
+        if await check_permissions(ctx) and not await is_immune(member):
+            # Envoi du message de confirmation
+            embed = discord.Embed(
+                title="⚠️ Avertissement donné",
+                description=f"{member.mention} a reçu un avertissement pour la raison suivante :\n**{reason}**",
+                color=discord.Color.orange()
+            )
+            embed.set_footer(text=f"Avertissement donné par {ctx.author}", icon_url=ctx.author.avatar.url)
+            await ctx.send(embed=embed)
 
-        # Envoi du log et du message privé
-        await send_log(ctx, member, "Warn", reason)
-        await send_dm(member, "Warn", reason)
+            # Envoi du log et du message privé
+            await send_log(ctx, member, "Warn", reason)
+            await send_dm(member, "Warn", reason)
+    except Exception as e:
+        # Capturer l'exception et afficher le détail dans la console
+        print(f"Erreur dans la commande warn: {e}")
+        await ctx.send(f"Une erreur s'est produite lors de l'exécution de la commande.")
 
 #------------------------------------------------------------------------- Commandes Utilitaires : +vc, +alerte, +uptime, +ping, +roleinfo
 

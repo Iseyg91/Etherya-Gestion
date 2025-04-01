@@ -1007,8 +1007,8 @@ async def notify_bot_owner(self, interaction, param, new_value):
                 ephemeral=True
             )
 
-@bot.command(name="setup")
-async def setup(ctx):
+@bot.tree.command(name="setup", description="Description de ta commande")
+async def setup(interaction: discord.Interaction):
     print("Commande 'setup' appelée.")  # Log de débogage
     
     # Vérifie si l'utilisateur est le propriétaire du bot ou un administrateur du serveur

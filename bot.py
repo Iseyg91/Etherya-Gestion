@@ -717,9 +717,14 @@ async def update_embed(self, category):
     embed.description = f"Voici les options pour la catégorie `{category}`."
     
     if self.embed_message:
-        await self.embed_message.edit(embed=embed)
+        try:
+            await self.embed_message.edit(embed=embed, view=self)
+            print(f"Embed mis à jour pour la catégorie: {category}")
+        except Exception as e:
+            print(f"Erreur lors de la mise à jour de l'embed: {e}")
     else:
         print("Erreur : embed_message n'est pas défini.")
+
 
     if category == "accueil":
         embed.title = "⚙️ **Configuration du Serveur**"

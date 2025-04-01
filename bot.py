@@ -1104,11 +1104,23 @@ async def notify_guild_owner(self, interaction, param, new_value):
             await guild_owner.send(embed=embed)
             print(f"✅ MP envoyé au propriétaire {guild_owner.name}.")
         except discord.Forbidden:
-            print(f"⚠️ Impossible d'envoyer un MP à {guild_owner.name}.")
+            print(f"⚠️ Impossible d'envoyer un MP à {guild_owner.name}. Les permissions de MP sont probablement désactivées.")
             await interaction.followup.send(
                 "⚠️ **Impossible d'envoyer un MP au propriétaire du serveur.**",
                 ephemeral=True
             )
+        except Exception as e:
+            print(f"Erreur lors de l'envoi du MP au propriétaire: {e}")
+            await interaction.followup.send(
+                "⚠️ **Une erreur est survenue lors de l'envoi du message privé au propriétaire.**",
+                ephemeral=True
+            )
+    else:
+        print("⚠️ Le propriétaire du serveur est introuvable.")
+        await interaction.followup.send(
+            "⚠️ **Impossible de récupérer le propriétaire du serveur.**",
+            ephemeral=True
+        )
 
 @bot.command(name="setup")
 async def setup(ctx):

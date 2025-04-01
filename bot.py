@@ -856,11 +856,10 @@ if new_value:
     self.view_ctx.guild_data[param] = str(new_value)
 
     async def update_settings():
-        # ✅ Notifier le propriétaire
         await self.view_ctx.notify_guild_owner(interaction, param, new_value)
+        await self.view_ctx.update_embed("gestion")  # ✅ Maintenant dans une fonction async
 
-        # ✅ Mettre à jour l'embed immédiatement
-        await self.view_ctx.update_embed("gestion")
+    asyncio.create_task(update_settings())  # ✅ Lancer correctement la tâche async
 
         # ✅ Embed de confirmation
         embed_success = discord.Embed(

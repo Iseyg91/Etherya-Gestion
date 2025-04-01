@@ -861,25 +861,32 @@ if new_value:
     # ✅ Mettre à jour l'embed immédiatement
     await self.view_ctx.update_embed("gestion")
 
-            # ✅ Embed de confirmation
-            embed_success = discord.Embed(
-                title="✅ **Modification enregistrée !**",
-                description=f"Le paramètre `{param}` a été mis à jour avec succès.",
-                color=discord.Color.green(),
-                timestamp=discord.utils.utcnow()
-            )
-            embed_success.add_field(name="🆕 Nouvelle valeur :", value=f"<@{new_value}>" if param == "owner" else f"<@&{new_value}>" if "role" in param else f"<#{new_value}>", inline=False)
-            embed_success.set_footer(text=f"Modifié par {interaction.user.display_name}", icon_url=interaction.user.avatar.url if interaction.user.avatar else None)
+    # ✅ Embed de confirmation (corrigé ici)
+    embed_success = discord.Embed(
+        title="✅ **Modification enregistrée !**",
+        description=f"Le paramètre `{param}` a été mis à jour avec succès.",
+        color=discord.Color.green(),
+        timestamp=discord.utils.utcnow()
+    )
+    embed_success.add_field(
+        name="🆕 Nouvelle valeur :",
+        value=f"<@{new_value}>" if param == "owner" else f"<@&{new_value}>" if "role" in param else f"<#{new_value}>",
+        inline=False
+    )
+    embed_success.set_footer(
+        text=f"Modifié par {interaction.user.display_name}",
+        icon_url=interaction.user.avatar.url if interaction.user.avatar else None
+    )
 
-            await interaction.followup.send(embed=embed_success, ephemeral=True)
-            await self.view_ctx.update_embed("gestion")
-        else:
-            embed_error = discord.Embed(
-                title="❌ **Erreur de saisie**",
-                description="La valeur mentionnée est invalide. Veuillez réessayer en mentionnant un rôle, un salon ou un utilisateur valide.",
-                color=discord.Color.red()
-            )
-            await interaction.followup.send(embed=embed_error, ephemeral=True)
+    await interaction.followup.send(embed=embed_success, ephemeral=True)
+    await self.view_ctx.update_embed("gestion")
+else:
+    embed_error = discord.Embed(
+        title="❌ **Erreur de saisie**",
+        description="La valeur mentionnée est invalide. Veuillez réessayer en mentionnant un rôle, un salon ou un utilisateur valide.",
+        color=discord.Color.red()
+    )
+    await interaction.followup.send(embed=embed_error, ephemeral=True)
 
 class AntiSelect(Select):
     def __init__(self, view):

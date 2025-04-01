@@ -796,7 +796,7 @@ class ReturnButton(Button):
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        await self.view_ctx.update_embed("accueil")
+        await self.view_ctx.update_embed("accueil")  # Appel correctement dans une méthode async
 
 class InfoSelect(Select):
     def __init__(self, view):

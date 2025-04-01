@@ -857,31 +857,30 @@ if new_value:
 
     async def update_settings():
         await self.view_ctx.notify_guild_owner(interaction, param, new_value)
-        await self.view_ctx.update_embed("gestion")  # ✅ Maintenant dans une fonction async
+        await self.view_ctx.update_embed("gestion")
 
-    asyncio.create_task(update_settings())  # ✅ Lancer correctement la tâche async
+    asyncio.create_task(update_settings())  # Lancer correctement la tâche async
 
-        # ✅ Embed de confirmation
-        embed_success = discord.Embed(
-            title="✅ **Modification enregistrée !**",
-            description=f"Le paramètre `{param}` a été mis à jour avec succès.",
-            color=discord.Color.green(),
-            timestamp=discord.utils.utcnow()
-        )
-        embed_success.add_field(
-            name="🆕 Nouvelle valeur :",
-            value=f"<@{new_value}>" if param == "owner" else f"<@&{new_value}>" if "role" in param else f"<#{new_value}>",
-            inline=False
-        )
-        embed_success.set_footer(
-            text=f"Modifié par {interaction.user.display_name}",
-            icon_url=interaction.user.avatar.url if interaction.user.avatar else None
-        )
+    embed_success = discord.Embed(
+        title="✅ **Modification enregistrée !**",
+        description=f"Le paramètre `{param}` a été mis à jour avec succès.",
+        color=discord.Color.green(),
+        timestamp=discord.utils.utcnow()
+    )
+    embed_success.add_field(
+        name="🆕 Nouvelle valeur :",
+        value=f"<@{new_value}>" if param == "owner" else f"<@&{new_value}>" if "role" in param else f"<#{new_value}>",
+        inline=False
+    )
+    embed_success.set_footer(
+        text=f"Modifié par {interaction.user.display_name}",
+        icon_url=interaction.user.avatar.url if interaction.user.avatar else None
+    )
 
-        await interaction.followup.send(embed=embed_success, ephemeral=True)  # ✅ Maintenant dans une fonction async
-
+    await interaction.followup.send(embed=embed_success, ephemeral=True)
     asyncio.create_task(update_settings())  # Lancer la tâche async correctement
     await self.view_ctx.update_embed("gestion")
+
 else:
     embed_error = discord.Embed(
         title="❌ **Erreur de saisie**",

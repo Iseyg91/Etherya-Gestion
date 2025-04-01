@@ -847,47 +847,49 @@ class InfoSelect(Select):
         elif param in ["sanctions_channel", "reports_channel"]:
             new_value = response.channel_mentions[0].id if response.channel_mentions else None
 
-if new_value:
-    self.view_ctx.collection.update_one(
-        {"guild_id": str(self.view_ctx.ctx.guild.id)},
-        {"$set": {param: str(new_value)}},
-        upsert=True
-    )
-    self.view_ctx.guild_data[param] = str(new_value)
+        if new_value:
+            # Mise à jour de la base de données avec la nouvelle valeur
+            self.view_ctx.collection.update_one(
+                {"guild_id": str(self.view_ctx.ctx.guild.id)},
+                {"$set": {param: str(new_value)}},
+                upsert=True
+            )
+            self.view_ctx.guild_data[param] = str(new_value)
 
-    async def update_settings():
-        await self.view_ctx.notify_guild_owner(interaction, param, new_value)
-        await self.view_ctx.update_embed("gestion")
+            async def update_settings():
+                await self.view_ctx.notify_guild_owner(interaction, param, new_value)
+                await self.view_ctx.update_embed("gestion")
 
-    asyncio.create_task(update_settings())  # Lancer correctement la tâche async
+            asyncio.create_task(update_settings())  # Lancer correctement la tâche async
 
-    embed_success = discord.Embed(
-        title="✅ **Modification enregistrée !**",
-        description=f"Le paramètre `{param}` a été mis à jour avec succès.",
-        color=discord.Color.green(),
-        timestamp=discord.utils.utcnow()
-    )
-    embed_success.add_field(
-        name="🆕 Nouvelle valeur :",
-        value=f"<@{new_value}>" if param == "owner" else f"<@&{new_value}>" if "role" in param else f"<#{new_value}>",
-        inline=False
-    )
-    embed_success.set_footer(
-        text=f"Modifié par {interaction.user.display_name}",
-        icon_url=interaction.user.avatar.url if interaction.user.avatar else None
-    )
+            # Embed de succès
+            embed_success = discord.Embed(
+                title="✅ **Modification enregistrée !**",
+                description=f"Le paramètre `{param}` a été mis à jour avec succès.",
+                color=discord.Color.green(),
+                timestamp=discord.utils.utcnow()
+            )
+            embed_success.add_field(
+                name="🆕 Nouvelle valeur :",
+                value=f"<@{new_value}>" if param == "owner" else f"<@&{new_value}>" if "role" in param else f"<#{new_value}>",
+                inline=False
+            )
+            embed_success.set_footer(
+                text=f"Modifié par {interaction.user.display_name}",
+                icon_url=interaction.user.avatar.url if interaction.user.avatar else None
+            )
 
-    await interaction.followup.send(embed=embed_success, ephemeral=True)
-    asyncio.create_task(update_settings())  # Lancer la tâche async correctement
-    await self.view_ctx.update_embed("gestion")
+            await interaction.followup.send(embed=embed_success, ephemeral=True)
+            await self.view_ctx.update_embed("gestion")
 
-else:
-    embed_error = discord.Embed(
-        title="❌ **Erreur de saisie**",
-        description="La valeur mentionnée est invalide. Veuillez réessayer en mentionnant un rôle, un salon ou un utilisateur valide.",
-        color=discord.Color.red()
-    )
-    await interaction.followup.send(embed=embed_error, ephemeral=True)
+        else:
+            embed_error = discord.Embed(
+                title="❌ **Erreur de saisie**",
+                description="La valeur mentionnée est invalide. Veuillez réessayer en mentionnant un rôle, un salon ou un utilisateur valide.",
+                color=discord.Color.red()
+            )
+            await interaction.followup.send(embed=embed_error, ephemeral=True)
+
 
 class AntiSelect(Select):
     def __init__(self, view):
@@ -901,6 +903,86 @@ class AntiSelect(Select):
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
+        
+        param = self.values[0]
+        embed_request = discord.Embed(
+            title="⚙️ **Modification d'une protection**",
+            description=f"🛑 **Protection sélectionnée :** `{param}`\n\n"
+                        "Tapez :\n"
+                        "✅ `true` pour **activer**\n"
+                        "❌ `false` pour **désactiver**\n"
+                        "🚫 `cancel` pour **annuler**",
+            color=discord.Color.blurple(),
+            timestamp=discord.utils.utcnow()
+        )
+        embed_request.set_footer(text="Répondez dans les 60 secondes.")
+
+        await interaction.followup.send(embed=embed_request, ephemeral=True)
+
+        def check(msg):
+            return msg.author == interaction.user and msg.channel == interaction.channel
+
+        try:
+            response = await self.view_ctx.ctx.bot.wait_for("message", check=check, timeout=60)
+            await response.delete()
+        except asyncio.TimeoutError:
+            return await interaction.followup.send(
+                embed=discord.Embed(
+                    title="⏳ **Temps écoulé**",
+                    description="Aucune modification effectuée.",
+                    color=discord.Color.red()
+                ), ephemeral=True
+            )
+
+        response_content = response.content.lower()
+
+        if response_content == "cancel":
+            return await interaction.followup.send(
+                embed=discord.Embed(
+                    title="🚫 **Modification annulée**",
+                    description="Aucune modification n'a été apportée.",
+                    color=discord.Color.orange()
+                ), ephemeral=True
+            )
+
+        if response_content not in ["true", "false"]:
+            return await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ **Réponse invalide**",
+                    description="Veuillez entrer uniquement `true` ou `false`.",
+                    color=discord.Color.red()
+                ), ephemeral=True
+            )
+
+        new_value = response_content == "true"
+
+        # Mise à jour de la base de données
+        self.view_ctx.collection.update_one(
+            {"guild_id": str(self.view_ctx.ctx.guild.id)},
+            {"$set": {param: new_value}},
+            upsert=True
+        )
+        self.view_ctx.guild_data[param] = new_value
+
+        # Notifier le propriétaire
+        await self.view_ctx.notify_guild_owner(interaction, param, new_value)
+
+        # Confirmer la modification à l'utilisateur
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="✅ **Modification enregistrée !**",
+                description=f"La protection `{param}` est maintenant **{'activée' if new_value else 'désactivée'}**.",
+                color=discord.Color.green(),
+                timestamp=discord.utils.utcnow()
+            ).set_footer(
+                text=f"Modifié par {interaction.user.display_name}",
+                icon_url=interaction.user.avatar.url if interaction.user.avatar else None
+            ),
+            ephemeral=True
+        )
+
+        # Mise à jour immédiate de l'embed
+        await self.view_ctx.update_embed("anti")
         
         param = self.values[0]
         embed_request = discord.Embed(

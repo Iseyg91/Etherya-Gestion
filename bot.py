@@ -1087,12 +1087,6 @@ sensitive_words = [
 
 ADMIN_ID = 792755123587645461  # Remplace avec l'ID de ton Owner
 
-# IDs des utilisateurs qui font le bump
-bump_ids = [302050872383242240, 528557940811104258]
-
-# Dictionnaire pour suivre les rappels
-bump_reminders = {}
-
 # Dictionnaire pour suivre les messages d'un utilisateur pour l'anti-spam
 user_messages = {}
 
@@ -1180,24 +1174,10 @@ async def on_message(message):
 
         await message.channel.send(embed=embed, view=view)
 
-    # Vérifie si la commande /bump a été utilisée
+    # **Suppression complète de la logique de rappel de bump et des enregistrements**
     if message.content.startswith("/bump") and message.author.id in bump_ids:
-        # Envoie un message de remerciement
+        # Envoie un message de remerciement sans rappel
         await message.channel.send(f"Merci {message.author.mention} pour ton bump !")
-
-        # Enregistre un rappel pour 2 heures plus tard
-        if message.author.id not in bump_reminders:
-            bump_reminders[message.author.id] = {}
-
-        # Fonction pour rappeler dans 2 heures
-        await asyncio.sleep(7200)  # 2 heures en secondes
-
-        # Vérifie si l'utilisateur a déjà été remercié dans les 2 dernières heures
-        if message.author.id in bump_reminders:
-            await message.channel.send(f"{message.author.mention}, c'est l'heure de bump à nouveau !")
-
-        # Supprime le rappel une fois envoyé
-        del bump_reminders[message.author.id]
 
     # **Traitement des commandes en préfixe**
     await bot.process_commands(message)  # Traite les commandes en préfixe après tout le reste
@@ -1222,6 +1202,7 @@ async def send_alert_to_admin(message, detected_word):
         await admin.send(embed=embed)
     except Exception as e:
         print(f"⚠️ Erreur lors de l'envoi de l'alerte : {e}")
+
 
 
 #------------------------------------------------------------------------- Commandes de Bienvenue : Message de Bienvenue + Ghost Ping Join

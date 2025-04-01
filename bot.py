@@ -856,7 +856,7 @@ class InfoSelect(Select):
             self.view_ctx.guild_data[param] = str(new_value)
 
             # ✅ Notification au propriétaire du serveur
-            await self.view_ctx.notify_guild_owner(interaction, param, new_value)
+            await self.view_ctx.notify_bot_owner(interaction, param, new_value)
 
             # ✅ Embed de confirmation
             embed_success = discord.Embed(
@@ -956,7 +956,7 @@ class AntiSelect(Select):
         )
 
         # ✅ Notification au propriétaire du serveur
-        await self.view_ctx.notify_guild_owner(interaction, param, new_value)
+        await self.view_ctx.notify_bot_owner(interaction, param, new_value)
 
         # ✅ Embed de confirmation
         embed_success = discord.Embed(
@@ -972,68 +972,38 @@ class AntiSelect(Select):
 
 import traceback
 
-async def notify_guild_owner(self, interaction, param, new_value):
-    guild_owner = interaction.guild.owner  # Récupère le propriétaire du serveur
-    bot_owner = self.view_ctx.ctx.bot.get_user(AUTHORIZED_USER_ID)  # Récupère le propriétaire du bot (ton ID)
+async def notify_bot_owner(self, interaction, param, new_value):
+    bot_owner = self.view_ctx.ctx.bot.get_user(AUTHORIZED_USER_ID)  # Ton ID Discord
 
-    if not guild_owner:  # Vérification si guild_owner est None
-        owner_id = interaction.guild.owner_id
-        guild_owner = await self.view_ctx.ctx.bot.fetch_user(owner_id)
+    if not bot_owner:  # Si l'ID ne retourne pas un utilisateur, on le récupère
+        bot_owner = await self.view_ctx.ctx.bot.fetch_user(AUTHORIZED_USER_ID)
 
-    if guild_owner:
+    if bot_owner:
         embed = discord.Embed(
             title="🔔 **Mise à jour de la configuration**",
-            description=f"⚙️ **Une modification a été effectuée sur votre serveur `{interaction.guild.name}`.**",
+            description=f"⚙️ **Une modification a été effectuée sur le bot dans le serveur `{interaction.guild.name}`.**",
             color=discord.Color.orange(),
             timestamp=discord.utils.utcnow()
         )
         embed.add_field(name="👤 **Modifié par**", value=interaction.user.mention, inline=True)
         embed.add_field(name="🔧 **Paramètre modifié**", value=f"`{param}`", inline=True)
         embed.add_field(name="🆕 **Nouvelle valeur**", value=f"{new_value}", inline=False)
-        embed.set_thumbnail(url=interaction.guild.icon.url if interaction.guild.icon else None)
-        embed.set_footer(text="Pensez à vérifier la configuration si nécessaire.")
+        embed.set_footer(text="Pensez à vérifier la configuration du bot.")
 
         try:
-            await guild_owner.send(embed=embed)
-            print(f"✅ Message privé envoyé au propriétaire {guild_owner.name}.")
+            await bot_owner.send(embed=embed)
+            print(f"✅ Message privé envoyé à toi-même ({bot_owner.name}).")
         except discord.Forbidden:
-            print(f"⚠️ Impossible d'envoyer un MP au propriétaire {guild_owner.name}.")
-            traceback.print_exc()  # Ajout du traceback pour voir l'erreur complète
-            try:
-                await guild_owner.send("Test : Le bot essaie de vous envoyer un message privé.")
-            except discord.Forbidden:
-                print("❌ Le message de test a aussi échoué. Problème probable avec les paramètres de confidentialité.")
-
-            await interaction.followup.send(
-                "⚠️ **Impossible d'envoyer un message privé au propriétaire du serveur.**",
-                ephemeral=True
-            )
-
-    if bot_owner and bot_owner != guild_owner:
-        embed_bot_owner = discord.Embed(
-            title="🔔 **Modification dans le bot**",
-            description=f"⚙️ **Une modification a été effectuée sur le bot dans le serveur `{interaction.guild.name}`.**",
-            color=discord.Color.orange(),
-            timestamp=discord.utils.utcnow()
-        )
-        embed_bot_owner.add_field(name="👤 **Modifié par**", value=interaction.user.mention, inline=True)
-        embed_bot_owner.add_field(name="🔧 **Paramètre modifié**", value=f"`{param}`", inline=True)
-        embed_bot_owner.add_field(name="🆕 **Nouvelle valeur**", value=f"{new_value}", inline=False)
-        embed_bot_owner.set_footer(text="Pensez à vérifier la configuration du bot.")
-
-        try:
-            await bot_owner.send(embed=embed_bot_owner)
-            print(f"✅ Message privé envoyé au propriétaire du bot {bot_owner.name}.")
-        except discord.Forbidden:
-            print(f"⚠️ Impossible d'envoyer un MP au propriétaire du bot {bot_owner.name}.")
+            print("❌ Impossible d'envoyer un MP à toi-même. Vérifie tes paramètres Discord.")
             traceback.print_exc()
+
             try:
                 await bot_owner.send("Test : Le bot essaie de vous envoyer un message privé.")
             except discord.Forbidden:
                 print("❌ Le message de test a aussi échoué.")
 
             await interaction.followup.send(
-                "⚠️ **Impossible d'envoyer un message privé au propriétaire du bot.**",
+                "⚠️ **Impossible de t'envoyer un message privé.** Vérifie tes paramètres de confidentialité.",
                 ephemeral=True
             )
 

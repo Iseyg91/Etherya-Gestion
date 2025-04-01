@@ -1012,13 +1012,13 @@ async def setup(interaction: discord.Interaction):
     print("Commande 'setup' appelée.")  # Log de débogage
     
     # Vérifie si l'utilisateur est le propriétaire du bot ou un administrateur du serveur
-    if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:
+    if interaction.user.id != AUTHORIZED_USER_ID and not interaction.user.guild_permissions.administrator:
         print("Utilisateur non autorisé.")
-        await ctx.send("❌ Vous n'avez pas les permissions nécessaires.", ephemeral=True)
+        await interaction.response.send_message("❌ Vous n'avez pas les permissions nécessaires.", ephemeral=True)
         return
     
     # Ton code pour le setup ici, si l'utilisateur est autorisé
-    guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
+    guild_data = collection.find_one({"guild_id": str(interaction.guild.id)}) or {}
 
     embed = discord.Embed(
         title="⚙️ **Configuration du Serveur**",
@@ -1035,8 +1035,8 @@ async def setup(interaction: discord.Interaction):
     )
 
     print("Embed créé, envoi en cours...")
-    view = SetupView(ctx, guild_data, collection)
-    view.embed_message = await ctx.send(embed=embed, view=view)  # Vérification que l'embed est envoyé
+    view = SetupView(interaction, guild_data, collection)
+    await interaction.response.send_message(embed=embed, view=view)  # Envoi de l'embed
     print("Message d'embed envoyé.")
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention

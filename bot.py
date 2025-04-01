@@ -971,8 +971,10 @@ class AntiSelect(Select):
         await self.view_ctx.update_embed("anti")
 
 async def notify_guild_owner(self, interaction, param, new_value):
-    guild_owner = interaction.guild.owner  # Récupère l'owner du serveur
-    if guild_owner:  # Vérifie si le propriétaire existe
+    guild_owner = interaction.guild.owner  # Récupère le propriétaire du serveur
+    bot_owner = self.view_ctx.ctx.bot.get_user(AUTHORIZED_USER_ID)  # Récupère le propriétaire du bot (ton ID)
+
+    if guild_owner:  # Si le propriétaire du serveur existe
         embed = discord.Embed(
             title="🔔 **Mise à jour de la configuration**",
             description=f"⚙️ **Une modification a été effectuée sur votre serveur `{interaction.guild.name}`.**",
@@ -986,7 +988,7 @@ async def notify_guild_owner(self, interaction, param, new_value):
         embed.set_footer(text="Pensez à vérifier la configuration si nécessaire.")
 
         try:
-            # Envoie de l'embed au propriétaire
+            # Envoie de l'embed au propriétaire du serveur
             await guild_owner.send(embed=embed)
             print(f"Message privé envoyé au propriétaire {guild_owner.name}.")  # Log pour confirmer l'envoi
 
@@ -1006,19 +1008,56 @@ async def notify_guild_owner(self, interaction, param, new_value):
                 ephemeral=True
             )
 
+    # Notification aussi au propriétaire du bot, même si c'est le même ID
+    if bot_owner and bot_owner != guild_owner:  # S'il existe et que c'est différent du propriétaire du serveur
+        embed_bot_owner = discord.Embed(
+            title="🔔 **Modification dans le bot**",
+            description=f"⚙️ **Une modification a été effectuée sur le bot dans le serveur `{interaction.guild.name}`.**",
+            color=discord.Color.orange(),
+            timestamp=discord.utils.utcnow()
+        )
+        embed_bot_owner.add_field(name="👤 **Modifié par**", value=interaction.user.mention, inline=True)
+        embed_bot_owner.add_field(name="🔧 **Paramètre modifié**", value=f"`{param}`", inline=True)
+        embed_bot_owner.add_field(name="🆕 **Nouvelle valeur**", value=f"{new_value}", inline=False)
+        embed_bot_owner.set_footer(text="Pensez à vérifier la configuration du bot.")
+
+        try:
+            # Envoie de l'embed au propriétaire du bot
+            await bot_owner.send(embed=embed_bot_owner)
+            print(f"Message privé envoyé au propriétaire du bot {bot_owner.name}.")  # Log pour confirmer l'envoi
+
+        except discord.Forbidden:
+            print(f"⚠️ Impossible d'envoyer un MP au propriétaire du bot {bot_owner.name}.")  # Log si l'envoi échoue
+
+            # Tentons d'envoyer un message simple pour tester la permission
+            try:
+                await bot_owner.send("Test : Le bot essaie de vous envoyer un message privé.")
+                print("Le message de test a été envoyé avec succès.")
+            except discord.Forbidden:
+                print("⚠️ Le message de test a échoué. Le problème vient probablement des paramètres de confidentialité du propriétaire.")
+
+            # Avertir l'utilisateur via le suivi
+            await interaction.followup.send(
+                "⚠️ **Impossible d'envoyer un message privé au propriétaire du bot.**",
+                ephemeral=True
+            )
+
 @bot.command(name="setup")
 async def setup(ctx):
     print("Commande 'setup' appelée.")  # Log de débogage
+    
+    # Vérifie si l'utilisateur est le propriétaire du bot ou un administrateur du serveur
     if ctx.author.id != AUTHORIZED_USER_ID and not ctx.author.guild_permissions.administrator:
         print("Utilisateur non autorisé.")
         await ctx.send("❌ Vous n'avez pas les permissions nécessaires.", ephemeral=True)
         return
-
+    
+    # Ton code pour le setup ici, si l'utilisateur est autorisé
     guild_data = collection.find_one({"guild_id": str(ctx.guild.id)}) or {}
 
     embed = discord.Embed(
         title="⚙️ **Configuration du Serveur**",
-        description="""
+        description=""" 
         🔧 **Bienvenue dans le setup !**  
         Configurez votre serveur facilement en quelques clics !  
 
@@ -1034,8 +1073,6 @@ async def setup(ctx):
     view = SetupView(ctx, guild_data, collection)
     view.embed_message = await ctx.send(embed=embed, view=view)  # Vérification que l'embed est envoyé
     print("Message d'embed envoyé.")
-
-
 
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 

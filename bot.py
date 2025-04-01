@@ -878,97 +878,90 @@ class InfoSelect(Select):
             )
             await interaction.followup.send(embed=embed_error, ephemeral=True)
 
-class AntiSelect(Select):
-    def __init__(self, view):
-        options = [
-            discord.SelectOption(label="🔗 Anti-lien", value="anti_link"),
-            discord.SelectOption(label="💬 Anti-Spam", value="anti_spam"),
-            discord.SelectOption(label="🚫 Anti-Everyone", value="anti_everyone"),
-        ]
-        super().__init__(placeholder="🛑 Sélectionnez une protection à configurer", options=options)
-        self.view_ctx = view
+async def callback(self, interaction: discord.Interaction):
+    print(f"Interaction received: {interaction}")  # Debug
+    await interaction.response.defer()
 
-    async def callback(self, interaction: discord.Interaction):
-        print(f"Interaction received: {interaction}")  # ✅ Ajouté pour afficher l'interaction
-        await interaction.response.defer(thinking=True)
+    try:
+        print(f"AntiSelect callback started. Values: {self.values}")  
+        param = self.values[0]
 
+        embed_request = discord.Embed(
+            title="⚙️ **Modification d'une protection**",
+            description=f"🛑 **Protection sélectionnée :** `{param}`\n\n"
+                        "Tapez :\n"
+                        "✅ `true` pour **activer**\n"
+                        "❌ `false` pour **désactiver**\n"
+                        "🚫 `cancel` pour **annuler**",
+            color=discord.Color.blurple()
+        )
+        embed_request.set_footer(text="Répondez dans les 60 secondes.")
+
+        await interaction.followup.send(embed=embed_request, ephemeral=True)
+    except Exception as e:
+        print(f"Erreur dans AntiSelect: {e}")
+        import traceback
+        traceback.print_exc()
+        await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
+        return  # Assure que l'erreur est arrêtée
+
+    def check(msg):
+        return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
+
+    try:
+        response = await self.view_ctx.ctx.bot.wait_for("message", check=check, timeout=60)
         try:
-            print(f"AntiSelect callback started. Values: {self.values}")  # Log des valeurs envoyées
-            param = self.values[0]
-
-            embed_request = discord.Embed(
-                title="⚙️ **Modification d'une protection**",
-                description=f"🛑 **Protection sélectionnée :** `{param}`\n\n"
-                            "Tapez :\n"
-                            "✅ `true` pour **activer**\n"
-                            "❌ `false` pour **désactiver**\n"
-                            "🚫 `cancel` pour **annuler**",
-                color=discord.Color.blurple(),
-                timestamp=discord.utils.utcnow()
-            )
-            embed_request.set_footer(text="Répondez dans les 60 secondes.")
-
-            await interaction.followup.send(embed=embed_request, ephemeral=True)
-        except Exception as e:
-            print(f"Erreur dans AntiSelect: {e}")
-            traceback.print_exc()
-            await interaction.followup.send("❌ Une erreur s'est produite.", ephemeral=True)
-
-        def check(msg):
-            return msg.author == self.view_ctx.ctx.author and msg.channel == self.view_ctx.ctx.channel
-
-        try:
-            response = await self.view_ctx.ctx.bot.wait_for("message", check=check, timeout=60)
             await response.delete()
-        except asyncio.TimeoutError:
-            embed_timeout = discord.Embed(
-                title="⏳ **Temps écoulé**",
-                description="Aucune modification effectuée.",
-                color=discord.Color.red()
-            )
-            return await interaction.followup.send(embed=embed_timeout, ephemeral=True)
-
-        response_content = response.content.lower()
-
-        if response_content == "cancel":
-            embed_cancel = discord.Embed(
-                title="🚫 **Modification annulée**",
-                description="Aucune modification n'a été apportée.",
-                color=discord.Color.orange()
-            )
-            await interaction.followup.send(embed=embed_cancel, ephemeral=True)
-            return await self.view_ctx.update_embed("anti")
-
-        if response_content not in ["true", "false"]:
-            embed_invalid = discord.Embed(
-                title="❌ **Réponse invalide**",
-                description="Veuillez entrer uniquement `true` ou `false`.",
-                color=discord.Color.red()
-            )
-            return await interaction.followup.send(embed=embed_invalid, ephemeral=True)
-
-        new_value = response_content == "true"
-
-        self.view_ctx.collection.update_one(
-            {"guild_id": str(self.view_ctx.ctx.guild.id)},
-            {"$set": {param: new_value}},
-            upsert=True
+        except discord.Forbidden:
+            print("⚠️ Impossible de supprimer le message, permissions manquantes.")
+    except asyncio.TimeoutError:
+        embed_timeout = discord.Embed(
+            title="⏳ **Temps écoulé**",
+            description="Aucune modification effectuée.",
+            color=discord.Color.red()
         )
+        return await interaction.followup.send(embed=embed_timeout, ephemeral=True)
 
-        # ✅ Notification au propriétaire du serveur
-        await self.view_ctx.notify_guild_owner(interaction, param, new_value)
-
-        # ✅ Embed de confirmation
-        embed_success = discord.Embed(
-            title="✅ **Modification enregistrée !**",
-            description=f"La protection `{param}` est maintenant **{'activée' if new_value else 'désactivée'}**.",
-            color=discord.Color.green(),
-            timestamp=discord.utils.utcnow()
+    response_content = response.content.lower()
+    
+    if response_content == "cancel":
+        embed_cancel = discord.Embed(
+            title="🚫 **Modification annulée**",
+            description="Aucune modification n'a été apportée.",
+            color=discord.Color.orange()
         )
-        embed_success.set_footer(text=f"Modifié par {interaction.user.display_name}", icon_url=interaction.user.avatar.url if interaction.user.avatar else None)
+        await interaction.followup.send(embed=embed_cancel, ephemeral=True)
+        return await self.view_ctx.update_embed("anti")
 
-        await interaction.followup.send(embed=embed_success, ephemeral=True)
-        await self.view_ctx.update_embed("anti")
+    if response_content not in ["true", "false"]:
+        embed_invalid = discord.Embed(
+            title="❌ **Réponse invalide**",
+            description="Veuillez entrer uniquement `true` ou `false`.",
+            color=discord.Color.red()
+        )
+        return await interaction.followup.send(embed=embed_invalid, ephemeral=True)
+
+    new_value = response_content == "true"
+
+    # Mise à jour dans la base de données
+    self.view_ctx.collection.update_one(
+        {"guild_id": str(self.view_ctx.ctx.guild.id)},
+        {"$set": {param: new_value}},
+        upsert=True
+    )
+
+    # ✅ Notification au propriétaire du serveur
+    await self.view_ctx.notify_guild_owner(interaction, param, new_value)
+
+    # ✅ Embed de confirmation
+    embed_success = discord.Embed(
+        title="✅ **Modification enregistrée !**",
+        description=f"La protection `{param}` est maintenant **{'activée' if new_value else 'désactivée'}**.",
+        color=discord.Color.green()
+    )
+    await interaction.followup.send(embed=embed_success, ephemeral=True)
+
+    await self.view_ctx.update_embed("anti")
 
 import traceback
 

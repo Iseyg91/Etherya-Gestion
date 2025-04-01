@@ -690,7 +690,9 @@ async def viewpremium(interaction: discord.Interaction):
 #------------------------------------------------------------------------- Commande SETUP
 AUTHORIZED_USER_ID = 792755123587645461
 
-class SetupView(View):
+AUTHORIZED_USER_ID = 792755123587645461  # Ton ID Discord
+
+class SetupView(discord.ui.View):
     def __init__(self, ctx, guild_data, collection):
         super().__init__(timeout=180)
         self.ctx = ctx
@@ -763,7 +765,6 @@ class SetupView(View):
         else:
             print("Erreur : embed_message est nul ou non défini.")
 
-# Déplacer la fonction format_mention en dehors de update_embed
 def format_mention(id, type_mention):
     if not id or id == "Non défini":
         return "❌ **Non défini**"
@@ -1007,17 +1008,18 @@ async def notify_bot_owner(self, interaction, param, new_value):
                 ephemeral=True
             )
 
+# Commande /setup qui est protégée par le check des permissions
 @bot.tree.command(name="setup", description="Description de ta commande")
 async def setup(interaction: discord.Interaction):
     print("Commande 'setup' appelée.")  # Log de débogage
-    
+
     # Vérifie si l'utilisateur est le propriétaire du bot ou un administrateur du serveur
     if interaction.user.id != AUTHORIZED_USER_ID and not interaction.user.guild_permissions.administrator:
         print("Utilisateur non autorisé.")
         await interaction.response.send_message("❌ Vous n'avez pas les permissions nécessaires.", ephemeral=True)
         return
     
-    # Ton code pour le setup ici, si l'utilisateur est autorisé
+    # Récupère les données du serveur à partir de la base de données
     guild_data = collection.find_one({"guild_id": str(interaction.guild.id)}) or {}
 
     embed = discord.Embed(
@@ -1038,7 +1040,6 @@ async def setup(interaction: discord.Interaction):
     view = SetupView(interaction, guild_data, collection)
     await interaction.response.send_message(embed=embed, view=view)  # Envoi de l'embed
     print("Message d'embed envoyé.")
-
 #------------------------------------------------------------------------- Commande Mention ainsi que Commandes d'Administration : Detections de Mots sensible et Mention
 
 # Liste des mots sensibles

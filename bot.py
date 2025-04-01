@@ -754,14 +754,13 @@ class SetupView(View):
             self.add_item(ReturnButton(self))
 
         # Vérifier que embed_message est valide avant de tenter de modifier
-        if self.embed_message:
-            try:
-                await self.embed_message.edit(embed=embed, view=self)
-                print(f"Embed mis à jour pour la catégorie: {category}")
-            except Exception as e:
-                print(f"Erreur lors de la mise à jour de l'embed: {e}")
-        else:
-            print("Erreur : embed_message est nul ou non défini.")
+if self.embed_message:
+    try:
+        await self.embed_message.edit(embed=embed, view=self)
+    except Exception as e:
+        print(f"Erreur lors de la mise à jour de l'embed: {e}")
+else:
+    print("Erreur : embed_message est nul ou non défini.")
 
 # Déplacer la fonction format_mention en dehors de update_embed
 def format_mention(id, type_mention):
@@ -784,10 +783,31 @@ class MainSelect(Select):
 
         # Vérification de view_ctx avant d'appeler la mise à jour
         if hasattr(self.view_ctx, 'update_embed'):
-            await self.view_ctx.update_embed(self.values[0])  # Mettre à jour l'embed selon le choix de l'utilisateur
-            print(f"Embed mis à jour avec la catégorie: {self.values[0]}")
+            try:
+                category = self.values[0]  # Récupérer la valeur sélectionnée
+                print(f"Catégorie sélectionnée: {category}")
+                await self.view_ctx.update_embed(category)  # Mettre à jour l'embed selon le choix de l'utilisateur
+                print(f"Embed mis à jour avec la catégorie: {category}")
+            except Exception as e:
+                print(f"Erreur lors de la mise à jour de l'embed: {e}")
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ **Erreur**",
+                        description="Une erreur est survenue lors de la mise à jour de l'embed.",
+                        color=discord.Color.red()
+                    ),
+                    ephemeral=True
+                )
         else:
             print("Erreur: view_ctx n'a pas la méthode update_embed.")
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ **Erreur**",
+                    description="Le système de mise à jour d'embed n'est pas disponible.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
 
 class ReturnButton(Button):
     def __init__(self, view):
@@ -902,8 +922,8 @@ class AntiSelect(Select):
         self.view_ctx = view
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
-        
+        await interaction.response.defer()  # Avertir que l'interaction est en cours
+
         param = self.values[0]
         embed_request = discord.Embed(
             title="⚙️ **Modification d'une protection**",

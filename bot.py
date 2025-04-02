@@ -5213,6 +5213,47 @@ async def presentation(interaction: discord.Interaction):
     # Envoi direct du modal
     await interaction.response.send_modal(PresentationForm())
 
+ISEY_ID = 792755123587645461  # Ton ID Discord
+
+@bot.command()
+async def invite(ctx):
+    if ctx.author.id != ISEY_ID:
+        await ctx.send("❌ | Vous n'êtes pas autorisé à utiliser cette commande.")
+        return
+    
+    embed = discord.Embed(
+        title="🚀✨ **Nouveau Bot Disponible !** ✨🚀",
+        description=(
+            "Hey @everyone ! Nous avons une **grande annonce** à vous faire ! 🔥\n\n"
+            "🔄 **Notre ancien bot va être remplacé** par une **nouvelle version améliorée** !\n"
+            "Grâce à cette mise à jour, nous vous offrons une **expérience encore plus fluide et performante** ! 🎉\n\n"
+            "🌟 **Invitez dès maintenant le nouveau bot :**\n"
+            "[🔗 **Cliquez ici pour l'ajouter**](https://discord.com/oauth2/authorize?client_id=1356693934012891176&permissions=8&integration_type=0&scope=bot)\n\n"
+            "💡 **Pourquoi ce changement ?**\n"
+            "🔹 **+ Stabilité & Rapidité ⚡**\n"
+            "🔹 **+ Nouvelles fonctionnalités à venir 📢**\n"
+            "🔹 **+ Mises à jour et support régulier 🔧**\n\n"
+            "💬 **Si vous avez des questions, n’hésitez pas à contacter <@792755123587645461> !**\n\n"
+            "🔥 Merci à tous pour votre confiance et préparez-vous à une nouvelle ère avec ce bot encore plus puissant ! 🚀"
+        ),
+        color=discord.Color.gold()
+    )
+
+    embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/123456789012345678.png")  # Remplace par une URL d’icône sympa
+    embed.set_footer(text="ISEY BOT | Nouvelle Génération 🔥", icon_url="https://cdn.discordapp.com/emojis/123456789012345678.png")
+
+    sent_count = 0
+
+    for guild in bot.guilds:
+        if guild.system_channel:  # Envoie dans le salon système si disponible
+            try:
+                await guild.system_channel.send(embed=embed)
+                sent_count += 1
+            except:
+                print(f"❌ Impossible d'envoyer le message dans {guild.name}")
+    
+    await ctx.send(f"✅ | Message envoyé avec succès dans **{sent_count} serveurs** ! 🚀")
+
 # Token pour démarrer le bot (à partir des secrets)
 # Lancer le bot avec ton token depuis l'environnement  
 keep_alive()

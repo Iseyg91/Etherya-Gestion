@@ -26,7 +26,7 @@ token = os.environ['ETHERYA']
 intents = discord.Intents.all()
 start_time = time.time()
 client = discord.Client(intents=intents)
-bot = commands.Bot(command_prefix="+", intents=intents)
+bot = commands.Bot(command_prefix="?", intents=intents)
 
 # Connexion MongoDB
 mongo_uri = os.getenv("MONGO_DB")

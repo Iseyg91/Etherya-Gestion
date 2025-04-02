@@ -4884,6 +4884,55 @@ async def alladmin(ctx):
 # Dictionnaire pour stocker les messages supprimés {channel_id: deque[(timestamp, auteur, contenu)]}
 sniped_messages = {}
 
+# Fonction pour générer une commande d'ajout de rôle et l'insérer dans main.py
+def generate_addrole_command(command_name, role_needed):
+    # Code généré pour la commande d'ajout de rôle
+    command_code = f"""
+@bot.command()
+async def {command_name}(ctx, user: discord.User, role: discord.Role):
+    # Vérifie si l'utilisateur qui exécute la commande a le rôle {role_needed}
+    if not any(role.name == '{role_needed}' for role in ctx.author.roles):
+        await ctx.send("❌ Vous n'avez pas la permission d'exécuter cette commande.")
+        return
+    
+    # Ajoute le rôle à l'utilisateur spécifié
+    try:
+        await user.add_roles(role)
+        await ctx.send(f"✅ Le rôle {{role.name}} a été ajouté à {{user.mention}}.")
+    except Exception as e:
+        await ctx.send(f"❌ Une erreur est survenue : {{str(e)}}")
+    """
+    
+    # Insère la nouvelle commande dans main.py
+    with open("main.py", "r") as f:
+        lines = f.readlines()
+    
+    # Vérifier si la commande existe déjà pour éviter les doublons
+    if f"async def {command_name}(" in "".join(lines):
+        return f"❌ La commande `{command_name}` existe déjà dans le code."
+
+    # Ajouter la commande à la fin du fichier main.py
+    with open("main.py", "a") as f:
+        f.write(command_code + "\n")
+    
+    return f"✅ La commande `{command_name}` a été créée et ajoutée avec succès dans `main.py`."
+
+# Commande pour créer une nouvelle commande via Discord
+@bot.command()
+async def newcmd(ctx, command_name: str, role_needed: str):
+    """
+    Crée une nouvelle commande pour ajouter un rôle à un utilisateur avec les permissions spécifiques.
+    :param command_name: Nom de la nouvelle commande à créer.
+    :param role_needed: Le rôle nécessaire pour exécuter la commande.
+    """
+    # Appelle la fonction pour générer et ajouter la commande dans main.py
+    response = generate_addrole_command(command_name, role_needed)
+    await ctx.send(response)
+
+# Lancer le bot
+bot.run("TON_BOT_TOKEN")
+
+
 @bot.event
 async def on_message_delete(message):
     if message.author.bot:

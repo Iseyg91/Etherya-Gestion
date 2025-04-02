@@ -715,16 +715,6 @@ async def update_embed(self, category):
     """Met à jour l'embed et rafraîchit dynamiquement le message."""
     embed = discord.Embed(title=f"Configuration: {category}", color=discord.Color.blurple())
     embed.description = f"Voici les options pour la catégorie `{category}`."
-    
-    if self.embed_message:
-        try:
-            await self.embed_message.edit(embed=embed, view=self)
-            print(f"Embed mis à jour pour la catégorie: {category}")
-        except Exception as e:
-            print(f"Erreur lors de la mise à jour de l'embed: {e}")
-    else:
-        print("Erreur : embed_message n'est pas défini.")
-
 
     if category == "accueil":
         embed.title = "⚙️ **Configuration du Serveur**"
@@ -763,15 +753,15 @@ async def update_embed(self, category):
         self.add_item(AntiSelect(self))
         self.add_item(ReturnButton(self))
 
-    # Vérifier que embed_message est valide avant de tenter de modifier
-if self.embed_message:
-    try:
-        await self.embed_message.edit(embed=embed, view=self)
-        print(f"Embed mis à jour pour la catégorie: {category}")
-    except Exception as e:
-        print(f"Erreur lors de la mise à jour de l'embed: {e}")
-else:
-    print("Erreur : embed_message est nul ou non défini.")
+    # ✅ Vérification avant d'éditer l'embed
+    if self.embed_message:
+        try:
+            await self.embed_message.edit(embed=embed, view=self)  # ✅ Déplacé ici dans une fonction async
+            print(f"Embed mis à jour pour la catégorie: {category}")
+        except Exception as e:
+            print(f"Erreur lors de la mise à jour de l'embed: {e}")
+    else:
+        print("Erreur : embed_message est nul ou non défini.")
 
 
 def format_mention(id, type_mention):
@@ -815,7 +805,7 @@ class InfoSelect(Select):
             discord.SelectOption(label="🛡️ Rôle Admin", value="admin_role"),
             discord.SelectOption(label="👥 Rôle Staff", value="staff_role"),
             discord.SelectOption(label="🚨 Salon Sanctions", value="sanctions_channel"),
-            discord.SelectOption(label="📝 Salon Rapports", value="reports_channel"),
+            discord.SelectOption(label="📝 Salon Alerte", value="reports_channel"),
         ]
         super().__init__(placeholder="🎛️ Sélectionnez un paramètre à modifier", options=options)
         self.view_ctx = view

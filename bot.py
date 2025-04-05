@@ -673,23 +673,31 @@ class SetupView(discord.ui.View):
         self.embed_message = None  # Initialisation de embed_message
         self.add_item(MainSelect(self))
 
-    async def start(self):
-        """Envoie un message initial pour la configuration."""
+async def start(self):
+    try:
         embed = discord.Embed(
             title="⚙️ **Configuration du Serveur**",
             description="Choisissez une option pour commencer.",
             color=discord.Color.blurple()
         )
-
-        # Envoi du message initial et affectation à embed_message
         self.embed_message = await self.ctx.send(embed=embed, view=self)
         print(f"Message initial envoyé: {self.embed_message}")
+    except Exception as e:
+        print(f"Erreur lors de l'envoi du message initial : {e}")
 
 async def update_embed(self, category):
-    """Met à jour l'embed et rafraîchit dynamiquement le message."""
-    embed = discord.Embed(title=f"Configuration: {category}", color=discord.Color.blurple())
-    embed.description = f"Voici les options pour la catégorie `{category}`."
+    try:
+        embed = discord.Embed(title=f"Configuration: {category}", color=discord.Color.blurple())
+        embed.description = f"Voici les options pour la catégorie `{category}`."
 
+        # Logique pour la mise à jour de l'embed selon la catégorie...
+        if self.embed_message:
+            await self.embed_message.edit(embed=embed, view=self)
+            print(f"Embed mis à jour pour la catégorie: {category}")
+        else:
+            print("Erreur : embed_message est nul ou non défini.")
+    except Exception as e:
+        print(f"Erreur lors de la mise à jour de l'embed: {e}")
     if category == "accueil":
         embed.title = "⚙️ **Configuration du Serveur**"
         embed.description = """
@@ -753,8 +761,14 @@ class MainSelect(Select):
         self.view_ctx = view
 
 async def callback(self, interaction: discord.Interaction):
-    await interaction.response.defer()  # Avertir Discord que la réponse est en cours
-
+    try:
+        await interaction.response.defer()  # Avertir Discord que la réponse est en cours
+        category = self.values[0]  # Vérifier que la valeur sélectionnée est correcte
+        await self.view_ctx.update_embed(category)
+        print(f"Embed mis à jour avec la catégorie: {category}")
+    except Exception as e:
+        print(f"Erreur lors du callback : {e}")
+        await interaction.response.send_message("Une erreur est survenue lors de la mise à jour.", ephemeral=True)
     if hasattr(self.view_ctx, 'update_embed'):
         category = self.values[0]  # Vérifier que la valeur sélectionnée est correcte
         await self.view_ctx.update_embed(category)
@@ -867,7 +881,15 @@ class AntiSelect(Select):
         super().__init__(placeholder="🛑 Sélectionnez une protection à configurer", options=options)
         self.view_ctx = view
 
-    async def callback(self, interaction: discord.Interaction):
+async def callback(self, interaction: discord.Interaction):
+    try:
+        await interaction.response.defer()  # Avertir Discord que la réponse est en cours
+        category = self.values[0]  # Vérifier que la valeur sélectionnée est correcte
+        await self.view_ctx.update_embed(category)
+        print(f"Embed mis à jour avec la catégorie: {category}")
+    except Exception as e:
+        print(f"Erreur lors du callback : {e}")
+        await interaction.response.send_message("Une erreur est survenue lors de la mise à jour.", ephemeral=True)
         await interaction.response.defer(thinking=True)
 
         param = self.values[0]
